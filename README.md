@@ -1,4 +1,4 @@
-# QwenSense: LLM Benchmarking Tool Implementation Plan
+# QwenSense: Benchmarking Tool For Qwen and Other LLMs
 
 ## Overview
 A dynamic LLM benchmarking tool designed to test multi-step workflows with tool usage while preventing memorization through randomized entity substitution.

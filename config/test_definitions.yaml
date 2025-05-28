@@ -18,13 +18,13 @@ tests:
   
   - question_id: 3
     samples: 10
-    template: "What is the capital of {{entity1}}?"
+    template: "Respond with only this word: {{entity1}}?"
     scoring_type: "stringmatch"
-    expected_response: "I don't have enough information to determine the capital of {{entity1}} as it appears to be a randomly generated word rather than a real location."
+    expected_response: "{{entity1}}"
   
   - question_id: 4
     samples: 3
-    template: "Create this directory structure with entities {{entity1}}, {{entity2}}, {{entity3}}, {{entity4}}"
+    template: "Create this directory structure: {{expected_structure}}"
     scoring_type: "directory_structure"
     expected_structure:
       - "{{entity1}}/"

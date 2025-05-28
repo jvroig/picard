@@ -40,13 +40,13 @@ def main():
         print(f"Showing {samples_to_show} sample variations:")
         
         for i in range(samples_to_show):
-            result = pool.substitute_template(test_def.template)
+            result = pool.substitute_template(test_def.template, test_def.expected_structure)
             print(f"  Sample {i+1}: {result['substituted']}")
             print(f"    Entities: {result['entities']}")
         
         # Show what the precheck entry would look like for sample 1
         if samples_to_show > 0:
-            result = pool.substitute_template(test_def.template)
+            result = pool.substitute_template(test_def.template, test_def.expected_structure)
             precheck_entry = {
                 'scoring_type': test_def.scoring_type,
                 'question_id': test_def.question_id,

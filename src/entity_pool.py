@@ -53,12 +53,14 @@ class EntityPool:
         """Get multiple random entities from the pool (with replacement)."""
         return [self.get_random_entity() for _ in range(count)]
     
-    def substitute_template(self, template: str) -> Dict[str, Any]:
+    def substitute_template(self, template: str, expected_structure: List[str] = None) -> Dict[str, Any]:
         """
         Substitute all {{entityN}} placeholders in a template with random entities.
+        Also handles special {{expected_structure}} placeholder if expected_structure is provided.
         
         Args:
             template: String containing {{entity1}}, {{entity2}}, etc. placeholders
+            expected_structure: List of paths for directory structure (optional)
             
         Returns:
             Dictionary containing:
@@ -69,7 +71,10 @@ class EntityPool:
         entity_pattern = r'\{\{(entity\d+)\}\}'
         entity_matches = re.findall(entity_pattern, template)
         
-        if not entity_matches:
+        # Check if we have expected_structure placeholder
+        has_expected_structure = '{{expected_structure}}' in template
+        
+        if not entity_matches and not has_expected_structure:
             # No entities to substitute
             return {
                 'substituted': template,
@@ -79,16 +84,40 @@ class EntityPool:
         # Get unique entity names (in case same entity appears multiple times)
         unique_entities = list(set(entity_matches))
         
+        # If we have expected_structure, we need to find entities in it too
+        if has_expected_structure and expected_structure:
+            for path in expected_structure:
+                path_entities = re.findall(entity_pattern, path)
+                unique_entities.extend(path_entities)
+            unique_entities = list(set(unique_entities))
+        
         # Generate random values for each unique entity
         entity_values = {}
         for entity_name in unique_entities:
             entity_values[entity_name] = self.get_random_entity()
         
-        # Perform substitution
+        # Perform basic entity substitution
         substituted = template
         for entity_name, entity_value in entity_values.items():
             placeholder = f'{{{{{entity_name}}}}}'
             substituted = substituted.replace(placeholder, entity_value)
+        
+        # Handle expected_structure substitution
+        if has_expected_structure and expected_structure:
+            # Substitute entities in the expected_structure paths
+            substituted_paths = []
+            for path in expected_structure:
+                substituted_path = path
+                for entity_name, entity_value in entity_values.items():
+                    placeholder = f'{{{{{entity_name}}}}}'
+                    substituted_path = substituted_path.replace(placeholder, entity_value)
+                substituted_paths.append(substituted_path)
+            
+            # Format as tree structure
+            tree_structure = self._format_directory_tree(substituted_paths)
+            
+            # Replace {{expected_structure}} with the formatted tree
+            substituted = substituted.replace('{{expected_structure}}', f'\n```\n{tree_structure}\n```')
         
         return {
             'substituted': substituted,
@@ -113,6 +142,80 @@ class EntityPool:
         
         return substituted
     
+    def _format_directory_tree(self, paths: List[str]) -> str:
+        """
+        Format a list of file/directory paths into a tree structure.
+        
+        Args:
+            paths: List of paths like ["dir1/", "dir1/subdir/", "dir1/file.txt"]
+            
+        Returns:
+            Formatted tree structure as string
+        """
+        if not paths:
+            return ""
+        
+        # Sort paths to ensure proper tree structure
+        sorted_paths = sorted(paths)
+        tree_lines = []
+        
+        for i, path in enumerate(sorted_paths):
+            # Count depth based on slashes
+            depth = path.count('/') - (1 if path.endswith('/') else 0)
+            
+            # Get the name (last part of path)
+            if path.endswith('/'):
+                name = path.rstrip('/').split('/')[-1] + "/"
+            else:
+                name = path.split('/')[-1]
+            
+            # Determine if this is the last item at this depth level
+            is_last = True
+            current_prefix = '/'.join(path.rstrip('/').split('/')[:-1])
+            
+            for j in range(i + 1, len(sorted_paths)):
+                next_path = sorted_paths[j]
+                next_prefix = '/'.join(next_path.rstrip('/').split('/')[:-1])
+                next_depth = next_path.count('/') - (1 if next_path.endswith('/') else 0)
+                
+                if next_depth == depth and next_prefix == current_prefix:
+                    is_last = False
+                    break
+                elif next_depth < depth:
+                    break
+            
+            # Build the tree prefix
+            prefix = ""
+            for d in range(depth):
+                # Check if there are more items at parent levels
+                parent_parts = path.rstrip('/').split('/')[:d+1]
+                parent_path = '/'.join(parent_parts)
+                
+                has_siblings_below = False
+                for j in range(i + 1, len(sorted_paths)):
+                    check_path = sorted_paths[j]
+                    check_parts = check_path.rstrip('/').split('/')
+                    if len(check_parts) > d:
+                        check_parent = '/'.join(check_parts[:d+1])
+                        if check_parent != parent_path and '/'.join(check_parts[:d]) == '/'.join(parent_parts[:d]):
+                            has_siblings_below = True
+                            break
+                
+                if has_siblings_below:
+                    prefix += "│   "
+                else:
+                    prefix += "    "
+            
+            # Add the final connector
+            if is_last:
+                connector = "└── "
+            else:
+                connector = "├── "
+            
+            tree_lines.append(f"{prefix}{connector}{name}")
+        
+        return '\n'.join(tree_lines)
+
     def count_entities(self) -> int:
         """Return the number of entities in the pool."""
         return len(self.entities)

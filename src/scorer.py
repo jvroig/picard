@@ -1,0 +1,306 @@
+"""
+Base Scorer Framework for QwenSense LLM Benchmarking Tool
+
+Handles loading precheck and response files, coordinating scoring, and generating results.
+"""
+import json
+import sys
+from pathlib import Path
+from datetime import datetime
+from typing import List, Dict, Any, Tuple
+from abc import ABC, abstractmethod
+
+# Add src to path for imports
+sys.path.append(str(Path(__file__).parent))
+
+
+class ScoringResult:
+    """Represents the result of scoring a single question."""
+    
+    def __init__(self, question_id: int, sample_number: int, scoring_type: str, 
+                 correct: bool, error_message: str = None, details: Dict[str, Any] = None):
+        self.question_id = question_id
+        self.sample_number = sample_number
+        self.scoring_type = scoring_type
+        self.correct = correct
+        self.error_message = error_message
+        self.details = details or {}
+        self.timestamp = datetime.now().isoformat()
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return {
+            'question_id': self.question_id,
+            'sample_number': self.sample_number,
+            'scoring_type': self.scoring_type,
+            'correct': self.correct,
+            'error_message': self.error_message,
+            'details': self.details,
+            'timestamp': self.timestamp
+        }
+
+
+class BaseScoringType(ABC):
+    """Abstract base class for all scoring type implementations."""
+    
+    @abstractmethod
+    def score(self, precheck_entry: Dict[str, Any], response_entry: Dict[str, Any], 
+              test_artifacts_dir: Path) -> ScoringResult:
+        """
+        Score a single question based on precheck data and LLM response.
+        
+        Args:
+            precheck_entry: The precheck entry containing expected values
+            response_entry: The LLM response entry
+            test_artifacts_dir: Path to test_artifacts directory
+            
+        Returns:
+            ScoringResult object with scoring outcome
+        """
+        pass
+
+
+class QwenSenseScorer:
+    """Main scorer that coordinates all scoring operations."""
+    
+    def __init__(self, test_artifacts_dir: str = None):
+        """
+        Initialize the scorer.
+        
+        Args:
+            test_artifacts_dir: Path to test artifacts directory
+        """
+        if test_artifacts_dir is None:
+            current_dir = Path(__file__).parent.parent
+            test_artifacts_dir = current_dir / "test_artifacts"
+        
+        self.test_artifacts_dir = Path(test_artifacts_dir)
+        self.scoring_types = {}
+        self._register_scoring_types()
+    
+    def _register_scoring_types(self):
+        """Register all available scoring type implementations."""
+        # We'll import these after creating the implementations
+        try:
+            from scoring_types.stringmatch import StringMatchScorer
+            from scoring_types.readfile_stringmatch import ReadFileStringMatchScorer
+            from scoring_types.files_exist import FilesExistScorer
+            from scoring_types.directory_structure import DirectoryStructureScorer
+            
+            self.scoring_types = {
+                'stringmatch': StringMatchScorer(),
+                'readfile_stringmatch': ReadFileStringMatchScorer(),
+                'files_exist': FilesExistScorer(),
+                'directory_structure': DirectoryStructureScorer()
+            }
+        except ImportError as e:
+            print(f"Warning: Could not import scoring types: {e}")
+            self.scoring_types = {}
+    
+    def load_precheck_file(self, precheck_file: str) -> List[Dict[str, Any]]:
+        """Load precheck entries from JSONL file."""
+        precheck_entries = []
+        with open(precheck_file, 'r', encoding='utf-8') as f:
+            for line_num, line in enumerate(f, 1):
+                try:
+                    entry = json.loads(line.strip())
+                    precheck_entries.append(entry)
+                except json.JSONDecodeError as e:
+                    print(f"Error parsing precheck line {line_num}: {e}")
+        
+        return precheck_entries
+    
+    def load_responses_file(self, responses_file: str) -> List[Dict[str, Any]]:
+        """Load response entries from JSONL file."""
+        response_entries = []
+        with open(responses_file, 'r', encoding='utf-8') as f:
+            for line_num, line in enumerate(f, 1):
+                try:
+                    entry = json.loads(line.strip())
+                    response_entries.append(entry)
+                except json.JSONDecodeError as e:
+                    print(f"Error parsing response line {line_num}: {e}")
+        
+        return response_entries
+    
+    def match_entries(self, precheck_entries: List[Dict[str, Any]], 
+                     response_entries: List[Dict[str, Any]]) -> List[Tuple[Dict[str, Any], Dict[str, Any]]]:
+        """Match precheck entries with corresponding response entries."""
+        # Create lookup for responses
+        response_lookup = {}
+        for response in response_entries:
+            key = (response['question_id'], response['sample_number'])
+            response_lookup[key] = response
+        
+        # Match with precheck entries
+        matched_pairs = []
+        for precheck in precheck_entries:
+            key = (precheck['question_id'], precheck['sample_number'])
+            if key in response_lookup:
+                matched_pairs.append((precheck, response_lookup[key]))
+            else:
+                print(f"Warning: No response found for Question {key[0]}, Sample {key[1]}")
+        
+        return matched_pairs
+    
+    def score_single_entry(self, precheck_entry: Dict[str, Any], 
+                          response_entry: Dict[str, Any]) -> ScoringResult:
+        """Score a single precheck/response pair."""
+        scoring_type = precheck_entry['scoring_type']
+        
+        if scoring_type not in self.scoring_types:
+            return ScoringResult(
+                question_id=precheck_entry['question_id'],
+                sample_number=precheck_entry['sample_number'],
+                scoring_type=scoring_type,
+                correct=False,
+                error_message=f"Unknown scoring type: {scoring_type}"
+            )
+        
+        scorer = self.scoring_types[scoring_type]
+        try:
+            return scorer.score(precheck_entry, response_entry, self.test_artifacts_dir)
+        except Exception as e:
+            return ScoringResult(
+                question_id=precheck_entry['question_id'],
+                sample_number=precheck_entry['sample_number'],
+                scoring_type=scoring_type,
+                correct=False,
+                error_message=f"Scoring error: {str(e)}"
+            )
+    
+    def score_all(self, precheck_file: str, responses_file: str) -> List[ScoringResult]:
+        """Score all entries and return results."""
+        print("🎯 QwenSense Scoring System")
+        print("=" * 30)
+        
+        # Load files
+        print(f"📄 Loading precheck file: {precheck_file}")
+        precheck_entries = self.load_precheck_file(precheck_file)
+        print(f"📝 Loaded {len(precheck_entries)} precheck entries")
+        
+        print(f"📄 Loading responses file: {responses_file}")
+        response_entries = self.load_responses_file(responses_file)
+        print(f"🤖 Loaded {len(response_entries)} response entries")
+        
+        # Match entries
+        matched_pairs = self.match_entries(precheck_entries, response_entries)
+        print(f"🔗 Matched {len(matched_pairs)} precheck/response pairs")
+        print()
+        
+        # Score each pair
+        results = []
+        correct_count = 0
+        
+        for precheck, response in matched_pairs:
+            result = self.score_single_entry(precheck, response)
+            results.append(result)
+            
+            if result.correct:
+                correct_count += 1
+                status = "✅ CORRECT"
+            else:
+                status = "❌ INCORRECT"
+            
+            print(f"Q{result.question_id}.{result.sample_number} ({result.scoring_type}): {status}")
+            if result.error_message:
+                print(f"   Error: {result.error_message}")
+            if result.details:
+                print(f"   Details: {result.details}")
+        
+        # Summary
+        total_count = len(results)
+        accuracy = (correct_count / total_count * 100) if total_count > 0 else 0
+        
+        print()
+        print("📊 SCORING SUMMARY")
+        print("=" * 20)
+        print(f"Total questions: {total_count}")
+        print(f"Correct answers: {correct_count}")
+        print(f"Incorrect answers: {total_count - correct_count}")
+        print(f"Accuracy: {accuracy:.2f}%")
+        
+        return results
+    
+    def save_results(self, results: List[ScoringResult], output_file: str):
+        """Save scoring results to file."""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Summary data
+        total_count = len(results)
+        correct_count = sum(1 for r in results if r.correct)
+        accuracy = (correct_count / total_count * 100) if total_count > 0 else 0
+        
+        # Group by question and scoring type
+        by_question = {}
+        by_scoring_type = {}
+        
+        for result in results:
+            # By question
+            qid = result.question_id
+            if qid not in by_question:
+                by_question[qid] = {'correct': 0, 'total': 0, 'scoring_type': result.scoring_type}
+            by_question[qid]['total'] += 1
+            if result.correct:
+                by_question[qid]['correct'] += 1
+            
+            # By scoring type
+            stype = result.scoring_type
+            if stype not in by_scoring_type:
+                by_scoring_type[stype] = {'correct': 0, 'total': 0}
+            by_scoring_type[stype]['total'] += 1
+            if result.correct:
+                by_scoring_type[stype]['correct'] += 1
+        
+        # Create final output
+        output_data = {
+            'metadata': {
+                'timestamp': timestamp,
+                'total_questions': total_count,
+                'correct_answers': correct_count,
+                'accuracy_percentage': round(accuracy, 2)
+            },
+            'by_question': by_question,
+            'by_scoring_type': by_scoring_type,
+            'detailed_results': [result.to_dict() for result in results]
+        }
+        
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(output_data, f, indent=2)
+        
+        print(f"💾 Saved detailed results to: {output_file}")
+
+
+def main():
+    """Test the scorer framework."""
+    print("🔧 Testing Scorer Framework (will fail until scoring types are implemented)")
+    
+    # Find latest files
+    current_dir = Path(__file__).parent.parent
+    results_dir = current_dir / "results"
+    
+    precheck_files = sorted(results_dir.glob("precheck_*.jsonl"))
+    response_files = sorted(results_dir.glob("responses_*.jsonl"))
+    
+    if not precheck_files or not response_files:
+        print("❌ No precheck or response files found!")
+        print("Run system_test.py and create_mock_data.py first.")
+        return
+    
+    latest_precheck = precheck_files[-1]
+    latest_responses = response_files[-1]
+    
+    # Initialize scorer
+    scorer = QwenSenseScorer()
+    
+    # Score all entries
+    results = scorer.score_all(str(latest_precheck), str(latest_responses))
+    
+    # Save results
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = results_dir / f"scores_{timestamp}.json"
+    scorer.save_results(results, str(output_file))
+
+
+if __name__ == "__main__":
+    main()

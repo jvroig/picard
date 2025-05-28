@@ -1,0 +1,35 @@
+# QwenSense Test Definitions
+# Example test cases demonstrating different scoring types
+
+tests:
+  - question_id: 1
+    samples: 5
+    template: "Write the text 'Hello {{entity1}}!' inside this file: test_artifacts/{{entity2}}.txt"
+    scoring_type: "readfile_stringmatch"
+    file_to_read: "test_artifacts/{{entity2}}.txt"
+  
+  - question_id: 2
+    samples: 3
+    template: "Create these files: {{entity1}}.log and {{entity2}}.config in the test_artifacts directory"
+    scoring_type: "files_exist"
+    files_to_check:
+      - "test_artifacts/{{entity1}}.log"
+      - "test_artifacts/{{entity2}}.config"
+  
+  - question_id: 3
+    samples: 10
+    template: "What is the capital of {{entity1}}?"
+    scoring_type: "stringmatch"
+    expected_response: "I don't have enough information to determine the capital of {{entity1}} as it appears to be a randomly generated word rather than a real location."
+  
+  - question_id: 4
+    samples: 3
+    template: "Create this directory structure with entities {{entity1}}, {{entity2}}, {{entity3}}, {{entity4}}"
+    scoring_type: "directory_structure"
+    expected_structure:
+      - "{{entity1}}/"
+      - "{{entity1}}/{{entity2}}/"
+      - "{{entity1}}/logs/"
+      - "{{entity1}}/logs/{{entity3}}.log"
+      - "{{entity4}}/"
+      - "{{entity4}}/README.md"

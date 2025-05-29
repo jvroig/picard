@@ -83,12 +83,12 @@ class PrecheckGenerator:
             )
             precheck_entry['file_to_read'] = substituted_file
             
-            # Generate expected content for readfile_stringmatch
-            if test_def.scoring_type == 'readfile_stringmatch':
-                # Extract expected content from template
-                if 'Hello {{entity1}}' in test_def.template:
-                    expected_content = f"Hello {entity_values.get('entity1', '')}"
-                    precheck_entry['expected_content'] = expected_content
+            # Handle expected_content substitution for readfile_stringmatch
+            if test_def.scoring_type == 'readfile_stringmatch' and test_def.expected_content:
+                substituted_expected_content = self.entity_pool.substitute_with_entities(
+                    test_def.expected_content, entity_values
+                )
+                precheck_entry['expected_content'] = substituted_expected_content
         
         if test_def.files_to_check:
             substituted_files = [

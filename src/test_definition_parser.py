@@ -19,6 +19,7 @@ class TestDefinition:
     
     # Optional properties based on scoring type
     file_to_read: Optional[str] = None
+    expected_content: Optional[str] = None
     files_to_check: Optional[List[str]] = None
     expected_structure: Optional[List[str]] = None
     expected_response: Optional[str] = None
@@ -60,6 +61,8 @@ class TestDefinition:
         # Add optional properties if they exist
         if self.file_to_read:
             result['file_to_read'] = self.file_to_read
+        if self.expected_content:
+            result['expected_content'] = self.expected_content
         if self.files_to_check:
             result['files_to_check'] = self.files_to_check
         if self.expected_structure:
@@ -153,6 +156,7 @@ class TestDefinitionParser:
                 template=test_data['template'],
                 scoring_type=test_data['scoring_type'],
                 file_to_read=test_data.get('file_to_read'),
+                expected_content=test_data.get('expected_content'),
                 files_to_check=test_data.get('files_to_check'),
                 expected_structure=test_data.get('expected_structure'),
                 expected_response=test_data.get('expected_response')
@@ -173,6 +177,7 @@ tests:
     template: "Write the text 'Hello {{entity1}}!' inside this file: test_artifacts/{{entity2}}.txt"
     scoring_type: "readfile_stringmatch"
     file_to_read: "test_artifacts/{{entity2}}.txt"
+    expected_content: 'Hello {{entity1}}!'
   
   - question_id: 2
     samples: 3

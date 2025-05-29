@@ -7,6 +7,7 @@ tests:
     template: "Write the text 'Hello {{entity1}}!' inside this file: test_artifacts/{{entity2}}.txt"
     scoring_type: "readfile_stringmatch"
     file_to_read: "test_artifacts/{{entity2}}.txt"
+    expected_content: 'Hello {{entity1}}!'
   
   - question_id: 2
     samples: 3
@@ -18,13 +19,13 @@ tests:
   
   - question_id: 3
     samples: 10
-    template: "Respond with only this word: {{entity1}}?"
+    template: "Respond with only this word: {{entity1}}"
     scoring_type: "stringmatch"
     expected_response: "{{entity1}}"
   
   - question_id: 4
     samples: 3
-    template: "Create this directory structure: {{expected_structure}}"
+    template: "Create this directory structure inside the folder `test_artifacts`: {{expected_structure}}"
     scoring_type: "directory_structure"
     expected_structure:
       - "{{entity1}}/"

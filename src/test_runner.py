@@ -9,7 +9,7 @@ import json
 import argparse
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 
 # Add src and scripts to path for imports
 current_dir = Path(__file__).parent
@@ -17,7 +17,7 @@ sys.path.append(str(current_dir))
 sys.path.append(str(current_dir.parent / "scripts"))
 
 from precheck_generator import PrecheckGenerator
-from mock_llm import execute_with_retry
+from mock_llm import execute_with_retry  # Can switch to real_llm when ready
 from sandbox_manager import SandboxManager
 
 
@@ -75,7 +75,8 @@ class TestRunner:
     
     def run_benchmark(self, test_definitions_file: str = None, 
                      sandbox_template: str = "clean_sandbox",
-                     max_retries: int = 3, retry_delay: float = 2.0) -> Dict[str, str]:
+                     max_retries: int = 3, retry_delay: float = 2.0,
+                     use_real_llm: bool = False) -> Dict[str, str]:
         """
         Run complete benchmark test.
         
@@ -84,10 +85,19 @@ class TestRunner:
             sandbox_template: Sandbox template to use
             max_retries: Maximum retry attempts for failed LLM calls
             retry_delay: Delay between retries in seconds
+            use_real_llm: Whether to use real LLM API or mock
             
         Returns:
             Dictionary with file paths of generated results
         """
+        # Import the appropriate LLM module based on parameter
+        global execute_with_retry
+        if use_real_llm:
+            print("🔗 Using REAL LLM API")
+            from real_llm import execute_with_retry
+        else:
+            print("🤖 Using MOCK LLM")
+            from mock_llm import execute_with_retry
         print("🚀 QwenSense Test Runner")
         print("=" * 40)
         
@@ -123,12 +133,18 @@ class TestRunner:
         
         # Execute questions against LLM
         print("🤖 Executing questions against LLM...")
-        responses = self._execute_questions(precheck_entries, max_retries, retry_delay)
+        responses, conversations = self._execute_questions(precheck_entries, max_retries, retry_delay)
         
         # Save responses file
         responses_file = self.test_dir / "responses.jsonl"
         self._save_responses(responses, str(responses_file))
         print(f"💾 Saved responses file: {responses_file}")
+        
+        # Save conversation files
+        conversations_dir = self.test_dir / "conversations"
+        conversations_dir.mkdir(exist_ok=True)
+        self._save_conversations(conversations, conversations_dir)
+        print(f"💾 Saved {len(conversations)} conversation files: {conversations_dir}")
         print()
         
         # Generate summary
@@ -145,9 +161,10 @@ class TestRunner:
         }
     
     def _execute_questions(self, precheck_entries: List[Dict[str, Any]], 
-                          max_retries: int, retry_delay: float) -> List[Dict[str, Any]]:
+                          max_retries: int, retry_delay: float) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """Execute all questions against the LLM."""
         responses = []
+        conversations = []
         total_questions = len(precheck_entries)
         
         for i, entry in enumerate(precheck_entries, 1):
@@ -165,7 +182,7 @@ class TestRunner:
                     delay=retry_delay
                 )
                 
-                # Create response entry
+                # Create response entry (for scoring)
                 response_entry = {
                     'question_id': question_id,
                     'sample_number': sample_number,
@@ -176,7 +193,22 @@ class TestRunner:
                     'model_info': result.get('model_info')
                 }
                 
+                # Create conversation entry (for analysis)
+                conversation_entry = {
+                    'question_id': question_id,
+                    'sample_number': sample_number,
+                    'timestamp': result['timestamp'],
+                    'initial_question': question,
+                    'conversation_history': result.get('conversation_history', []),
+                    'statistics': result.get('statistics', {}),
+                    'final_response': result['response_text'],
+                    'execution_successful': result['execution_successful'],
+                    'error_message': result.get('error_message'),
+                    'model_info': result.get('model_info')
+                }
+                
                 responses.append(response_entry)
+                conversations.append(conversation_entry)
                 print(" ✅")
                 
             except Exception as e:
@@ -186,13 +218,26 @@ class TestRunner:
                 raise Exception(f"Test run aborted due to LLM execution failure: {e}")
         
         print(f"\n🎯 Executed {len(responses)} questions successfully")
-        return responses
+        return responses, conversations
     
     def _save_responses(self, responses: List[Dict[str, Any]], output_file: str):
         """Save responses to JSONL file."""
         with open(output_file, 'w', encoding='utf-8') as f:
             for response in responses:
                 f.write(json.dumps(response) + '\n')
+    
+    def _save_conversations(self, conversations: List[Dict[str, Any]], conversations_dir: Path):
+        """Save conversation files to individual JSON files."""
+        for conversation in conversations:
+            question_id = conversation['question_id']
+            sample_number = conversation['sample_number']
+            
+            # Create filename: q1_s1.json, q2_s3.json, etc.
+            filename = f"q{question_id}_s{sample_number}.json"
+            conversation_file = conversations_dir / filename
+            
+            with open(conversation_file, 'w', encoding='utf-8') as f:
+                json.dump(conversation, f, indent=2)
     
     def _generate_test_summary(self):
         """Generate and save test run summary."""
@@ -254,6 +299,12 @@ Examples:
         help='Delay between retries in seconds (default: 2.0)'
     )
     
+    parser.add_argument(
+        '--real-llm',
+        action='store_true',
+        help='Use real LLM API instead of mock (requires qwen-max-agentic server running)'
+    )
+    
     args = parser.parse_args()
     
     try:
@@ -263,7 +314,8 @@ Examples:
             test_definitions_file=args.definitions,
             sandbox_template=args.template,
             max_retries=args.retries,
-            retry_delay=args.delay
+            retry_delay=args.delay,
+            use_real_llm=args.real_llm
         )
         
         print(f"\n🎊 Success! Test results available at: {result['test_dir']}")

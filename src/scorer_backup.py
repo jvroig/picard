@@ -1,12 +1,13 @@
 """
-Updated Scorer for QwenSense LLM Benchmarking Tool
+Base Scorer Framework for QwenSense LLM Benchmarking Tool
 
-Works with new test directory structure (results/test_TIMESTAMP/).
-Supports scoring latest test, specific test, or all tests.
+Handles loading precheck and response files, coordinating scoring, and generating results.
+Updated to work with new test directory structure (results/test_TIMESTAMP/).
 """
 import json
 import sys
 import argparse
+import glob
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Tuple, Optional
@@ -48,7 +49,17 @@ class BaseScoringType(ABC):
     @abstractmethod
     def score(self, precheck_entry: Dict[str, Any], response_entry: Dict[str, Any], 
               test_artifacts_dir: Path) -> ScoringResult:
-        """Score a single question based on precheck data and LLM response."""
+        """
+        Score a single question based on precheck data and LLM response.
+        
+        Args:
+            precheck_entry: The precheck entry containing expected values
+            response_entry: The LLM response entry
+            test_artifacts_dir: Path to test_artifacts directory
+            
+        Returns:
+            ScoringResult object with scoring outcome
+        """
         pass
 
 
@@ -56,36 +67,23 @@ class QwenSenseScorer:
     """Main scorer that coordinates all scoring operations."""
     
     def __init__(self, base_dir: str = None):
-        """Initialize the scorer."""
-        if base_dir is None:
-            base_dir = Path(__file__).parent.parent
-        else:
-            base_dir = Path(base_dir)
+        """
+        Initialize the scorer.
         
-        self.base_dir = base_dir
-        self.results_dir = base_dir / "results"
-        self.test_artifacts_dir = base_dir / "test_artifacts"
+        Args:
+            base_dir: Base directory of QwenSense project (optional)
+        """
+        if base_dir is None:
+            current_dir = Path(__file__).parent.parent
+        else:
+            current_dir = Path(base_dir)
+        
+        self.base_dir = current_dir
+        self.results_dir = current_dir / "results"
+        self.test_artifacts_dir = current_dir / "test_artifacts"
         
         self.scoring_types = {}
         self._register_scoring_types()
-    
-    def _register_scoring_types(self):
-        """Register all available scoring type implementations."""
-        try:
-            from scoring_types.stringmatch import StringMatchScorer
-            from scoring_types.readfile_stringmatch import ReadFileStringMatchScorer
-            from scoring_types.files_exist import FilesExistScorer
-            from scoring_types.directory_structure import DirectoryStructureScorer
-            
-            self.scoring_types = {
-                'stringmatch': StringMatchScorer(),
-                'readfile_stringmatch': ReadFileStringMatchScorer(),
-                'files_exist': FilesExistScorer(),
-                'directory_structure': DirectoryStructureScorer()
-            }
-        except ImportError as e:
-            print(f"Warning: Could not import scoring types: {e}")
-            self.scoring_types = {}
     
     def find_test_directories(self) -> List[Path]:
         """Find all test directories in results folder."""
@@ -113,6 +111,25 @@ class QwenSenseScorer:
                 return False
         
         return True
+    
+    def _register_scoring_types(self):
+        """Register all available scoring type implementations."""
+        # We'll import these after creating the implementations
+        try:
+            from scoring_types.stringmatch import StringMatchScorer
+            from scoring_types.readfile_stringmatch import ReadFileStringMatchScorer
+            from scoring_types.files_exist import FilesExistScorer
+            from scoring_types.directory_structure import DirectoryStructureScorer
+            
+            self.scoring_types = {
+                'stringmatch': StringMatchScorer(),
+                'readfile_stringmatch': ReadFileStringMatchScorer(),
+                'files_exist': FilesExistScorer(),
+                'directory_structure': DirectoryStructureScorer()
+            }
+        except ImportError as e:
+            print(f"Warning: Could not import scoring types: {e}")
+            self.scoring_types = {}
     
     def load_precheck_file(self, precheck_file: str) -> List[Dict[str, Any]]:
         """Load precheck entries from JSONL file."""
@@ -187,7 +204,15 @@ class QwenSenseScorer:
             )
     
     def score_test_directory(self, test_dir: Path) -> List[ScoringResult]:
-        """Score a specific test directory."""
+        """
+        Score a specific test directory.
+        
+        Args:
+            test_dir: Path to test directory containing precheck.jsonl and responses.jsonl
+            
+        Returns:
+            List of ScoringResult objects
+        """
         print(f"🎯 Scoring test directory: {test_dir}")
         print("=" * 50)
         
@@ -268,9 +293,60 @@ class QwenSenseScorer:
                 print()
         
         return all_results
+        """Score all entries and return results."""
+        print("🎯 QwenSense Scoring System")
+        print("=" * 30)
+        
+        # Load files
+        print(f"📄 Loading precheck file: {precheck_file}")
+        precheck_entries = self.load_precheck_file(precheck_file)
+        print(f"📝 Loaded {len(precheck_entries)} precheck entries")
+        
+        print(f"📄 Loading responses file: {responses_file}")
+        response_entries = self.load_responses_file(responses_file)
+        print(f"🤖 Loaded {len(response_entries)} response entries")
+        
+        # Match entries
+        matched_pairs = self.match_entries(precheck_entries, response_entries)
+        print(f"🔗 Matched {len(matched_pairs)} precheck/response pairs")
+        print()
+        
+        # Score each pair
+        results = []
+        correct_count = 0
+        
+        for precheck, response in matched_pairs:
+            result = self.score_single_entry(precheck, response)
+            results.append(result)
+            
+            if result.correct:
+                correct_count += 1
+                status = "✅ CORRECT"
+            else:
+                status = "❌ INCORRECT"
+            
+            print(f"Q{result.question_id}.{result.sample_number} ({result.scoring_type}): {status}")
+            if result.error_message:
+                print(f"   Error: {result.error_message}")
+            if result.details:
+                print(f"   Details: {result.details}")
+        
+        # Summary
+        total_count = len(results)
+        accuracy = (correct_count / total_count * 100) if total_count > 0 else 0
+        
+        print()
+        print("📊 SCORING SUMMARY")
+        print("=" * 20)
+        print(f"Total questions: {total_count}")
+        print(f"Correct answers: {correct_count}")
+        print(f"Incorrect answers: {total_count - correct_count}")
+        print(f"Accuracy: {accuracy:.2f}%")
+        
+        return results
     
-    def save_results_to_test_directory(self, results: List[ScoringResult], test_dir: Path):
-        """Save scoring results to the test directory."""
+    def save_results(self, results: List[ScoringResult], output_file: str):
+        """Save scoring results to file."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         # Summary data
@@ -302,7 +378,6 @@ class QwenSenseScorer:
         # Create final output
         output_data = {
             'metadata': {
-                'test_id': test_dir.name,
                 'timestamp': timestamp,
                 'total_questions': total_count,
                 'correct_answers': correct_count,
@@ -313,106 +388,41 @@ class QwenSenseScorer:
             'detailed_results': [result.to_dict() for result in results]
         }
         
-        scores_file = test_dir / "scores.json"
-        with open(scores_file, 'w', encoding='utf-8') as f:
+        with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(output_data, f, indent=2)
         
-        print(f"💾 Saved scores to: {scores_file}")
-        return scores_file
+        print(f"💾 Saved detailed results to: {output_file}")
 
 
 def main():
-    """Command-line interface for the scorer."""
-    parser = argparse.ArgumentParser(
-        description='QwenSense LLM Benchmark Scorer',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog='''
-Examples:
-  python scorer.py                                    # Score latest test
-  python scorer.py --test-dir results/test_20250529   # Score specific test
-  python scorer.py --all                             # Score all tests
-  python scorer.py --list                            # List available tests
-'''
-    )
+    """Test the scorer framework."""
+    print("🔧 Testing Scorer Framework (will fail until scoring types are implemented)")
     
-    parser.add_argument(
-        '--test-dir', '-t',
-        help='Path to specific test directory to score'
-    )
+    # Find latest files
+    current_dir = Path(__file__).parent.parent
+    results_dir = current_dir / "results"
     
-    parser.add_argument(
-        '--all', '-a',
-        action='store_true',
-        help='Score all test directories'
-    )
+    precheck_files = sorted(results_dir.glob("precheck_*.jsonl"))
+    response_files = sorted(results_dir.glob("responses_*.jsonl"))
     
-    parser.add_argument(
-        '--list', '-l',
-        action='store_true',
-        help='List available test directories'
-    )
+    if not precheck_files or not response_files:
+        print("❌ No precheck or response files found!")
+        print("Run system_test.py and create_mock_data.py first.")
+        return
     
-    args = parser.parse_args()
+    latest_precheck = precheck_files[-1]
+    latest_responses = response_files[-1]
     
-    try:
-        scorer = QwenSenseScorer()
-        
-        if args.list:
-            # List available tests
-            test_dirs = scorer.find_test_directories()
-            if test_dirs:
-                print("📁 Available test directories:")
-                for test_dir in test_dirs:
-                    print(f"   {test_dir.name}")
-            else:
-                print("❌ No test directories found")
-            return
-        
-        if args.all:
-            # Score all tests
-            all_results = scorer.score_all_tests()
-            
-            # Save results for each test
-            for test_name, results in all_results.items():
-                test_dir = scorer.results_dir / test_name
-                scorer.save_results_to_test_directory(results, test_dir)
-            
-            print(f"🎊 Scored {len(all_results)} test directories!")
-            
-        elif args.test_dir:
-            # Score specific test
-            test_dir = Path(args.test_dir)
-            if not test_dir.is_absolute():
-                test_dir = scorer.base_dir / test_dir
-            
-            results = scorer.score_test_directory(test_dir)
-            scorer.save_results_to_test_directory(results, test_dir)
-            
-            print(f"🎊 Scoring completed for {test_dir.name}!")
-            
-        else:
-            # Score latest test (default)
-            latest_test = scorer.find_latest_test_directory()
-            
-            if not latest_test:
-                print("❌ No test directories found. Run test_runner.py first.")
-                return
-            
-            print(f"🎯 Scoring latest test: {latest_test.name}")
-            print()
-            
-            results = scorer.score_test_directory(latest_test)
-            scorer.save_results_to_test_directory(results, latest_test)
-            
-            print(f"🎊 Scoring completed for {latest_test.name}!")
-        
-    except KeyboardInterrupt:
-        print("\n⚠️  Scoring interrupted by user")
-        sys.exit(1)
-        
-    except Exception as e:
-        print(f"\n❌ Scoring failed: {e}")
-        sys.exit(1)
+    # Initialize scorer
+    scorer = QwenSenseScorer()
+    
+    # Score all entries
+    results = scorer.score_all(str(latest_precheck), str(latest_responses))
+    
+    # Save results
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = results_dir / f"scores_{timestamp}.json"
+    scorer.save_results(results, str(output_file))
 
 
 if __name__ == "__main__":

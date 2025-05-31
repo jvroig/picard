@@ -37,24 +37,24 @@ tests:
 
   - question_id: 5
     samples: 2
-    template: "Read the file test_artifacts/{{qs_id}}/{{entity1}}/notes.txt and tell me what line 3 says."
+    template: "Read the file {{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt and tell me what line 3 says."
     scoring_type: "stringmatch"
     expected_response: "{{file_line:3:TARGET_FILE}}"
     sandbox_setup:
       type: "create_files"
-      target_file: "test_artifacts/{{qs_id}}/{{entity1}}/notes.txt"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt"
       content:
         type: "lorem_lines"
         count: 7
 
   - question_id: 6
-    samples: 2  
-    template: "What is the name of the first person in the CSV file?"
+    samples: 1  
+    template: "What is the name of the first person in {{artifacts}}/{{qs_id}}/{{entity1}}/people.csv?"
     scoring_type: "stringmatch"
     expected_response: "{{csv_value:0:name:TARGET_FILE}}"
     sandbox_setup:
       type: "create_csv"
-      target_file: "test_artifacts/{{qs_id}}/people.csv" 
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/people.csv" 
       content:
         headers: ["name", "age", "city"]
         rows: 5

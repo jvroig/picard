@@ -132,6 +132,40 @@ class TestDefinitionParser:
         qs_id = f"q{question_id}_s{sample_number}"
         return text.replace("{{qs_id}}", qs_id)
     
+    @staticmethod
+    def substitute_artifacts(text: str, artifacts_dir: str = None) -> str:
+        """
+        Substitute {{artifacts}} template variables in text.
+        
+        Args:
+            text: Text containing {{artifacts}} placeholders
+            artifacts_dir: Artifacts directory path (optional, loads from config if None)
+            
+        Returns:
+            Text with {{artifacts}} replaced with the artifacts directory path
+        """
+        if not text:
+            return text
+        
+        if artifacts_dir is None:
+            # Import here to avoid circular imports
+            try:
+                import sys
+                from pathlib import Path
+                
+                # Add the project root to path to import config
+                project_root = Path(__file__).parent.parent
+                if str(project_root) not in sys.path:
+                    sys.path.insert(0, str(project_root))
+                
+                import qwen_sense_config
+                artifacts_dir = qwen_sense_config.get_artifacts_dir()
+            except Exception:
+                # Fallback to default if config can't be loaded
+                artifacts_dir = str(Path(__file__).parent.parent / "test_artifacts")
+        
+        return text.replace("{{artifacts}}", str(artifacts_dir))
+    
     def parse_file(self, file_path: str) -> List[TestDefinition]:
         """
         Parse a YAML test definition file.

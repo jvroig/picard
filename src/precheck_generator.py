@@ -81,6 +81,14 @@ class PrecheckGenerator:
                     **result['entities']  # Add all entity mappings
                 }
                 
+                # Apply {{artifacts}} and {{qs_id}} substitutions to the question
+                # This ensures the LLM sees the fully resolved question
+                # Use the same artifacts directory resolution as sandbox generation
+                artifacts_dir = None  # Let it load from config for consistency
+                fully_substituted_question = self.parser.substitute_artifacts(precheck_entry['substituted_question'], artifacts_dir)
+                fully_substituted_question = self.parser.substitute_qs_id(fully_substituted_question, test_def.question_id, sample_num)
+                precheck_entry['substituted_question'] = fully_substituted_question
+                
                 # Handle sandbox setup and file generation if needed
                 # This must happen BEFORE scoring properties because template functions need the files
                 sandbox_result = self._handle_sandbox_generation(precheck_entry, test_def)
@@ -128,8 +136,9 @@ class PrecheckGenerator:
                 'clutter': str(test_def.sandbox_setup.clutter or {})
             }
             
-            # Use manual entity substitution and qs_id substitution for consistency
+            # Use manual entity substitution and template substitutions for consistency
             target_file = setup_fields['target_file']
+            target_file = self.parser.substitute_artifacts(target_file, None)  # Use config artifacts dir
             target_file = self.entity_pool.substitute_with_entities(target_file, entity_values)
             target_file = self.parser.substitute_qs_id(target_file, question_id, sample_number)
             
@@ -267,7 +276,7 @@ class PrecheckGenerator:
     def _evaluate_template_functions(self, text: str, question_id: int, sample_number: int, 
                                     target_file_path: str = None) -> str:
         """
-        Evaluate template functions in text after applying {{qs_id}} substitution.
+        Evaluate template functions in text after applying template substitutions.
         
         Args:
             text: Text that may contain template functions like {{file_line:3:path}}
@@ -282,10 +291,13 @@ class PrecheckGenerator:
             return text
         
         try:
-            # First apply {{qs_id}} substitution
-            processed_text = self.parser.substitute_qs_id(text, question_id, sample_number)
+            # First apply {{artifacts}} substitution
+            processed_text = self.parser.substitute_artifacts(text)
             
-            # Then evaluate any template functions with TARGET_FILE support
+            # Then apply {{qs_id}} substitution
+            processed_text = self.parser.substitute_qs_id(processed_text, question_id, sample_number)
+            
+            # Finally evaluate any template functions with TARGET_FILE support
             result = self.template_processor.template_functions.evaluate_all_functions(
                 processed_text, target_file_path
             )
@@ -293,9 +305,10 @@ class PrecheckGenerator:
             return result
             
         except Exception as e:
-            # If template function evaluation fails, return the text with {{qs_id}} substitution
+            # If template function evaluation fails, return the text with basic substitutions
             # This allows the system to continue even if files don't exist yet
-            return self.parser.substitute_qs_id(text, question_id, sample_number)
+            processed_text = self.parser.substitute_artifacts(text)
+            return self.parser.substitute_qs_id(processed_text, question_id, sample_number)
     
     def save_precheck_entries(self, precheck_entries: List[Dict[str, Any]], 
                              output_file: str):

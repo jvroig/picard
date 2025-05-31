@@ -14,21 +14,35 @@ sys.path.append(str(Path(__file__).parent))
 
 from entity_pool import EntityPool
 from test_definition_parser import TestDefinitionParser
+from file_generators import FileGeneratorFactory
+from template_processor import TemplateProcessor
 
 
 class PrecheckGenerator:
     """Generates precheck entries from test definitions and entity pool."""
     
-    def __init__(self, entity_pool_file: str = None, test_definitions_file: str = None):
+    def __init__(self, entity_pool_file: str = None, test_definitions_file: str = None, base_dir: str = None):
         """
         Initialize the precheck generator.
         
         Args:
             entity_pool_file: Path to entity pool file (optional)
             test_definitions_file: Path to test definitions file (optional)
+            base_dir: Base directory for file operations (optional)
         """
         self.entity_pool = EntityPool(entity_pool_file)
         self.parser = TestDefinitionParser()
+        
+        # Initialize template processor for function evaluation
+        self.template_processor = TemplateProcessor(
+            entity_pool_file=entity_pool_file,
+            base_dir=base_dir
+        )
+        
+        # Set base directory for file generation
+        if base_dir is None:
+            base_dir = Path.cwd()
+        self.base_dir = Path(base_dir)
         
         if test_definitions_file:
             self.test_definitions = self.parser.parse_file(test_definitions_file)
@@ -42,9 +56,10 @@ class PrecheckGenerator:
     def generate_precheck_entries(self) -> List[Dict[str, Any]]:
         """
         Generate precheck entries for all test definitions.
+        Handles sandbox file generation and template function evaluation.
         
         Returns:
-            List of precheck entry dictionaries
+            List of precheck entry dictionaries with resolved template functions
         """
         precheck_entries = []
         
@@ -66,21 +81,103 @@ class PrecheckGenerator:
                     **result['entities']  # Add all entity mappings
                 }
                 
-                # Add scoring-specific properties
+                # Handle sandbox setup and file generation if needed
+                # This must happen BEFORE scoring properties because template functions need the files
+                sandbox_result = self._handle_sandbox_generation(precheck_entry, test_def)
+                if sandbox_result:
+                    precheck_entry.update(sandbox_result)
+                
+                # Add scoring-specific properties with template function evaluation
+                # Pass the entity values from the initial substitution to ensure consistency
                 self._add_scoring_properties(precheck_entry, test_def, result['entities'])
                 
                 precheck_entries.append(precheck_entry)
         
         return precheck_entries
     
+    def _handle_sandbox_generation(self, precheck_entry: Dict[str, Any], test_def) -> Dict[str, Any]:
+        """
+        Handle sandbox file generation for questions that need it.
+        
+        Args:
+            precheck_entry: The precheck entry being built
+            test_def: Test definition object
+            
+        Returns:
+            Dictionary with sandbox-related fields to add to precheck entry
+        """
+        if not test_def.sandbox_setup:
+            return {}
+        
+        result = {
+            'sandbox_setup': test_def.sandbox_setup.to_dict(),
+            'sandbox_generation': {}
+        }
+        
+        try:
+            question_id = precheck_entry['question_id']
+            sample_number = precheck_entry['sample_number']
+            
+            # Get entity values from precheck entry
+            entity_values = {k: v for k, v in precheck_entry.items() if k.startswith('entity')}
+            
+            # Process sandbox setup templates
+            setup_fields = {
+                'target_file': test_def.sandbox_setup.target_file or '',
+                'content': str(test_def.sandbox_setup.content or {}),
+                'clutter': str(test_def.sandbox_setup.clutter or {})
+            }
+            
+            # Use manual entity substitution and qs_id substitution for consistency
+            target_file = setup_fields['target_file']
+            target_file = self.entity_pool.substitute_with_entities(target_file, entity_values)
+            target_file = self.parser.substitute_qs_id(target_file, question_id, sample_number)
+            
+            content_spec = eval(setup_fields['content']) if setup_fields['content'] != '{}' else {}
+            clutter_spec = eval(setup_fields['clutter']) if setup_fields['clutter'] != '{}' else None
+            
+            # Create file generator
+            generator_type = test_def.sandbox_setup.type
+            file_generator = FileGeneratorFactory.create_generator(generator_type, str(self.base_dir))
+            
+            # Generate files during precheck generation
+            generation_result = file_generator.generate(
+                target_file=target_file,
+                content_spec=content_spec,
+                clutter_spec=clutter_spec
+            )
+            
+            # Store generation results
+            result['sandbox_generation'] = {
+                'target_file_resolved': target_file,
+                'files_created': generation_result['files_created'],
+                'generation_successful': len(generation_result.get('errors', [])) == 0,
+                'errors': generation_result.get('errors', []),
+                'timestamp': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            result['sandbox_generation'] = {
+                'generation_successful': False,
+                'errors': [f"Sandbox generation failed: {e}"],
+                'timestamp': datetime.now().isoformat()
+            }
+        
+        return result
+    
     def _add_scoring_properties(self, precheck_entry: Dict[str, Any], 
                                test_def, entity_values: Dict[str, str]):
-        """Add scoring-specific properties to precheck entry."""
+        """Add scoring-specific properties to precheck entry with template function evaluation."""
+        
+        question_id = precheck_entry['question_id']
+        sample_number = precheck_entry['sample_number']
         
         if test_def.file_to_read:
             substituted_file = self.entity_pool.substitute_with_entities(
                 test_def.file_to_read, entity_values
             )
+            # Apply {{qs_id}} substitution
+            substituted_file = self.parser.substitute_qs_id(substituted_file, question_id, sample_number)
             precheck_entry['file_to_read'] = substituted_file
             
             # Handle expected_content substitution for readfile_stringmatch
@@ -88,31 +185,66 @@ class PrecheckGenerator:
                 substituted_expected_content = self.entity_pool.substitute_with_entities(
                     test_def.expected_content, entity_values
                 )
+                # Apply {{qs_id}} substitution and evaluate template functions
+                substituted_expected_content = self._evaluate_template_functions(
+                    substituted_expected_content, question_id, sample_number
+                )
                 precheck_entry['expected_content'] = substituted_expected_content
         
         if test_def.files_to_check:
-            substituted_files = [
-                self.entity_pool.substitute_with_entities(file_path, entity_values)
-                for file_path in test_def.files_to_check
-            ]
+            substituted_files = []
+            for file_path in test_def.files_to_check:
+                substituted_file = self.entity_pool.substitute_with_entities(file_path, entity_values)
+                substituted_file = self.parser.substitute_qs_id(substituted_file, question_id, sample_number)
+                substituted_files.append(substituted_file)
             precheck_entry['files_to_check'] = substituted_files
         
         if test_def.expected_structure:
-            substituted_structure = [
-                self.entity_pool.substitute_with_entities(path, entity_values)
-                for path in test_def.expected_structure
-            ]
+            substituted_structure = []
+            for path in test_def.expected_structure:
+                substituted_path = self.entity_pool.substitute_with_entities(path, entity_values)
+                substituted_path = self.parser.substitute_qs_id(substituted_path, question_id, sample_number)
+                substituted_structure.append(substituted_path)
             precheck_entry['expected_paths'] = substituted_structure
         
         if test_def.expected_response:
             substituted_response = self.entity_pool.substitute_with_entities(
                 test_def.expected_response, entity_values
             )
+            # Apply {{qs_id}} substitution and evaluate template functions
+            substituted_response = self._evaluate_template_functions(
+                substituted_response, question_id, sample_number
+            )
             precheck_entry['expected_response'] = substituted_response
+    
+    def _evaluate_template_functions(self, text: str, question_id: int, sample_number: int) -> str:
+        """
+        Evaluate template functions in text after applying {{qs_id}} substitution.
         
-        # Handle sandbox_setup if present
-        if test_def.sandbox_setup:
-            precheck_entry['sandbox_setup'] = test_def.sandbox_setup.to_dict()
+        Args:
+            text: Text that may contain template functions like {{file_line:3:path}}
+            question_id: Question ID for {{qs_id}} substitution
+            sample_number: Sample number for {{qs_id}} substitution
+            
+        Returns:
+            Text with template functions evaluated to their actual values
+        """
+        if not text:
+            return text
+        
+        try:
+            # First apply {{qs_id}} substitution
+            processed_text = self.parser.substitute_qs_id(text, question_id, sample_number)
+            
+            # Then evaluate any template functions
+            result = self.template_processor.template_functions.evaluate_all_functions(processed_text)
+            
+            return result
+            
+        except Exception as e:
+            # If template function evaluation fails, return the text with {{qs_id}} substitution
+            # This allows the system to continue even if files don't exist yet
+            return self.parser.substitute_qs_id(text, question_id, sample_number)
     
     def save_precheck_entries(self, precheck_entries: List[Dict[str, Any]], 
                              output_file: str):

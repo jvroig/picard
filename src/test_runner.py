@@ -71,7 +71,8 @@ class TestRunner:
             test_definitions_file = self.config_dir / "test_definitions.yaml"
         
         self.precheck_generator = PrecheckGenerator(
-            test_definitions_file=str(test_definitions_file)
+            test_definitions_file=str(test_definitions_file),
+            base_dir=str(self.base_dir)
         )
         
         return self.test_id
@@ -260,15 +261,16 @@ class TestRunner:
             
             print(f"Running: Question {question_id}, Sample {sample_number} ({i}/{total_questions})", end="")
             
+            # Check if this entry had sandbox setup (informational only - files already generated during precheck)
+            if 'sandbox_generation' in entry:
+                sandbox_gen = entry['sandbox_generation']
+                if sandbox_gen.get('generation_successful', False):
+                    files_count = len(sandbox_gen.get('files_created', []))
+                    print(f" [Using {files_count} pre-generated files]", end="")
+                else:
+                    print(f" [⚠️ Sandbox generation had errors]", end="")
+            
             try:
-                # Set up sandbox files if needed (just-in-time generation)
-                sandbox_result = self._setup_question_sandbox(entry)
-                if sandbox_result['has_sandbox_setup']:
-                    print(f" [Generated {len(sandbox_result['files_created'])} files]", end="")
-                    if sandbox_result['errors']:
-                        print(f" [⚠️ {len(sandbox_result['errors'])} warnings]", end="")
-                
-                # Execute with retry logic
                 result = execute_with_retry(
                     question, 
                     max_retries=max_retries, 

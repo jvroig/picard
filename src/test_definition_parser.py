@@ -10,6 +10,21 @@ from dataclasses import dataclass
 
 
 @dataclass
+class SandboxSetup:
+    """Represents sandbox setup configuration for dynamic file/database generation."""
+    type: str  # "create_files", "create_database", etc.
+    target_file: Optional[str] = None
+    content: Optional[Dict[str, Any]] = None
+    clutter: Optional[Dict[str, Any]] = None
+    
+    def __post_init__(self):
+        """Validate sandbox setup configuration."""
+        if self.type == "create_files":
+            if not self.target_file:
+                raise ValueError("'target_file' required for sandbox_setup type 'create_files'")
+
+
+@dataclass
 class TestDefinition:
     """Represents a single test question definition."""
     question_id: int
@@ -23,6 +38,9 @@ class TestDefinition:
     files_to_check: Optional[List[str]] = None
     expected_structure: Optional[List[str]] = None
     expected_response: Optional[str] = None
+    
+    # New sandbox setup property
+    sandbox_setup: Optional[SandboxSetup] = None
     
     def __post_init__(self):
         """Validate the test definition after creation."""
@@ -69,6 +87,13 @@ class TestDefinition:
             result['expected_structure'] = self.expected_structure
         if self.expected_response:
             result['expected_response'] = self.expected_response
+        if self.sandbox_setup:
+            result['sandbox_setup'] = {
+                'type': self.sandbox_setup.type,
+                'target_file': self.sandbox_setup.target_file,
+                'content': self.sandbox_setup.content,
+                'clutter': self.sandbox_setup.clutter
+            }
         
         return result
 
@@ -78,6 +103,25 @@ class TestDefinitionParser:
     
     def __init__(self):
         pass
+    
+    @staticmethod
+    def substitute_qs_id(text: str, question_id: int, sample_number: int) -> str:
+        """
+        Substitute {{qs_id}} template variables in text.
+        
+        Args:
+            text: Text containing {{qs_id}} placeholders
+            question_id: Question ID number
+            sample_number: Sample number within the question
+            
+        Returns:
+            Text with {{qs_id}} replaced with "q{question_id}_s{sample_number}"
+        """
+        if not text:
+            return text
+        
+        qs_id = f"q{question_id}_s{sample_number}"
+        return text.replace("{{qs_id}}", qs_id)
     
     def parse_file(self, file_path: str) -> List[TestDefinition]:
         """
@@ -150,6 +194,19 @@ class TestDefinitionParser:
             seen_question_ids.add(question_id)
             
             # Create TestDefinition
+            sandbox_setup = None
+            if 'sandbox_setup' in test_data:
+                sandbox_data = test_data['sandbox_setup']
+                if not isinstance(sandbox_data, dict):
+                    raise ValueError(f"Test {i}: 'sandbox_setup' must be an object")
+                
+                sandbox_setup = SandboxSetup(
+                    type=sandbox_data.get('type'),
+                    target_file=sandbox_data.get('target_file'),
+                    content=sandbox_data.get('content'),
+                    clutter=sandbox_data.get('clutter')
+                )
+            
             test_def = TestDefinition(
                 question_id=question_id,
                 samples=test_data['samples'],
@@ -159,7 +216,8 @@ class TestDefinitionParser:
                 expected_content=test_data.get('expected_content'),
                 files_to_check=test_data.get('files_to_check'),
                 expected_structure=test_data.get('expected_structure'),
-                expected_response=test_data.get('expected_response')
+                expected_response=test_data.get('expected_response'),
+                sandbox_setup=sandbox_setup
             )
             
             test_definitions.append(test_def)

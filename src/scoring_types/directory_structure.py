@@ -33,7 +33,8 @@ class DirectoryStructureScorer(BaseScoringType):
         wrong_type_paths = []
         
         for expected_path in expected_paths:
-            full_path = test_artifacts_dir / expected_path
+            # Smart path resolution - handle both relative and absolute paths
+            full_path = self._resolve_file_path(expected_path, test_artifacts_dir)
             exists = full_path.exists()
             
             # Determine expected type based on trailing slash
@@ -87,3 +88,28 @@ class DirectoryStructureScorer(BaseScoringType):
             error_message=error_message,
             details=details
         )
+    
+    def _resolve_file_path(self, file_path_str: str, test_artifacts_dir: Path) -> Path:
+        """
+        Resolve file path intelligently - handle both relative and absolute paths.
+        
+        Args:
+            file_path_str: File path from precheck entry (may be relative or absolute)
+            test_artifacts_dir: Test artifacts directory from scorer
+            
+        Returns:
+            Resolved Path object
+        """
+        file_path = Path(file_path_str)
+        
+        # If it's already an absolute path, use it directly
+        if file_path.is_absolute():
+            return file_path
+        
+        # If it starts with test_artifacts/, remove that prefix and use test_artifacts_dir
+        if file_path_str.startswith('test_artifacts/'):
+            relative_path = file_path_str[len('test_artifacts/'):]
+            return test_artifacts_dir / relative_path
+        
+        # Otherwise, treat it as relative to test_artifacts_dir
+        return test_artifacts_dir / file_path_str

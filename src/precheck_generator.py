@@ -181,48 +181,6 @@ class PrecheckGenerator:
         question_id = precheck_entry['question_id']
         sample_number = precheck_entry['sample_number']
         
-        if test_def.file_to_read:
-            substituted_file = self.entity_pool.substitute_with_entities(
-                test_def.file_to_read, entity_values
-            )
-            # Apply {{qs_id}} substitution
-            substituted_file = self.parser.substitute_qs_id(substituted_file, question_id, sample_number)
-            precheck_entry['file_to_read'] = substituted_file
-            
-            # Handle expected_content substitution for readfile_stringmatch
-            if test_def.scoring_type == 'readfile_stringmatch' and test_def.expected_content:
-                substituted_expected_content = self.entity_pool.substitute_with_entities(
-                    test_def.expected_content, entity_values
-                )
-                # Apply {{qs_id}} substitution and evaluate template functions
-                substituted_expected_content = self._evaluate_template_functions(
-                    substituted_expected_content, question_id, sample_number
-                )
-                precheck_entry['expected_content'] = substituted_expected_content
-        
-        if test_def.files_to_check:
-            substituted_files = []
-            for file_path in test_def.files_to_check:
-                substituted_file = self.entity_pool.substitute_with_entities(file_path, entity_values)
-                substituted_file = self.parser.substitute_qs_id(substituted_file, question_id, sample_number)
-                substituted_files.append(substituted_file)
-            precheck_entry['files_to_check'] = substituted_files
-        
-        if test_def.expected_structure:
-            substituted_structure = []
-            for path in test_def.expected_structure:
-                substituted_path = self.entity_pool.substitute_with_entities(path, entity_values)
-                substituted_path = self.parser.substitute_qs_id(substituted_path, question_id, sample_number)
-                substituted_structure.append(substituted_path)
-            precheck_entry['expected_paths'] = substituted_structure
-        
-    def _add_scoring_properties(self, precheck_entry: Dict[str, Any], 
-                               test_def, entity_values: Dict[str, str]):
-        """Add scoring-specific properties to precheck entry with template function evaluation."""
-        
-        question_id = precheck_entry['question_id']
-        sample_number = precheck_entry['sample_number']
-        
         # Get the resolved target file path if sandbox setup exists
         target_file_path = None
         if 'sandbox_generation' in precheck_entry:
@@ -232,7 +190,8 @@ class PrecheckGenerator:
             substituted_file = self.entity_pool.substitute_with_entities(
                 test_def.file_to_read, entity_values
             )
-            # Apply {{qs_id}} substitution
+            # Apply template substitutions  
+            substituted_file = self.parser.substitute_artifacts(substituted_file, None)
             substituted_file = self.parser.substitute_qs_id(substituted_file, question_id, sample_number)
             precheck_entry['file_to_read'] = substituted_file
             
@@ -241,7 +200,7 @@ class PrecheckGenerator:
                 substituted_expected_content = self.entity_pool.substitute_with_entities(
                     test_def.expected_content, entity_values
                 )
-                # Apply {{qs_id}} substitution and evaluate template functions
+                # Apply template substitutions and evaluate template functions
                 substituted_expected_content = self._evaluate_template_functions(
                     substituted_expected_content, question_id, sample_number, target_file_path
                 )
@@ -251,6 +210,7 @@ class PrecheckGenerator:
             substituted_files = []
             for file_path in test_def.files_to_check:
                 substituted_file = self.entity_pool.substitute_with_entities(file_path, entity_values)
+                substituted_file = self.parser.substitute_artifacts(substituted_file, None)
                 substituted_file = self.parser.substitute_qs_id(substituted_file, question_id, sample_number)
                 substituted_files.append(substituted_file)
             precheck_entry['files_to_check'] = substituted_files
@@ -259,6 +219,7 @@ class PrecheckGenerator:
             substituted_structure = []
             for path in test_def.expected_structure:
                 substituted_path = self.entity_pool.substitute_with_entities(path, entity_values)
+                substituted_path = self.parser.substitute_artifacts(substituted_path, None)
                 substituted_path = self.parser.substitute_qs_id(substituted_path, question_id, sample_number)
                 substituted_structure.append(substituted_path)
             precheck_entry['expected_paths'] = substituted_structure
@@ -267,12 +228,11 @@ class PrecheckGenerator:
             substituted_response = self.entity_pool.substitute_with_entities(
                 test_def.expected_response, entity_values
             )
-            # Apply {{qs_id}} substitution and evaluate template functions with TARGET_FILE support
+            # Apply template substitutions and evaluate template functions with TARGET_FILE support
             substituted_response = self._evaluate_template_functions(
                 substituted_response, question_id, sample_number, target_file_path
             )
             precheck_entry['expected_response'] = substituted_response
-    
     def _evaluate_template_functions(self, text: str, question_id: int, sample_number: int, 
                                     target_file_path: str = None) -> str:
         """

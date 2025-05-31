@@ -12,7 +12,7 @@ from pathlib import Path
 # =============================================================================
 
 # Default artifacts directory - relative to this config file
-DEFAULT_ARTIFACTS_DIR = "/Users/jvroig/Dev/sandbox/test_artifacts"
+DEFAULT_ARTIFACTS_DIR = "/Users/jvroig/Dev/sandbox/bearnifacts"
 
 # You can override this by setting the QWENSENSE_ARTIFACTS_DIR environment variable
 # or by modifying the ARTIFACTS_DIR setting below

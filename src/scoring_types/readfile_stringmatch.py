@@ -27,14 +27,8 @@ class ReadFileStringMatchScorer(BaseScoringType):
                 error_message="No file_to_read specified in precheck entry"
             )
         
-        # Construct full file path
-        # Handle case where file_to_read already includes test_artifacts/
-        if file_to_read.startswith('test_artifacts/'):
-            # Remove the test_artifacts/ prefix since we're already in test_artifacts_dir
-            relative_path = file_to_read[len('test_artifacts/'):]
-            file_path = test_artifacts_dir / relative_path
-        else:
-            file_path = test_artifacts_dir / file_to_read
+        # Smart path resolution - handle both relative and absolute paths
+        file_path = self._resolve_file_path(file_to_read, test_artifacts_dir)
         
         # Check if file exists
         if not file_path.exists():
@@ -93,3 +87,28 @@ class ReadFileStringMatchScorer(BaseScoringType):
             error_message=error_message,
             details=details
         )
+    
+    def _resolve_file_path(self, file_path_str: str, test_artifacts_dir: Path) -> Path:
+        """
+        Resolve file path intelligently - handle both relative and absolute paths.
+        
+        Args:
+            file_path_str: File path from precheck entry (may be relative or absolute)
+            test_artifacts_dir: Test artifacts directory from scorer
+            
+        Returns:
+            Resolved Path object
+        """
+        file_path = Path(file_path_str)
+        
+        # If it's already an absolute path, use it directly
+        if file_path.is_absolute():
+            return file_path
+        
+        # If it starts with test_artifacts/, remove that prefix and use test_artifacts_dir
+        if file_path_str.startswith('test_artifacts/'):
+            relative_path = file_path_str[len('test_artifacts/'):]
+            return test_artifacts_dir / relative_path
+        
+        # Otherwise, treat it as relative to test_artifacts_dir
+        return test_artifacts_dir / file_path_str

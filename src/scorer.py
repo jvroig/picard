@@ -64,7 +64,19 @@ class QwenSenseScorer:
         
         self.base_dir = base_dir
         self.results_dir = base_dir / "results"
-        self.test_artifacts_dir = base_dir / "test_artifacts"
+        
+        # Load artifacts directory from config instead of hardcoding
+        try:
+            import sys
+            if str(base_dir) not in sys.path:
+                sys.path.insert(0, str(base_dir))
+            
+            import qwen_sense_config
+            self.test_artifacts_dir = Path(qwen_sense_config.get_artifacts_dir())
+        except Exception:
+            # Fallback to default if config can't be loaded
+            self.test_artifacts_dir = base_dir / "test_artifacts"
+            print(f"Warning: Could not load config, using default artifacts dir: {self.test_artifacts_dir}")
         
         self.scoring_types = {}
         self._register_scoring_types()

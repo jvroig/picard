@@ -207,17 +207,65 @@ class PrecheckGenerator:
                 substituted_structure.append(substituted_path)
             precheck_entry['expected_paths'] = substituted_structure
         
+    def _add_scoring_properties(self, precheck_entry: Dict[str, Any], 
+                               test_def, entity_values: Dict[str, str]):
+        """Add scoring-specific properties to precheck entry with template function evaluation."""
+        
+        question_id = precheck_entry['question_id']
+        sample_number = precheck_entry['sample_number']
+        
+        # Get the resolved target file path if sandbox setup exists
+        target_file_path = None
+        if 'sandbox_generation' in precheck_entry:
+            target_file_path = precheck_entry['sandbox_generation'].get('target_file_resolved')
+        
+        if test_def.file_to_read:
+            substituted_file = self.entity_pool.substitute_with_entities(
+                test_def.file_to_read, entity_values
+            )
+            # Apply {{qs_id}} substitution
+            substituted_file = self.parser.substitute_qs_id(substituted_file, question_id, sample_number)
+            precheck_entry['file_to_read'] = substituted_file
+            
+            # Handle expected_content substitution for readfile_stringmatch
+            if test_def.scoring_type == 'readfile_stringmatch' and test_def.expected_content:
+                substituted_expected_content = self.entity_pool.substitute_with_entities(
+                    test_def.expected_content, entity_values
+                )
+                # Apply {{qs_id}} substitution and evaluate template functions
+                substituted_expected_content = self._evaluate_template_functions(
+                    substituted_expected_content, question_id, sample_number, target_file_path
+                )
+                precheck_entry['expected_content'] = substituted_expected_content
+        
+        if test_def.files_to_check:
+            substituted_files = []
+            for file_path in test_def.files_to_check:
+                substituted_file = self.entity_pool.substitute_with_entities(file_path, entity_values)
+                substituted_file = self.parser.substitute_qs_id(substituted_file, question_id, sample_number)
+                substituted_files.append(substituted_file)
+            precheck_entry['files_to_check'] = substituted_files
+        
+        if test_def.expected_structure:
+            substituted_structure = []
+            for path in test_def.expected_structure:
+                substituted_path = self.entity_pool.substitute_with_entities(path, entity_values)
+                substituted_path = self.parser.substitute_qs_id(substituted_path, question_id, sample_number)
+                substituted_structure.append(substituted_path)
+            precheck_entry['expected_paths'] = substituted_structure
+        
         if test_def.expected_response:
             substituted_response = self.entity_pool.substitute_with_entities(
                 test_def.expected_response, entity_values
             )
-            # Apply {{qs_id}} substitution and evaluate template functions
+            # Apply {{qs_id}} substitution and evaluate template functions with TARGET_FILE support
             substituted_response = self._evaluate_template_functions(
-                substituted_response, question_id, sample_number
+                substituted_response, question_id, sample_number, target_file_path
             )
             precheck_entry['expected_response'] = substituted_response
     
-    def _evaluate_template_functions(self, text: str, question_id: int, sample_number: int) -> str:
+    def _evaluate_template_functions(self, text: str, question_id: int, sample_number: int, 
+                                    target_file_path: str = None) -> str:
         """
         Evaluate template functions in text after applying {{qs_id}} substitution.
         
@@ -225,6 +273,7 @@ class PrecheckGenerator:
             text: Text that may contain template functions like {{file_line:3:path}}
             question_id: Question ID for {{qs_id}} substitution
             sample_number: Sample number for {{qs_id}} substitution
+            target_file_path: Path to substitute for TARGET_FILE keyword (optional)
             
         Returns:
             Text with template functions evaluated to their actual values
@@ -236,8 +285,10 @@ class PrecheckGenerator:
             # First apply {{qs_id}} substitution
             processed_text = self.parser.substitute_qs_id(text, question_id, sample_number)
             
-            # Then evaluate any template functions
-            result = self.template_processor.template_functions.evaluate_all_functions(processed_text)
+            # Then evaluate any template functions with TARGET_FILE support
+            result = self.template_processor.template_functions.evaluate_all_functions(
+                processed_text, target_file_path
+            )
             
             return result
             

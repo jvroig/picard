@@ -29,12 +29,13 @@ class TemplateFunctions:
             base_dir = Path.cwd()
         self.base_dir = Path(base_dir)
     
-    def evaluate_all_functions(self, text: str) -> str:
+    def evaluate_all_functions(self, text: str, target_file_path: str = None) -> str:
         """
         Evaluate all template functions in the given text.
         
         Args:
             text: Text containing template functions like {{file_line:3:path}}
+            target_file_path: Path to substitute for TARGET_FILE keyword (optional)
             
         Returns:
             Text with all template functions replaced with their results
@@ -51,7 +52,7 @@ class TemplateFunctions:
             args = [arg.strip() for arg in args_str.split(':')]
             
             try:
-                return str(self.evaluate_function(function_name, args))
+                return str(self.evaluate_function(function_name, args, target_file_path))
             except Exception as e:
                 raise TemplateFunctionError(f"Error evaluating {{{{{function_name}:{args_str}}}}}: {e}")
         
@@ -63,13 +64,14 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error processing template functions in '{text}': {e}")
     
-    def evaluate_function(self, function_name: str, args: List[str]) -> Any:
+    def evaluate_function(self, function_name: str, args: List[str], target_file_path: str = None) -> Any:
         """
         Evaluate a single template function.
         
         Args:
             function_name: Name of the function (e.g., 'file_line', 'csv_cell')
             args: List of function arguments
+            target_file_path: Path to substitute for TARGET_FILE keyword (optional)
             
         Returns:
             Result of the function evaluation
@@ -89,7 +91,7 @@ class TemplateFunctions:
         if function_name not in function_map:
             raise TemplateFunctionError(f"Unknown template function: {function_name}")
         
-        return function_map[function_name](args)
+        return function_map[function_name](args, target_file_path)
     
     def _resolve_path(self, path: str) -> Path:
         """Resolve a file path relative to base directory."""
@@ -97,6 +99,21 @@ class TemplateFunctions:
         if not file_path.is_absolute():
             file_path = self.base_dir / file_path
         return file_path
+    
+    def _resolve_target_file(self, path: str, target_file_path: str = None) -> str:
+        """
+        Resolve TARGET_FILE keyword to actual target file path.
+        
+        Args:
+            path: Path that may contain TARGET_FILE keyword
+            target_file_path: Actual target file path to substitute
+            
+        Returns:
+            Resolved path with TARGET_FILE replaced if applicable
+        """
+        if path == "TARGET_FILE" and target_file_path:
+            return target_file_path
+        return path
     
     def _read_file_lines(self, path: str) -> List[str]:
         """Read file and return list of lines (without newlines)."""
@@ -126,7 +143,7 @@ class TemplateFunctions:
     
     # File content extraction functions
     
-    def _file_line(self, args: List[str]) -> str:
+    def _file_line(self, args: List[str], target_file_path: str = None) -> str:
         """Get specific line number from file. Usage: {{file_line:N:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("file_line requires exactly 2 arguments: line_number, file_path")
@@ -136,7 +153,7 @@ class TemplateFunctions:
         except ValueError:
             raise TemplateFunctionError(f"Invalid line number: {args[0]}")
         
-        path = args[1]
+        path = self._resolve_target_file(args[1], target_file_path)
         lines = self._read_file_lines(path)
         
         # Convert to 0-based indexing
@@ -145,7 +162,7 @@ class TemplateFunctions:
         
         return lines[line_number - 1]
     
-    def _file_word(self, args: List[str]) -> str:
+    def _file_word(self, args: List[str], target_file_path: str = None) -> str:
         """Get Nth word from entire file. Usage: {{file_word:N:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("file_word requires exactly 2 arguments: word_number, file_path")
@@ -155,7 +172,7 @@ class TemplateFunctions:
         except ValueError:
             raise TemplateFunctionError(f"Invalid word number: {args[0]}")
         
-        path = args[1]
+        path = self._resolve_target_file(args[1], target_file_path)
         text = self._read_file_text(path)
         words = text.split()
         
@@ -165,21 +182,21 @@ class TemplateFunctions:
         
         return words[word_number - 1]
     
-    def _file_line_count(self, args: List[str]) -> int:
+    def _file_line_count(self, args: List[str], target_file_path: str = None) -> int:
         """Count total lines in file. Usage: {{file_line_count:path}}"""
         if len(args) != 1:
             raise TemplateFunctionError("file_line_count requires exactly 1 argument: file_path")
         
-        path = args[0]
+        path = self._resolve_target_file(args[0], target_file_path)
         lines = self._read_file_lines(path)
         return len(lines)
     
-    def _file_word_count(self, args: List[str]) -> int:
+    def _file_word_count(self, args: List[str], target_file_path: str = None) -> int:
         """Count total words in file. Usage: {{file_word_count:path}}"""
         if len(args) != 1:
             raise TemplateFunctionError("file_word_count requires exactly 1 argument: file_path")
         
-        path = args[0]
+        path = self._resolve_target_file(args[0], target_file_path)
         text = self._read_file_text(path)
         words = text.split()
         return len(words)
@@ -200,7 +217,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error reading CSV file {file_path}: {e}")
     
-    def _csv_cell(self, args: List[str]) -> str:
+    def _csv_cell(self, args: List[str], target_file_path: str = None) -> str:
         """Get cell at row N, column M (0-indexed). Usage: {{csv_cell:row:column:path}}"""
         if len(args) != 3:
             raise TemplateFunctionError("csv_cell requires exactly 3 arguments: row, column, file_path")
@@ -211,7 +228,7 @@ class TemplateFunctions:
         except ValueError:
             raise TemplateFunctionError(f"Invalid row/column numbers: {args[0]}, {args[1]}")
         
-        path = args[2]
+        path = self._resolve_target_file(args[2], target_file_path)
         data = self._read_csv_data(path)
         
         if row < 0 or row >= len(data):
@@ -222,7 +239,7 @@ class TemplateFunctions:
         
         return data[row][column]
     
-    def _csv_row(self, args: List[str]) -> str:
+    def _csv_row(self, args: List[str], target_file_path: str = None) -> str:
         """Get entire row N as comma-separated string. Usage: {{csv_row:N:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("csv_row requires exactly 2 arguments: row_number, file_path")
@@ -232,7 +249,7 @@ class TemplateFunctions:
         except ValueError:
             raise TemplateFunctionError(f"Invalid row number: {args[0]}")
         
-        path = args[1]
+        path = self._resolve_target_file(args[1], target_file_path)
         data = self._read_csv_data(path)
         
         if row < 0 or row >= len(data):
@@ -240,13 +257,13 @@ class TemplateFunctions:
         
         return ','.join(data[row])
     
-    def _csv_column(self, args: List[str]) -> str:
+    def _csv_column(self, args: List[str], target_file_path: str = None) -> str:
         """Get entire column by header name as comma-separated string. Usage: {{csv_column:header:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("csv_column requires exactly 2 arguments: header_name, file_path")
         
         header = args[0]
-        path = args[1]
+        path = self._resolve_target_file(args[1], target_file_path)
         data = self._read_csv_data(path)
         
         if len(data) == 0:
@@ -268,7 +285,7 @@ class TemplateFunctions:
         
         return ','.join(column_values)
     
-    def _csv_value(self, args: List[str]) -> str:
+    def _csv_value(self, args: List[str], target_file_path: str = None) -> str:
         """Get cell by row number and column header. Usage: {{csv_value:row:header:path}}"""
         if len(args) != 3:
             raise TemplateFunctionError("csv_value requires exactly 3 arguments: row_number, header_name, file_path")
@@ -279,7 +296,7 @@ class TemplateFunctions:
             raise TemplateFunctionError(f"Invalid row number: {args[0]}")
         
         header = args[1]
-        path = args[2]
+        path = self._resolve_target_file(args[2], target_file_path)
         data = self._read_csv_data(path)
         
         if len(data) == 0:

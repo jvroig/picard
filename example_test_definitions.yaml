@@ -1,0 +1,78 @@
+# QwenSense Test Definitions - Dynamic File Generation Examples
+# This file demonstrates the new sandbox file generation and template function capabilities
+
+tests:
+  # Example 1: Basic text file reading with TARGET_FILE keyword
+  - question_id: 101
+    samples: 3
+    template: "Please read the file test_artifacts/{{qs_id}}/{{entity1}}/notes.txt and tell me exactly what line 3 says."
+    scoring_type: "stringmatch"
+    expected_response: "{{file_line:3:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_files"
+      target_file: "test_artifacts/{{qs_id}}/{{entity1}}/notes.txt"
+      content:
+        type: "lorem_lines"
+        count: 7
+      clutter:
+        count: 4
+
+  # Example 2: CSV data extraction with TARGET_FILE
+  - question_id: 102
+    samples: 2
+    template: "Look at the CSV file test_artifacts/{{qs_id}}/employees.csv. What is the name of the person in the first data row?"
+    scoring_type: "stringmatch"
+    expected_response: "{{csv_value:0:name:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "test_artifacts/{{qs_id}}/employees.csv"
+      content:
+        headers: ["name", "age", "department", "salary"]
+        rows: 5
+
+  # Example 3: Multiple template functions with TARGET_FILE
+  - question_id: 103
+    samples: 1
+    template: "Read test_artifacts/{{qs_id}}/{{entity1}}/data.txt. How many lines does it have, and what does the last line say?"
+    scoring_type: "stringmatch"
+    expected_response: "The file has {{file_line_count:TARGET_FILE}} lines. The last line says: {{file_line:5:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_files"
+      target_file: "test_artifacts/{{qs_id}}/{{entity1}}/data.txt"
+      content:
+        type: "lorem_lines"
+        count: 5
+
+  # Example 4: CSV with specific data analysis using TARGET_FILE
+  - question_id: 104
+    samples: 2
+    template: "Examine the sales data in test_artifacts/{{qs_id}}/sales.csv. What is the age of the person in row 2 (second data row)?"
+    scoring_type: "stringmatch"
+    expected_response: "{{csv_value:1:age:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "test_artifacts/{{qs_id}}/sales.csv"
+      content:
+        headers: ["name", "age", "city", "sales_amount"]
+        rows: 4
+
+  # Example 5: Traditional test (no sandbox) for comparison
+  - question_id: 105
+    samples: 2
+    template: "Say hello to {{entity1}} in a friendly way."
+    scoring_type: "stringmatch"
+    expected_response: "Hello {{entity1}}!"
+
+  # Example 6: Testing with explicit file paths (still works)
+  - question_id: 106
+    samples: 1
+    template: "Create a file called test_artifacts/{{entity1}}_notes.txt with some content, then tell me how many lines it has."
+    scoring_type: "stringmatch"  
+    expected_response: "{{file_line_count:test_artifacts/{{qs_id}}/{{entity1}}_created.txt}}"
+    sandbox_setup:
+      type: "create_files"
+      target_file: "test_artifacts/{{qs_id}}/{{entity1}}_created.txt"
+      content:
+        type: "lorem_lines"
+        count: 8
+

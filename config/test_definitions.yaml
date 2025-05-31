@@ -3,14 +3,14 @@
 
 tests:
   - question_id: 1
-    samples: 5
+    samples: 2
     template: "Write the text 'Hello {{entity1}}!' inside this file: test_artifacts/{{entity2}}.txt"
     scoring_type: "readfile_stringmatch"
     file_to_read: "test_artifacts/{{entity2}}.txt"
     expected_content: 'Hello {{entity1}}!'
   
   - question_id: 2
-    samples: 3
+    samples: 2
     template: "Create these files: {{entity1}}.log and {{entity2}}.config in the test_artifacts directory"
     scoring_type: "files_exist"
     files_to_check:
@@ -18,13 +18,13 @@ tests:
       - "test_artifacts/{{entity2}}.config"
   
   - question_id: 3
-    samples: 10
+    samples: 2
     template: "Respond with only this word: {{entity1}}"
     scoring_type: "stringmatch"
     expected_response: "{{entity1}}"
   
   - question_id: 4
-    samples: 3
+    samples: 2
     template: "Create this directory structure inside the folder `test_artifacts`: {{expected_structure}}"
     scoring_type: "directory_structure"
     expected_structure:
@@ -34,3 +34,27 @@ tests:
       - "{{entity1}}/logs/{{entity3}}.log"
       - "{{entity4}}/"
       - "{{entity4}}/README.md"
+
+  - question_id: 5
+    samples: 2
+    template: "Read the file test_artifacts/{{qs_id}}/{{entity1}}/notes.txt and tell me what line 3 says."
+    scoring_type: "stringmatch"
+    expected_response: "{{file_line:3:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_files"
+      target_file: "test_artifacts/{{qs_id}}/{{entity1}}/notes.txt"
+      content:
+        type: "lorem_lines"
+        count: 7
+
+  - question_id: 6
+    samples: 2  
+    template: "What is the name of the first person in the CSV file?"
+    scoring_type: "stringmatch"
+    expected_response: "{{csv_value:0:name:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "test_artifacts/{{qs_id}}/people.csv" 
+      content:
+        headers: ["name", "age", "city"]
+        rows: 5

@@ -22,6 +22,15 @@ class SandboxSetup:
         if self.type == "create_files":
             if not self.target_file:
                 raise ValueError("'target_file' required for sandbox_setup type 'create_files'")
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary format."""
+        return {
+            'type': self.type,
+            'target_file': self.target_file,
+            'content': self.content,
+            'clutter': self.clutter
+        }
 
 
 @dataclass

@@ -19,6 +19,8 @@ sys.path.append(str(current_dir.parent / "scripts"))
 from precheck_generator import PrecheckGenerator
 from mock_llm import execute_with_retry  # Can switch to real_llm when ready
 from sandbox_manager import SandboxManager
+from file_generators import FileGeneratorFactory
+from template_processor import TemplateProcessor
 
 
 class TestRunner:
@@ -40,6 +42,7 @@ class TestRunner:
         
         # Initialize components
         self.sandbox_manager = SandboxManager(base_dir)
+        self.template_processor = TemplateProcessor(base_dir=base_dir)
         self.precheck_generator = None
         
         # Test run info
@@ -160,6 +163,89 @@ class TestRunner:
             'responses_file': str(responses_file)
         }
     
+    def _setup_question_sandbox(self, precheck_entry: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Set up sandbox files for a question if it has sandbox_setup configuration.
+        
+        Args:
+            precheck_entry: Precheck entry that may contain sandbox setup info
+            
+        Returns:
+            Dictionary with sandbox setup results
+        """
+        sandbox_result = {
+            'has_sandbox_setup': False,
+            'files_created': [],
+            'content_generated': {},
+            'errors': []
+        }
+        
+        # Check if this question has sandbox setup requirements
+        if 'sandbox_setup' not in precheck_entry:
+            return sandbox_result
+        
+        sandbox_setup = precheck_entry['sandbox_setup']
+        sandbox_result['has_sandbox_setup'] = True
+        
+        try:
+            # Get question context for qs_id substitution
+            question_id = precheck_entry['question_id']
+            sample_number = precheck_entry['sample_number']
+            
+            # Process sandbox setup templates with entity values
+            setup_fields = {
+                'target_file': sandbox_setup.get('target_file', ''),
+                'content': str(sandbox_setup.get('content', {})),
+                'clutter': str(sandbox_setup.get('clutter', {}))
+            }
+            
+            # Get entity values from precheck entry
+            entity_values = {}
+            for key, value in precheck_entry.items():
+                if key.startswith('entity'):
+                    entity_values[key] = value
+            
+            # Process templates using the template processor
+            processed_setup = self.template_processor.process_multiple_fields(
+                setup_fields, question_id, sample_number
+            )
+            
+            # Extract processed values
+            target_file = processed_setup['target_file']['substituted']
+            content_spec = eval(processed_setup['content']['substituted']) if processed_setup['content']['substituted'] != '{}' else {}
+            clutter_spec = eval(processed_setup['clutter']['substituted']) if processed_setup['clutter']['substituted'] != '{}' else None
+            
+            # Create file generator
+            generator_type = sandbox_setup.get('type', 'create_files')
+            file_generator = FileGeneratorFactory.create_generator(generator_type, str(self.base_dir))
+            
+            # Generate files
+            generation_result = file_generator.generate(
+                target_file=target_file,
+                content_spec=content_spec,
+                clutter_spec=clutter_spec
+            )
+            
+            sandbox_result.update({
+                'files_created': generation_result['files_created'],
+                'content_generated': generation_result['content_generated'],
+                'errors': generation_result.get('errors', [])
+            })
+            
+            # Store sandbox details in precheck entry for reference
+            precheck_entry['sandbox_execution'] = {
+                'target_file': target_file,
+                'files_created': generation_result['files_created'],
+                'generation_timestamp': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            error_msg = f"Sandbox setup failed for Q{question_id}S{sample_number}: {e}"
+            sandbox_result['errors'].append(error_msg)
+            print(f"\n   ⚠️  {error_msg}")
+        
+        return sandbox_result
+    
     def _execute_questions(self, precheck_entries: List[Dict[str, Any]], 
                           max_retries: int, retry_delay: float) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """Execute all questions against the LLM."""
@@ -175,6 +261,13 @@ class TestRunner:
             print(f"Running: Question {question_id}, Sample {sample_number} ({i}/{total_questions})", end="")
             
             try:
+                # Set up sandbox files if needed (just-in-time generation)
+                sandbox_result = self._setup_question_sandbox(entry)
+                if sandbox_result['has_sandbox_setup']:
+                    print(f" [Generated {len(sandbox_result['files_created'])} files]", end="")
+                    if sandbox_result['errors']:
+                        print(f" [⚠️ {len(sandbox_result['errors'])} warnings]", end="")
+                
                 # Execute with retry logic
                 result = execute_with_retry(
                     question, 

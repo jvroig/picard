@@ -109,6 +109,10 @@ class PrecheckGenerator:
                 test_def.expected_response, entity_values
             )
             precheck_entry['expected_response'] = substituted_response
+        
+        # Handle sandbox_setup if present
+        if test_def.sandbox_setup:
+            precheck_entry['sandbox_setup'] = test_def.sandbox_setup.to_dict()
     
     def save_precheck_entries(self, precheck_entries: List[Dict[str, Any]], 
                              output_file: str):

@@ -17,7 +17,6 @@ sys.path.append(str(current_dir))
 sys.path.append(str(current_dir.parent / "scripts"))
 
 from precheck_generator import PrecheckGenerator
-from mock_llm import execute_with_retry  # Can switch to real_llm when ready
 from sandbox_manager import SandboxManager
 from file_generators import FileGeneratorFactory
 from template_processor import TemplateProcessor

@@ -62,7 +62,7 @@ tests:
   # SQLite database examples
   - question_id: 7
     samples: 2
-    template: "Query the SQLite database {{artifacts}}/{{qs_id}}/{{entity1}}.db and tell me the name of the first customer. Hint: study the schema first to know how to navigate and inspect the data."
+    template: "Query the SQLite database {{artifacts}}/{{qs_id}}/{{entity1}}.db and tell me the name of the first customer. Hint: study the schema first to know how to navigate and inspect the data. Respond only with the name of the first customer."
     scoring_type: "stringmatch"
     expected_response: "{{sqlite_query:SELECT name FROM customers LIMIT 1:TARGET_FILE}}"
     sandbox_setup:
@@ -79,7 +79,7 @@ tests:
 
   - question_id: 8
     samples: 2
-    template: "What is the total amount of all orders in the database {{artifacts}}/{{qs_id}}/{{entity1}}.db? Hint: study the schema first to know how to navigate and inspect the data."
+    template: "What is the total amount of all orders in the database {{artifacts}}/{{qs_id}}/{{entity1}}.db? Hint: study the schema first to know how to navigate and inspect the data. Respond only with the total amount."
     scoring_type: "stringmatch"
     expected_response: "{{sqlite_query:SELECT SUM(amount) FROM orders:TARGET_FILE}}"
     sandbox_setup:
@@ -103,7 +103,7 @@ tests:
 
   - question_id: 9
     samples: 2
-    template: "Find customers who have orders above 10000 in the database {{artifacts}}/{{qs_id}}/{{entity1}}.db. How many are there? Hint: study the schema first to know how to navigate and inspect the data."
+    template: "Find customers who have orders above 10000 in the database {{artifacts}}/{{qs_id}}/{{entity1}}.db. How many are there? Hint: study the schema first to know how to navigate and inspect the data. Respond only with the number asked."
     scoring_type: "stringmatch"
     expected_response: "{{sqlite_query:SELECT COUNT(DISTINCT c.name) FROM customers c JOIN orders o ON c.id = o.customer_id WHERE o.amount > 10000:TARGET_FILE}}"
     sandbox_setup:

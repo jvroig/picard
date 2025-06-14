@@ -15,17 +15,16 @@ from pathlib import Path
 class QwenLLMClient:
     """Client for communicating with qwen-max-agentic API."""
     
-    def __init__(self, base_url: str = "http://localhost:5001", timeout: int = 300):
+    def __init__(self, api_endpoint: str = "http://localhost:5001/api/chat", timeout: int = 300):
         """
         Initialize the Qwen LLM client.
         
         Args:
-            base_url: Base URL of the qwen API server
+            api_endpoint: Full API endpoint URL (e.g., "http://example.com/api/chat")
             timeout: Request timeout in seconds
         """
-        self.base_url = base_url
+        self.api_endpoint = api_endpoint
         self.timeout = timeout
-        self.api_endpoint = f"{base_url}/api/chat"
     
     def execute_question(self, question: str, temperature: float = 0.4, 
                         max_tokens: int = 1000) -> Tuple[str, List[Dict[str, Any]], Dict[str, Any]]:
@@ -131,18 +130,22 @@ class QwenLLMClient:
         return final_response, conversation_history, statistics
 
 
-def real_llm_execute(question: str, **kwargs) -> Dict[str, Any]:
+def real_llm_execute(question: str, api_endpoint: str = None, **kwargs) -> Dict[str, Any]:
     """
     Execute question against real LLM (compatible with mock_llm interface).
     
     Args:
         question: The question to ask the LLM
+        api_endpoint: Optional API endpoint URL override
         **kwargs: Additional parameters (temperature, max_tokens, etc.)
         
     Returns:
         Dictionary with response data (compatible with mock_llm format)
     """
-    client = QwenLLMClient()
+    if api_endpoint:
+        client = QwenLLMClient(api_endpoint=api_endpoint)
+    else:
+        client = QwenLLMClient()
     
     try:
         final_response, conversation_history, statistics = client.execute_question(
@@ -181,7 +184,7 @@ def real_llm_execute(question: str, **kwargs) -> Dict[str, Any]:
 
 
 def execute_with_retry(question: str, max_retries: int = 3, delay: float = 2.0, 
-                      **kwargs) -> Dict[str, Any]:
+                      api_endpoint: str = None, **kwargs) -> Dict[str, Any]:
     """
     Execute LLM call with retry logic (compatible with mock_llm interface).
     
@@ -189,6 +192,7 @@ def execute_with_retry(question: str, max_retries: int = 3, delay: float = 2.0,
         question: The question to ask the LLM
         max_retries: Maximum number of retry attempts
         delay: Delay between retries in seconds
+        api_endpoint: Optional API endpoint URL override
         **kwargs: Additional parameters passed to LLM function
         
     Returns:
@@ -201,7 +205,7 @@ def execute_with_retry(question: str, max_retries: int = 3, delay: float = 2.0,
     
     for attempt in range(max_retries):
         try:
-            result = real_llm_execute(question, **kwargs)
+            result = real_llm_execute(question, api_endpoint=api_endpoint, **kwargs)
             
             # Check if execution was successful
             if result.get("execution_successful", False):

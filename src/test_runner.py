@@ -79,7 +79,7 @@ class TestRunner:
     def run_benchmark(self, test_definitions_file: str = None, 
                      sandbox_template: str = "clean_sandbox",
                      max_retries: int = 3, retry_delay: float = 2.0,
-                     use_real_llm: bool = False) -> Dict[str, str]:
+                     use_real_llm: bool = False, api_endpoint: str = None) -> Dict[str, str]:
         """
         Run complete benchmark test.
         
@@ -89,6 +89,7 @@ class TestRunner:
             max_retries: Maximum retry attempts for failed LLM calls
             retry_delay: Delay between retries in seconds
             use_real_llm: Whether to use real LLM API or mock
+            api_endpoint: Optional API endpoint for real LLM
             
         Returns:
             Dictionary with file paths of generated results
@@ -136,7 +137,7 @@ class TestRunner:
         
         # Execute questions against LLM
         print("🤖 Executing questions against LLM...")
-        responses, conversations = self._execute_questions(precheck_entries, max_retries, retry_delay)
+        responses, conversations = self._execute_questions(precheck_entries, max_retries, retry_delay, api_endpoint)
         
         # Save responses file
         responses_file = self.test_dir / "responses.jsonl"
@@ -247,7 +248,7 @@ class TestRunner:
         return sandbox_result
     
     def _execute_questions(self, precheck_entries: List[Dict[str, Any]], 
-                          max_retries: int, retry_delay: float) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+                          max_retries: int, retry_delay: float, api_endpoint: str = None) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """Execute all questions against the LLM."""
         responses = []
         conversations = []
@@ -270,11 +271,17 @@ class TestRunner:
                     print(f" [⚠️ Sandbox generation had errors]", end="")
             
             try:
-                result = execute_with_retry(
-                    question, 
-                    max_retries=max_retries, 
-                    delay=retry_delay
-                )
+                # Prepare execution parameters
+                execution_params = {
+                    'max_retries': max_retries,
+                    'delay': retry_delay
+                }
+                
+                # Add api_endpoint if provided
+                if api_endpoint:
+                    execution_params['api_endpoint'] = api_endpoint
+                
+                result = execute_with_retry(question, **execution_params)
                 
                 # Create response entry (for scoring)
                 response_entry = {
@@ -361,10 +368,12 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Examples:
-  python test_runner.py                                    # Run with defaults
+  python test_runner.py                                    # Run with defaults (mock LLM)
   python test_runner.py --template clean_sandbox           # Specify sandbox template
   python test_runner.py --definitions custom_tests.yaml   # Use custom test definitions
   python test_runner.py --retries 5 --delay 3.0          # Custom retry settings
+  python test_runner.py --real-llm                        # Use real LLM (localhost:5001)
+  python test_runner.py --real-llm --api-endpoint http://example.com/api/chat  # Custom endpoint
 '''
     )
     
@@ -399,6 +408,11 @@ Examples:
         help='Use real LLM API instead of mock (requires qwen-max-agentic server running)'
     )
     
+    parser.add_argument(
+        '--api-endpoint',
+        help='API endpoint for real LLM (default: http://localhost:5001/api/chat)'
+    )
+    
     args = parser.parse_args()
     
     try:
@@ -409,7 +423,8 @@ Examples:
             sandbox_template=args.template,
             max_retries=args.retries,
             retry_delay=args.delay,
-            use_real_llm=args.real_llm
+            use_real_llm=args.real_llm,
+            api_endpoint=args.api_endpoint
         )
         
         print(f"\n🎊 Success! Test results available at: {result['test_dir']}")

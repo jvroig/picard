@@ -7,6 +7,7 @@ Supports {{lorem:20l}}, {{lorem:5p}}, {{lorem:10s}} style content generation.
 import csv
 import random
 import re
+import sqlite3
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from abc import ABC, abstractmethod
@@ -585,6 +586,306 @@ class CSVFileGenerator(BaseFileGenerator):
         return result
 
 
+class SQLiteFileGenerator(BaseFileGenerator):
+    """Generates SQLite database files with tables and data."""
+    
+    def generate(self, target_file: str, content_spec: Dict[str, Any], 
+                 clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Generate SQLite database file with specified tables and data.
+        
+        Args:
+            target_file: Path to target SQLite file
+            content_spec: Content specification with tables, columns, and rows
+            clutter_spec: Clutter specification (optional)
+            
+        Returns:
+            Generation results with SQLite data and metadata
+        """
+        result = {
+            'target_file': target_file,
+            'files_created': [],
+            'content_generated': {},
+            'sqlite_data': {},
+            'errors': []
+        }
+        
+        try:
+            # Generate SQLite database
+            db_data = self._generate_sqlite_content(content_spec)
+            
+            # Create SQLite database file
+            target_path = self._resolve_path(target_file)
+            self._ensure_directory(target_path)
+            
+            # Remove existing file if it exists
+            if target_path.exists():
+                target_path.unlink()
+            
+            # Create database and tables
+            conn = sqlite3.connect(str(target_path))
+            
+            try:
+                for table_name, table_info in db_data.items():
+                    # Create table
+                    create_sql = self._build_create_table_sql(table_name, table_info['columns'])
+                    conn.execute(create_sql)
+                    
+                    # Insert data
+                    if table_info['rows']:
+                        placeholders = ', '.join(['?' for _ in table_info['columns']])
+                        insert_sql = f"INSERT INTO {table_name} VALUES ({placeholders})"
+                        conn.executemany(insert_sql, table_info['rows'])
+                
+                conn.commit()
+                
+            finally:
+                conn.close()
+            
+            result['files_created'].append(str(target_path))
+            result['sqlite_data'][str(target_path)] = db_data
+            
+            # Store content summary for compatibility
+            content_summary = self._generate_content_summary(db_data)
+            result['content_generated'][str(target_path)] = content_summary
+            
+            # Generate clutter files if specified
+            if clutter_spec:
+                clutter_result = self._generate_clutter_files(target_file, clutter_spec)
+                result['files_created'].extend(clutter_result['files_created'])
+                result['content_generated'].update(clutter_result['content_generated'])
+                result['errors'].extend(clutter_result['errors'])
+            
+        except Exception as e:
+            result['errors'].append(f"Error generating SQLite file {target_file}: {e}")
+            raise FileGeneratorError(f"Failed to generate SQLite file {target_file}: {e}")
+        
+        return result
+    
+    def _generate_sqlite_content(self, content_spec: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+        """Generate SQLite content based on specification."""
+        db_data = {}
+        
+        # Check if it's single table format or multi-table format
+        if 'tables' in content_spec:
+            # Multi-table format
+            tables_spec = content_spec['tables']
+        elif 'table_name' in content_spec or 'columns' in content_spec:
+            # Single table format - convert to multi-table format
+            table_name = content_spec.get('table_name', 'data')
+            tables_spec = [{
+                'name': table_name,
+                'columns': content_spec.get('columns', []),
+                'rows': content_spec.get('rows', 5)
+            }]
+        else:
+            raise FileGeneratorError("Invalid SQLite content specification")
+        
+        # Process each table
+        for table_spec in tables_spec:
+            table_name = table_spec['name']
+            columns_spec = table_spec['columns']
+            row_count = table_spec.get('rows', 5)
+            
+            # Process column definitions
+            columns = []
+            column_types = []
+            
+            for col_spec in columns_spec:
+                if isinstance(col_spec, dict):
+                    col_name = col_spec['name']
+                    col_type = col_spec['type']
+                else:
+                    # Simple string format
+                    col_name = str(col_spec)
+                    col_type = 'TEXT'
+                
+                columns.append(col_name)
+                column_types.append(self._map_column_type(col_type))
+            
+            # Generate data rows
+            rows = []
+            for _ in range(row_count):
+                row = []
+                for i, col_name in enumerate(columns):
+                    col_type = columns_spec[i]
+                    if isinstance(col_type, dict):
+                        data_type = col_type['type']
+                    else:
+                        data_type = 'TEXT'
+                    
+                    value = self._generate_column_value(col_name, data_type)
+                    row.append(value)
+                
+                rows.append(row)
+            
+            db_data[table_name] = {
+                'columns': list(zip(columns, column_types)),
+                'rows': rows
+            }
+        
+        return db_data
+    
+    def _map_column_type(self, data_type: str) -> str:
+        """Map QwenSense data types to SQLite types."""
+        type_mapping = {
+            'TEXT': 'TEXT',
+            'INTEGER': 'INTEGER', 
+            'REAL': 'REAL',
+            'BOOLEAN': 'INTEGER',
+            'DATE': 'TEXT',
+            'DATETIME': 'TEXT',
+            'auto_id': 'INTEGER PRIMARY KEY AUTOINCREMENT'
+        }
+        
+        return type_mapping.get(data_type, 'TEXT')
+    
+    def _generate_column_value(self, column_name: str, data_type: str) -> Any:
+        """Generate a value for a column based on its type."""
+        if data_type == 'auto_id':
+            # Auto-increment will handle this
+            return None
+        elif data_type == 'INTEGER':
+            # Check column name for hints
+            if 'age' in column_name.lower():
+                return random.randint(18, 70)
+            elif 'amount' in column_name.lower() or 'price' in column_name.lower():
+                return random.randint(100, 50000)  # Cents or arbitrary amounts
+            elif 'id' in column_name.lower():
+                return random.randint(1, 1000)
+            else:
+                return random.randint(1, 1000)
+        elif data_type == 'REAL':
+            return round(random.uniform(1.0, 1000.0), 2)
+        elif data_type == 'BOOLEAN':
+            return random.choice([0, 1])
+        elif data_type == 'DATE':
+            year = random.randint(2020, 2025)
+            month = random.randint(1, 12)
+            day = random.randint(1, 28)
+            return f"{year}-{month:02d}-{day:02d}"
+        elif data_type == 'DATETIME':
+            year = random.randint(2020, 2025)
+            month = random.randint(1, 12)
+            day = random.randint(1, 28)
+            hour = random.randint(0, 23)
+            minute = random.randint(0, 59)
+            second = random.randint(0, 59)
+            return f"{year}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:{second:02d}"
+        else:
+            # TEXT - use existing data generator
+            return self.data_generator.generate_field(
+                self.data_generator.auto_detect_field_type(column_name)
+            )
+    
+    def _build_create_table_sql(self, table_name: str, columns: List[tuple]) -> str:
+        """Build CREATE TABLE SQL statement."""
+        column_defs = []
+        
+        for col_name, col_type in columns:
+            column_defs.append(f"{col_name} {col_type}")
+        
+        return f"CREATE TABLE {table_name} ({', '.join(column_defs)})"
+    
+    def _generate_content_summary(self, db_data: Dict[str, Dict[str, Any]]) -> str:
+        """Generate a text summary of database content for compatibility."""
+        summary_lines = []
+        
+        for table_name, table_info in db_data.items():
+            summary_lines.append(f"Table: {table_name}")
+            
+            # Column headers
+            columns = [col[0] for col in table_info['columns']]
+            summary_lines.append(f"Columns: {', '.join(columns)}")
+            
+            # Sample rows
+            if table_info['rows']:
+                summary_lines.append("Sample data:")
+                for i, row in enumerate(table_info['rows'][:3]):  # Show first 3 rows
+                    summary_lines.append(f"  Row {i+1}: {row}")
+                
+                if len(table_info['rows']) > 3:
+                    summary_lines.append(f"  ... ({len(table_info['rows']) - 3} more rows)")
+            
+            summary_lines.append("")  # Empty line between tables
+        
+        return '\n'.join(summary_lines)
+    
+    def _generate_clutter_files(self, base_file: str, clutter_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate clutter files (SQLite, CSV, and text files)."""
+        result = {
+            'files_created': [],
+            'content_generated': {},
+            'errors': []
+        }
+        
+        try:
+            count = clutter_spec.get('count', 3)
+            base_path = self._resolve_path(base_file).parent
+            
+            for i in range(count):
+                # Random file type and location
+                file_type = random.choice(['db', 'csv', 'txt', 'log'])
+                subdir_depth = random.randint(0, 1)
+                
+                if subdir_depth > 0:
+                    subdir = f"subdir_{random.randint(1, 50)}"
+                    clutter_path = base_path / subdir / f"clutter_{random.randint(1, 100)}.{file_type}"
+                else:
+                    clutter_path = base_path / f"clutter_{random.randint(1, 100)}.{file_type}"
+                
+                self._ensure_directory(clutter_path)
+                
+                if file_type == 'db':
+                    # Generate small SQLite database
+                    if clutter_path.exists():
+                        clutter_path.unlink()
+                    
+                    conn = sqlite3.connect(str(clutter_path))
+                    try:
+                        # Create a simple table
+                        conn.execute("CREATE TABLE items (id INTEGER PRIMARY KEY, name TEXT, value INTEGER)")
+                        
+                        # Insert some random data
+                        for j in range(random.randint(2, 5)):
+                            name = self.data_generator.generate_field('lorem_words')
+                            value = random.randint(1, 100)
+                            conn.execute("INSERT INTO items (name, value) VALUES (?, ?)", (name, value))
+                        
+                        conn.commit()
+                    finally:
+                        conn.close()
+                    
+                    content = f"SQLite database with items table ({random.randint(2, 5)} rows)"
+                    
+                elif file_type == 'csv':
+                    # Generate small random CSV
+                    headers = random.sample(['id', 'name', 'value', 'status', 'date'], 3)
+                    csv_data = [headers]
+                    for _ in range(random.randint(2, 5)):
+                        row = [self.data_generator.generate_field('lorem_words') for _ in headers]
+                        csv_data.append(row)
+                    
+                    with open(clutter_path, 'w', newline='', encoding='utf-8') as f:
+                        writer = csv.writer(f)
+                        writer.writerows(csv_data)
+                    
+                    content = '\n'.join([','.join(row) for row in csv_data])
+                else:
+                    # Generate text content
+                    content = self.lorem_generator.generate_lines(random.randint(2, 8))
+                    with open(clutter_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                
+                result['files_created'].append(str(clutter_path))
+                result['content_generated'][str(clutter_path)] = content
+                
+        except Exception as e:
+            result['errors'].append(f"Error generating SQLite clutter files: {e}")
+        
+        return result
+
+
 class FileGeneratorFactory:
     """Factory for creating file generators."""
     
@@ -604,6 +905,8 @@ class FileGeneratorFactory:
             return TextFileGenerator(base_dir)
         elif generator_type == 'create_csv':
             return CSVFileGenerator(base_dir)
+        elif generator_type == 'create_sqlite':
+            return SQLiteFileGenerator(base_dir)
         else:
             raise FileGeneratorError(f"Unknown generator type: {generator_type}")
 

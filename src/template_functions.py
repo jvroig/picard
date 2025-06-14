@@ -6,6 +6,7 @@ Functions like {{file_line:3:path}}, {{csv_cell:row:column:path}}, etc.
 """
 import csv
 import re
+import sqlite3
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -86,6 +87,8 @@ class TemplateFunctions:
             'csv_row': self._csv_row,
             'csv_column': self._csv_column,
             'csv_value': self._csv_value,
+            'sqlite_query': self._sqlite_query,
+            'sqlite_value': self._sqlite_value,
         }
         
         if function_name not in function_map:
@@ -317,6 +320,104 @@ class TemplateFunctions:
             return ''  # Handle missing column
         
         return data[data_row_index][column_index]
+    
+    # SQLite-specific extraction functions
+    
+    def _sqlite_query(self, args: List[str], target_file_path: str = None) -> str:
+        """Execute arbitrary SQL query and return first result. Usage: {{sqlite_query:SELECT name FROM users:path}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("sqlite_query requires exactly 2 arguments: sql_query, file_path")
+        
+        sql_query = args[0]
+        path = self._resolve_target_file(args[1], target_file_path)
+        
+        file_path = self._resolve_path(path)
+        if not file_path.exists():
+            raise TemplateFunctionError(f"SQLite file not found: {file_path}")
+        
+        try:
+            conn = sqlite3.connect(str(file_path))
+            try:
+                cursor = conn.execute(sql_query)
+                result = cursor.fetchone()
+                
+                if result is None:
+                    raise TemplateFunctionError(f"SQL query returned no results: {sql_query}")
+                
+                # Return first column of first row
+                return str(result[0]) if result[0] is not None else ""
+                
+            finally:
+                conn.close()
+                
+        except sqlite3.Error as e:
+            raise TemplateFunctionError(f"SQLite error executing '{sql_query}': {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error executing SQLite query '{sql_query}': {e}")
+    
+    def _sqlite_value(self, args: List[str], target_file_path: str = None) -> str:
+        """Get value by row and column from first table. Usage: {{sqlite_value:row:column:path}} or {{sqlite_value:row:column:table:path}}"""
+        if len(args) not in [3, 4]:
+            raise TemplateFunctionError("sqlite_value requires 3 or 4 arguments: row, column, [table], file_path")
+        
+        try:
+            row = int(args[0])
+            column = args[1]  # Can be column name or index
+        except ValueError:
+            raise TemplateFunctionError(f"Invalid row number: {args[0]}")
+        
+        if len(args) == 4:
+            table_name = args[2]
+            path = self._resolve_target_file(args[3], target_file_path)
+        else:
+            table_name = None
+            path = self._resolve_target_file(args[2], target_file_path)
+        
+        file_path = self._resolve_path(path)
+        if not file_path.exists():
+            raise TemplateFunctionError(f"SQLite file not found: {file_path}")
+        
+        try:
+            conn = sqlite3.connect(str(file_path))
+            try:
+                # If no table specified, get the first table
+                if table_name is None:
+                    cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                    tables = cursor.fetchall()
+                    if not tables:
+                        raise TemplateFunctionError("No tables found in SQLite database")
+                    table_name = tables[0][0]
+                
+                # Try to parse column as integer index first
+                try:
+                    column_index = int(column)
+                    # Get column names to validate index
+                    cursor = conn.execute(f"PRAGMA table_info({table_name})")
+                    columns = cursor.fetchall()
+                    if column_index < 0 or column_index >= len(columns):
+                        raise TemplateFunctionError(f"Column index {column_index} out of range (table has {len(columns)} columns)")
+                    column_name = columns[column_index][1]  # Column name is at index 1
+                except ValueError:
+                    # Column is a name, not an index
+                    column_name = column
+                
+                # Execute query to get the value
+                sql_query = f"SELECT {column_name} FROM {table_name} LIMIT 1 OFFSET {row}"
+                cursor = conn.execute(sql_query)
+                result = cursor.fetchone()
+                
+                if result is None:
+                    raise TemplateFunctionError(f"Row {row} not found in table {table_name}")
+                
+                return str(result[0]) if result[0] is not None else ""
+                
+            finally:
+                conn.close()
+                
+        except sqlite3.Error as e:
+            raise TemplateFunctionError(f"SQLite error: {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error accessing SQLite database: {e}")
 
 
 def main():

@@ -37,7 +37,7 @@ tests:
 
   - question_id: 5
     samples: 2
-    template: "Read the file {{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt and tell me what line 3 says."
+    template: "Read the file {{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt and tell me what line 3 says. Reply only with the contents of that line."
     scoring_type: "stringmatch"
     expected_response: "{{file_line:3:TARGET_FILE}}"
     sandbox_setup:
@@ -49,7 +49,7 @@ tests:
 
   - question_id: 6
     samples: 1  
-    template: "What is the name of the first person in {{artifacts}}/{{qs_id}}/{{entity1}}/people.csv?"
+    template: "What is the name of the first person in {{artifacts}}/{{qs_id}}/{{entity1}}/people.csv? Reply only with the name."
     scoring_type: "stringmatch"
     expected_response: "{{csv_value:0:name:TARGET_FILE}}"
     sandbox_setup:

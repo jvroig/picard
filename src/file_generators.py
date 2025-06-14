@@ -587,7 +587,11 @@ class CSVFileGenerator(BaseFileGenerator):
 
 
 class SQLiteFileGenerator(BaseFileGenerator):
-    """Generates SQLite database files with tables and data."""
+    """Generates SQLite database files with tables and data, supporting explicit foreign key relationships."""
+    
+    def __init__(self, base_dir: str):
+        super().__init__(base_dir)
+        self.generated_tables = {}  # Cache of generated table data for foreign key references
     
     def generate(self, target_file: str, content_spec: Dict[str, Any], 
                  clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
@@ -611,6 +615,9 @@ class SQLiteFileGenerator(BaseFileGenerator):
         }
         
         try:
+            # Reset generated tables cache for this generation
+            self.generated_tables = {}
+            
             # Generate SQLite database
             db_data = self._generate_sqlite_content(content_spec)
             
@@ -663,12 +670,12 @@ class SQLiteFileGenerator(BaseFileGenerator):
         return result
     
     def _generate_sqlite_content(self, content_spec: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-        """Generate SQLite content based on specification."""
+        """Generate SQLite content based on specification with foreign key support."""
         db_data = {}
         
         # Check if it's single table format or multi-table format
         if 'tables' in content_spec:
-            # Multi-table format
+            # Multi-table format - process in order (strong entities first)
             tables_spec = content_spec['tables']
         elif 'table_name' in content_spec or 'columns' in content_spec:
             # Single table format - convert to multi-table format
@@ -681,7 +688,7 @@ class SQLiteFileGenerator(BaseFileGenerator):
         else:
             raise FileGeneratorError("Invalid SQLite content specification")
         
-        # Process each table
+        # Process each table in order (important for foreign key dependencies)
         for table_spec in tables_spec:
             table_name = table_spec['name']
             columns_spec = table_spec['columns']
@@ -703,26 +710,33 @@ class SQLiteFileGenerator(BaseFileGenerator):
                 columns.append(col_name)
                 column_types.append(self._map_column_type(col_type))
             
-            # Generate data rows
+            # Generate data rows with foreign key awareness
             rows = []
             for _ in range(row_count):
                 row = []
                 for i, col_name in enumerate(columns):
-                    col_type = columns_spec[i]
-                    if isinstance(col_type, dict):
-                        data_type = col_type['type']
+                    col_spec = columns_spec[i]
+                    if isinstance(col_spec, dict):
+                        data_type = col_spec['type']
+                        # Pass the full column spec for foreign key info
+                        value = self._generate_column_value(col_name, data_type, col_spec)
                     else:
                         data_type = 'TEXT'
+                        value = self._generate_column_value(col_name, data_type, {})
                     
-                    value = self._generate_column_value(col_name, data_type)
                     row.append(value)
                 
                 rows.append(row)
             
-            db_data[table_name] = {
+            # Store table data
+            table_data = {
                 'columns': list(zip(columns, column_types)),
                 'rows': rows
             }
+            db_data[table_name] = table_data
+            
+            # Cache the generated table data for foreign key references
+            self.generated_tables[table_name] = table_data
         
         return db_data
     
@@ -740,12 +754,59 @@ class SQLiteFileGenerator(BaseFileGenerator):
         
         return type_mapping.get(data_type, 'TEXT')
     
-    def _generate_column_value(self, column_name: str, data_type: str) -> Any:
-        """Generate a value for a column based on its type."""
+    def _generate_column_value(self, column_name: str, data_type: str, col_spec: Dict[str, Any] = None) -> Any:
+        """Generate a value for a column based on its type, with foreign key support."""
+        if col_spec is None:
+            col_spec = {}
+            
         if data_type == 'auto_id':
             # Auto-increment will handle this
             return None
-        elif data_type == 'INTEGER':
+        
+        # Check for explicit foreign key declaration
+        if 'foreign_key' in col_spec:
+            fk_spec = col_spec['foreign_key']
+            
+            # Parse foreign key specification
+            if isinstance(fk_spec, str):
+                # Format: "table.column" or just "table" (assumes .id)
+                if '.' in fk_spec:
+                    ref_table, ref_column = fk_spec.split('.', 1)
+                else:
+                    ref_table, ref_column = fk_spec, 'id'
+            elif isinstance(fk_spec, dict):
+                # Format: {"table": "customers", "column": "id"}
+                ref_table = fk_spec['table']
+                ref_column = fk_spec.get('column', 'id')
+            else:
+                raise FileGeneratorError(f"Invalid foreign key specification: {fk_spec}")
+            
+            # Get available values from the referenced table
+            if ref_table in self.generated_tables:
+                table_data = self.generated_tables[ref_table]
+                # Find the column index
+                for i, (col_name, col_type) in enumerate(table_data['columns']):
+                    if col_name == ref_column:
+                        # Handle auto-increment columns specially
+                        if 'PRIMARY KEY AUTOINCREMENT' in col_type:
+                            # For auto-increment columns, generate sequential IDs 1, 2, 3, ...
+                            num_rows = len(table_data['rows'])
+                            available_values = list(range(1, num_rows + 1))
+                        else:
+                            # For regular columns, use actual values (excluding None)
+                            available_values = [row[i] for row in table_data['rows'] if row[i] is not None]
+                        
+                        if available_values:
+                            return random.choice(available_values)
+                        break
+                
+                # If no values found, generate a fallback value
+                return random.randint(1, 3)  # Conservative fallback
+            else:
+                raise FileGeneratorError(f"Referenced table '{ref_table}' not found for foreign key '{column_name}'")
+        
+        # Generate regular values based on type and column name hints
+        if data_type == 'INTEGER':
             # Check column name for hints
             if 'age' in column_name.lower():
                 return random.randint(18, 70)

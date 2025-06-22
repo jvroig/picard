@@ -61,6 +61,12 @@ class TestDefinition:
             if not self.file_to_read:
                 raise ValueError(f"Question {self.question_id}: 'file_to_read' required for scoring_type 'readfile_stringmatch'")
         
+        elif self.scoring_type == "readfile_jsonmatch":
+            if not self.file_to_read:
+                raise ValueError(f"Question {self.question_id}: 'file_to_read' required for scoring_type 'readfile_jsonmatch'")
+            if not self.expected_content:
+                raise ValueError(f"Question {self.question_id}: 'expected_content' required for scoring_type 'readfile_jsonmatch'")
+        
         elif self.scoring_type == "files_exist":
             if not self.files_to_check:
                 raise ValueError(f"Question {self.question_id}: 'files_to_check' required for scoring_type 'files_exist'")
@@ -73,7 +79,11 @@ class TestDefinition:
             if not self.expected_response:
                 raise ValueError(f"Question {self.question_id}: 'expected_response' required for scoring_type 'stringmatch'")
         
-        elif self.scoring_type not in ["readfile_stringmatch", "files_exist", "directory_structure", "stringmatch"]:
+        elif self.scoring_type == "jsonmatch":
+            if not self.expected_response:
+                raise ValueError(f"Question {self.question_id}: 'expected_response' required for scoring_type 'jsonmatch'")
+        
+        elif self.scoring_type not in ["readfile_stringmatch", "readfile_jsonmatch", "files_exist", "directory_structure", "stringmatch", "jsonmatch"]:
             raise ValueError(f"Question {self.question_id}: Unknown scoring_type '{self.scoring_type}'")
     
     def to_dict(self) -> Dict[str, Any]:

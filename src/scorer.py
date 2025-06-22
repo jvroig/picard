@@ -88,12 +88,16 @@ class QwenSenseScorer:
             from scoring_types.readfile_stringmatch import ReadFileStringMatchScorer
             from scoring_types.files_exist import FilesExistScorer
             from scoring_types.directory_structure import DirectoryStructureScorer
+            from scoring_types.jsonmatch import JsonMatchScorer
+            from scoring_types.readfile_jsonmatch import ReadFileJsonMatchScorer
             
             self.scoring_types = {
                 'stringmatch': StringMatchScorer(),
                 'readfile_stringmatch': ReadFileStringMatchScorer(),
                 'files_exist': FilesExistScorer(),
-                'directory_structure': DirectoryStructureScorer()
+                'directory_structure': DirectoryStructureScorer(),
+                'jsonmatch': JsonMatchScorer(),
+                'readfile_jsonmatch': ReadFileJsonMatchScorer()
             }
         except ImportError as e:
             print(f"Warning: Could not import scoring types: {e}")

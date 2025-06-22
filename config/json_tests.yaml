@@ -1,0 +1,109 @@
+# JSON Scoring Examples for QwenSense
+# Demonstrates the new jsonmatch and readfile_jsonmatch scoring types
+
+tests:
+  # Basic JSON Response Examples
+  - question_id: 201
+    samples: 2
+    template: "Convert this data to JSON format: name John, age 30, city Boston. Reply with only the JSON."
+    scoring_type: "jsonmatch"
+    expected_response: '{"name": "John", "age": 30, "city": "Boston"}'
+
+  - question_id: 202
+    samples: 2
+    template: "From the CSV file {{artifacts}}/{{qs_id}}/{{entity1}}/customers.csv, return the first customer as JSON. Reply with only the JSON."
+    scoring_type: "jsonmatch"
+    expected_response: '{"name": "{{csv_value:0:name:TARGET_FILE}}", "age": {{csv_value:0:age:TARGET_FILE}}, "city": "{{csv_value:0:city:TARGET_FILE}}"}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/customers.csv"
+      content:
+        headers: ["name", "age", "city"]
+        rows: 5
+
+  - question_id: 203
+    samples: 2
+    template: "Calculate the total and average from {{artifacts}}/{{qs_id}}/{{entity1}}/sales.csv and return as JSON with keys 'total' and 'average'. Reply with only the JSON."
+    scoring_type: "jsonmatch"
+    expected_response: '{"total": {{csv_sum:amount:TARGET_FILE}}, "average": {{csv_avg:amount:TARGET_FILE}}}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/sales.csv"
+      content:
+        headers: ["order_id", "customer", "amount", "status"]
+        rows: 10
+
+  # JSON File Creation Examples
+  - question_id: 204
+    samples: 2
+    template: "Create a JSON file at {{artifacts}}/{{qs_id}}/{{entity1}}/report.json with customer data from {{artifacts}}/{{qs_id}}/{{entity1}}/customers.csv. Include name and city for each customer."
+    scoring_type: "readfile_jsonmatch"
+    file_to_read: "{{artifacts}}/{{qs_id}}/{{entity1}}/report.json"
+    expected_content: '{"customers": [{"name": "{{csv_value:0:name:TARGET_FILE}}", "city": "{{csv_value:0:city:TARGET_FILE}}"}, {"name": "{{csv_value:1:name:TARGET_FILE}}", "city": "{{csv_value:1:city:TARGET_FILE}}"}]}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/customers.csv"
+      content:
+        headers: ["name", "age", "city"]
+        rows: 3
+
+  - question_id: 205
+    samples: 2
+    template: "Analyze {{artifacts}}/{{qs_id}}/{{entity1}}/orders.csv and create a summary JSON file at {{artifacts}}/{{qs_id}}/{{entity1}}/summary.json with total orders, total amount, and average order value."
+    scoring_type: "readfile_jsonmatch"
+    file_to_read: "{{artifacts}}/{{qs_id}}/{{entity1}}/summary.json"
+    expected_content: '{"total_orders": {{csv_count:order_id:TARGET_FILE}}, "total_amount": {{csv_sum:amount:TARGET_FILE}}, "average_order": {{csv_avg:amount:TARGET_FILE}}}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/orders.csv"
+      content:
+        headers: ["order_id", "customer", "amount", "status", "date"]
+        rows: 15
+
+  # Complex JSON Structure Examples
+  - question_id: 206
+    samples: 2
+    template: "Create a JSON report at {{artifacts}}/{{qs_id}}/{{entity1}}/analysis.json showing department statistics from {{artifacts}}/{{qs_id}}/{{entity1}}/employees.csv. Include total count and average salary per department."
+    scoring_type: "readfile_jsonmatch"
+    file_to_read: "{{artifacts}}/{{qs_id}}/{{entity1}}/analysis.json"
+    expected_content: '{"departments": {"Engineering": {"count": {{csv_count_where:name:department:==:Engineering:TARGET_FILE}}, "avg_salary": {{csv_avg_where:salary:department:==:Engineering:TARGET_FILE}}}, "Sales": {"count": {{csv_count_where:name:department:==:Sales:TARGET_FILE}}, "avg_salary": {{csv_avg_where:salary:department:==:Sales:TARGET_FILE}}}}}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/employees.csv"
+      content:
+        headers: ["name", "department", "salary", "years_experience"]
+        rows: 20
+
+  # API Response Style Examples
+  - question_id: 207
+    samples: 2
+    template: "Return the top 3 customers by total orders from {{artifacts}}/{{qs_id}}/{{entity1}}/orders.csv as a JSON API response with status, message, and data fields."
+    scoring_type: "jsonmatch"
+    expected_response: '{"status": "success", "message": "Top customers retrieved", "data": [{"customer": "{{csv_value:0:customer:TARGET_FILE}}", "amount": {{csv_value:0:amount:TARGET_FILE}}}]}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/orders.csv"
+      content:
+        headers: ["order_id", "customer", "amount", "status"]
+        rows: 8
+
+  # Error Handling Examples  
+  - question_id: 208
+    samples: 2
+    template: "Try to read the non-existent file {{artifacts}}/{{qs_id}}/{{entity1}}/missing.csv and return an error response as JSON with error code and message."
+    scoring_type: "jsonmatch"
+    expected_response: '{"error": true, "code": 404, "message": "File not found"}'
+
+  # Mixed Data Types
+  - question_id: 209
+    samples: 2
+    template: "Create a configuration JSON file at {{artifacts}}/{{qs_id}}/{{entity1}}/config.json with settings: debug mode enabled, max users from customer count in {{artifacts}}/{{qs_id}}/{{entity1}}/customers.csv, and timeout of 30 seconds."
+    scoring_type: "readfile_jsonmatch"
+    file_to_read: "{{artifacts}}/{{qs_id}}/{{entity1}}/config.json"
+    expected_content: '{"debug": true, "max_users": {{csv_count:name:TARGET_FILE}}, "timeout": 30}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/customers.csv"
+      content:
+        headers: ["name", "email", "status"]
+        rows: 12

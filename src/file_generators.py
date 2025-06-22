@@ -849,6 +849,11 @@ class SQLiteFileGenerator(BaseFileGenerator):
         """Generate a value for a column based on its type, with foreign key support."""
         if col_spec is None:
             col_spec = {}
+        
+        # NEW: Check for explicit semantic data type
+        semantic_type = col_spec.get('data_type', None)
+        if semantic_type:
+            return self.data_generator.generate_field(semantic_type)
             
         if data_type == 'auto_id':
             # Auto-increment will handle this
@@ -1140,6 +1145,31 @@ def main():
         print("\n4. Testing factory:")
         factory_gen = FileGeneratorFactory.create_generator('create_files', temp_dir)
         print(f"   Factory created: {type(factory_gen).__name__}")
+        
+        # Test SQLite data_type feature
+        print("\n5. Testing SQLite data_type feature:")
+        sqlite_gen = SQLiteFileGenerator(temp_dir)
+        sqlite_result = sqlite_gen.generate(
+            target_file="test_data/enterprise_test.db",
+            content_spec={
+                'table_name': 'enterprise_test',
+                'columns': [
+                    {'name': 'CUST_ID', 'type': 'INTEGER', 'data_type': 'id'},
+                    {'name': 'CUST_NM', 'type': 'TEXT', 'data_type': 'person_name'},
+                    {'name': 'DEPT_CD', 'type': 'TEXT', 'data_type': 'department'},
+                    {'name': 'SAL_AMT', 'type': 'INTEGER', 'data_type': 'salary'}
+                ],
+                'rows': 3
+            }
+        )
+        
+        print(f"   SQLite database created with explicit data_type:")
+        sqlite_file = list(sqlite_result['sqlite_data'].keys())[0]
+        sqlite_data = sqlite_result['sqlite_data'][sqlite_file]
+        for table_name, table_info in sqlite_data.items():
+            print(f"     Table: {table_name}")
+            for i, row in enumerate(table_info['rows'][:3]):
+                print(f"       Row {i+1}: {row}")
         
         print("\n✅ All file generator tests completed!")
 

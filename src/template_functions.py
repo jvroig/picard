@@ -87,6 +87,12 @@ class TemplateFunctions:
             'csv_row': self._csv_row,
             'csv_column': self._csv_column,
             'csv_value': self._csv_value,
+            'csv_sum': self._csv_sum,
+            'csv_avg': self._csv_avg,
+            'csv_count': self._csv_count,
+            'csv_sum_where': self._csv_sum_where,
+            'csv_avg_where': self._csv_avg_where,
+            'csv_count_where': self._csv_count_where,
             'sqlite_query': self._sqlite_query,
             'sqlite_value': self._sqlite_value,
         }
@@ -321,6 +327,248 @@ class TemplateFunctions:
         
         return data[data_row_index][column_index]
     
+    # CSV Aggregation Functions
+    
+    def _csv_sum(self, args: List[str], target_file_path: str = None) -> float:
+        """Sum all numeric values in a column. Usage: {{csv_sum:column:path}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("csv_sum requires exactly 2 arguments: column_name, file_path")
+        
+        column = args[0]
+        path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_csv_data(path)
+        
+        if len(data) == 0:
+            raise TemplateFunctionError("CSV file is empty")
+        
+        headers = data[0]
+        try:
+            column_index = headers.index(column)
+        except ValueError:
+            raise TemplateFunctionError(f"Column '{column}' not found in CSV. Available headers: {headers}")
+        
+        total = 0
+        count = 0
+        for row in data[1:]:  # Skip header
+            if column_index < len(row) and row[column_index].strip():
+                try:
+                    total += float(row[column_index])
+                    count += 1
+                except ValueError:
+                    # Skip non-numeric values
+                    continue
+        
+        return total
+    
+    def _csv_avg(self, args: List[str], target_file_path: str = None) -> float:
+        """Average all numeric values in a column. Usage: {{csv_avg:column:path}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("csv_avg requires exactly 2 arguments: column_name, file_path")
+        
+        column = args[0]
+        path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_csv_data(path)
+        
+        if len(data) == 0:
+            raise TemplateFunctionError("CSV file is empty")
+        
+        headers = data[0]
+        try:
+            column_index = headers.index(column)
+        except ValueError:
+            raise TemplateFunctionError(f"Column '{column}' not found in CSV. Available headers: {headers}")
+        
+        total = 0
+        count = 0
+        for row in data[1:]:  # Skip header
+            if column_index < len(row) and row[column_index].strip():
+                try:
+                    total += float(row[column_index])
+                    count += 1
+                except ValueError:
+                    # Skip non-numeric values
+                    continue
+        
+        if count == 0:
+            raise TemplateFunctionError(f"No numeric values found in column '{column}'")
+        
+        return total / count
+    
+    def _csv_count(self, args: List[str], target_file_path: str = None) -> int:
+        """Count non-empty values in a column. Usage: {{csv_count:column:path}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("csv_count requires exactly 2 arguments: column_name, file_path")
+        
+        column = args[0]
+        path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_csv_data(path)
+        
+        if len(data) == 0:
+            raise TemplateFunctionError("CSV file is empty")
+        
+        headers = data[0]
+        try:
+            column_index = headers.index(column)
+        except ValueError:
+            raise TemplateFunctionError(f"Column '{column}' not found in CSV. Available headers: {headers}")
+        
+        count = 0
+        for row in data[1:]:  # Skip header
+            if column_index < len(row) and row[column_index].strip():
+                count += 1
+        
+        return count
+    
+    def _apply_filter(self, value: str, operator: str, filter_value: str) -> bool:
+        """Apply filter operation to compare two values."""
+        if not value.strip():
+            return False
+        
+        # Try numeric comparison first
+        try:
+            num_value = float(value)
+            num_filter = float(filter_value)
+            
+            if operator == '>':
+                return num_value > num_filter
+            elif operator == '<':
+                return num_value < num_filter
+            elif operator == '>=':
+                return num_value >= num_filter
+            elif operator == '<=':
+                return num_value <= num_filter
+            elif operator == '==':
+                return num_value == num_filter
+            elif operator == '!=':
+                return num_value != num_filter
+        except ValueError:
+            # Fall back to string comparison
+            pass
+        
+        # String operations
+        if operator == '==':
+            return value == filter_value
+        elif operator == '!=':
+            return value != filter_value
+        elif operator == 'contains':
+            return filter_value in value
+        elif operator == 'startswith':
+            return value.startswith(filter_value)
+        elif operator == 'endswith':
+            return value.endswith(filter_value)
+        elif operator in ['>', '<', '>=', '<=']:
+            # String comparison for non-numeric values
+            if operator == '>':
+                return value > filter_value
+            elif operator == '<':
+                return value < filter_value
+            elif operator == '>=':
+                return value >= filter_value
+            elif operator == '<=':
+                return value <= filter_value
+        
+        raise TemplateFunctionError(f"Unsupported operator: {operator}")
+    
+    def _csv_sum_where(self, args: List[str], target_file_path: str = None) -> float:
+        """Sum values in column where filter condition is met. Usage: {{csv_sum_where:column:filter_column:operator:value:path}}"""
+        if len(args) != 5:
+            raise TemplateFunctionError("csv_sum_where requires exactly 5 arguments: column, filter_column, operator, value, file_path")
+        
+        column, filter_column, operator, filter_value, path = args
+        path = self._resolve_target_file(path, target_file_path)
+        data = self._read_csv_data(path)
+        
+        if len(data) == 0:
+            raise TemplateFunctionError("CSV file is empty")
+        
+        headers = data[0]
+        try:
+            column_index = headers.index(column)
+            filter_column_index = headers.index(filter_column)
+        except ValueError as e:
+            raise TemplateFunctionError(f"Column not found in CSV. Available headers: {headers}. Error: {e}")
+        
+        total = 0
+        for row in data[1:]:  # Skip header
+            if (column_index < len(row) and filter_column_index < len(row) and 
+                row[column_index].strip() and row[filter_column_index].strip()):
+                
+                if self._apply_filter(row[filter_column_index], operator, filter_value):
+                    try:
+                        total += float(row[column_index])
+                    except ValueError:
+                        # Skip non-numeric values
+                        continue
+        
+        return total
+    
+    def _csv_avg_where(self, args: List[str], target_file_path: str = None) -> float:
+        """Average values in column where filter condition is met. Usage: {{csv_avg_where:column:filter_column:operator:value:path}}"""
+        if len(args) != 5:
+            raise TemplateFunctionError("csv_avg_where requires exactly 5 arguments: column, filter_column, operator, value, file_path")
+        
+        column, filter_column, operator, filter_value, path = args
+        path = self._resolve_target_file(path, target_file_path)
+        data = self._read_csv_data(path)
+        
+        if len(data) == 0:
+            raise TemplateFunctionError("CSV file is empty")
+        
+        headers = data[0]
+        try:
+            column_index = headers.index(column)
+            filter_column_index = headers.index(filter_column)
+        except ValueError as e:
+            raise TemplateFunctionError(f"Column not found in CSV. Available headers: {headers}. Error: {e}")
+        
+        total = 0
+        count = 0
+        for row in data[1:]:  # Skip header
+            if (column_index < len(row) and filter_column_index < len(row) and 
+                row[column_index].strip() and row[filter_column_index].strip()):
+                
+                if self._apply_filter(row[filter_column_index], operator, filter_value):
+                    try:
+                        total += float(row[column_index])
+                        count += 1
+                    except ValueError:
+                        # Skip non-numeric values
+                        continue
+        
+        if count == 0:
+            raise TemplateFunctionError(f"No numeric values found in column '{column}' matching filter criteria")
+        
+        return total / count
+    
+    def _csv_count_where(self, args: List[str], target_file_path: str = None) -> int:
+        """Count rows where filter condition is met. Usage: {{csv_count_where:column:filter_column:operator:value:path}}"""
+        if len(args) != 5:
+            raise TemplateFunctionError("csv_count_where requires exactly 5 arguments: column, filter_column, operator, value, file_path")
+        
+        column, filter_column, operator, filter_value, path = args
+        path = self._resolve_target_file(path, target_file_path)
+        data = self._read_csv_data(path)
+        
+        if len(data) == 0:
+            raise TemplateFunctionError("CSV file is empty")
+        
+        headers = data[0]
+        try:
+            column_index = headers.index(column)
+            filter_column_index = headers.index(filter_column)
+        except ValueError as e:
+            raise TemplateFunctionError(f"Column not found in CSV. Available headers: {headers}. Error: {e}")
+        
+        count = 0
+        for row in data[1:]:  # Skip header
+            if (column_index < len(row) and filter_column_index < len(row) and 
+                row[column_index].strip() and row[filter_column_index].strip()):
+                
+                if self._apply_filter(row[filter_column_index], operator, filter_value):
+                    count += 1
+        
+        return count
+    
     # SQLite-specific extraction functions
     
     def _sqlite_query(self, args: List[str], target_file_path: str = None) -> str:
@@ -436,7 +684,7 @@ def main():
         
         # Create test CSV file
         csv_file = temp_path / "test.csv"
-        csv_content = "name,age,city\nJohn,25,Boston\nAlice,30,Seattle\nBob,35,Denver"
+        csv_content = "name,age,salary,department,status\nJohn,25,50000,Engineering,active\nAlice,30,60000,Engineering,active\nBob,35,70000,Sales,inactive\nCarol,28,55000,Marketing,active"
         csv_file.write_text(csv_content)
         
         # Test template functions
@@ -448,11 +696,20 @@ def main():
             ("{{file_line_count:test.txt}}", "5"),
             ("{{file_word_count:test.txt}}", "12"),
             ("{{csv_cell:1:0:test.csv}}", "John"),
-            ("{{csv_cell:2:2:test.csv}}", "Seattle"),
-            ("{{csv_row:1:test.csv}}", "John,25,Boston"),
-            ("{{csv_column:name:test.csv}}", "John,Alice,Bob"),
+            ("{{csv_cell:3:4:test.csv}}", "inactive"),
+            ("{{csv_row:1:test.csv}}", "John,25,50000,Engineering,active"),
+            ("{{csv_column:name:test.csv}}", "John,Alice,Bob,Carol"),
             ("{{csv_value:0:age:test.csv}}", "25"),
-            ("{{csv_value:2:city:test.csv}}", "Denver"),
+            ("{{csv_value:2:department:test.csv}}", "Sales"),
+            # New aggregation functions
+            ("{{csv_sum:age:test.csv}}", "118.0"),
+            ("{{csv_avg:salary:test.csv}}", "58750.0"),
+            ("{{csv_count:name:test.csv}}", "4"),
+            # New filtered aggregation functions
+            ("{{csv_sum_where:salary:department:==:Engineering:test.csv}}", "110000.0"),
+            ("{{csv_avg_where:age:status:==:active:test.csv}}", "27.666666666666668"),
+            ("{{csv_count_where:name:department:contains:ing:test.csv}}", "3"),
+            ("{{csv_sum_where:salary:age:>:30:test.csv}}", "70000.0"),
         ]
         
         print("Testing template functions:")

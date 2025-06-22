@@ -208,6 +208,43 @@ class DataGenerator:
             day = random.randint(1, 28)  # Safe day range
             return f"{year}-{month:02d}-{day:02d}"
         
+        # New field types
+        elif field_type == 'status':
+            return random.choice(['active', 'inactive', 'completed', 'pending', 'cancelled', 'approved', 'rejected', 'processing'])
+        
+        elif field_type == 'department':
+            return random.choice(['Engineering', 'Sales', 'Marketing', 'Finance', 'HR', 'Operations', 'IT', 'Legal', 'Customer Service', 'Research'])
+        
+        elif field_type == 'region':
+            return random.choice(['North', 'South', 'East', 'West', 'Central', 'Northeast', 'Southeast', 'Southwest', 'Northwest', 'Midwest'])
+        
+        elif field_type == 'id':
+            return str(random.randint(1, 9999))
+        
+        elif field_type == 'experience':
+            return str(random.randint(0, 40))
+        
+        elif field_type == 'score':
+            return str(random.randint(60, 100))
+        
+        elif field_type == 'course':
+            courses = ['Math 101', 'Physics 201', 'Chemistry 301', 'Biology 101', 'Engineering 401', 
+                      'Computer Science 202', 'Statistics 301', 'Calculus 401', 'Data Science 501', 
+                      'Machine Learning 601', 'Economics 101', 'Psychology 201', 'History 101', 
+                      'Literature 301', 'Art 201']
+            return random.choice(courses)
+        
+        elif field_type == 'semester':
+            seasons = ['Spring', 'Summer', 'Fall', 'Winter']
+            years = ['2023', '2024', '2025']
+            return f"{random.choice(seasons)} {random.choice(years)}"
+        
+        elif field_type == 'category':
+            return random.choice(['Electronics', 'Clothing', 'Books', 'Home & Garden', 'Sports', 'Toys', 'Automotive', 'Health', 'Beauty', 'Food'])
+        
+        elif field_type == 'boolean':
+            return random.choice(['true', 'false', 'yes', 'no', '1', '0'])
+        
         elif field_type == 'lorem_word':
             lorem = LoremGenerator()
             return lorem.generate_words(1)
@@ -250,6 +287,29 @@ class DataGenerator:
             return 'phone'
         elif header_lower in ['date', 'created_date', 'updated_date']:
             return 'date'
+        # New field types
+        elif header_lower in ['status', 'state']:
+            return 'status'
+        elif header_lower in ['department', 'dept']:
+            return 'department'
+        elif header_lower in ['region', 'area', 'zone']:
+            return 'region'
+        elif header_lower.endswith('_id') or header_lower == 'id':
+            return 'id'
+        elif header_lower in ['experience', 'years_experience', 'years', 'exp']:
+            return 'experience'
+        elif header_lower in ['score', 'grade', 'rating', 'points']:
+            return 'score'
+        elif header_lower in ['course', 'subject', 'class']:
+            return 'course'
+        elif header_lower in ['semester', 'term', 'quarter']:
+            return 'semester'
+        elif header_lower in ['category', 'type', 'kind']:
+            return 'category'
+        elif header_lower in ['in_stock', 'available', 'active']:
+            return 'boolean'
+        elif header_lower in ['total', 'sum', 'revenue']:
+            return 'currency'
         
         # Partial matches
         elif 'name' in header_lower:
@@ -266,6 +326,22 @@ class DataGenerator:
             return 'phone'
         elif 'date' in header_lower:
             return 'date'
+        elif 'status' in header_lower:
+            return 'status'
+        elif 'department' in header_lower or 'dept' in header_lower:
+            return 'department'
+        elif 'region' in header_lower:
+            return 'region'
+        elif 'id' in header_lower:
+            return 'id'
+        elif 'experience' in header_lower or 'exp' in header_lower:
+            return 'experience'
+        elif 'score' in header_lower or 'grade' in header_lower:
+            return 'score'
+        elif 'course' in header_lower or 'subject' in header_lower:
+            return 'course'
+        elif 'category' in header_lower or 'type' in header_lower:
+            return 'category'
         
         # Default
         return 'lorem_words'
@@ -998,13 +1074,28 @@ def main():
         csv_gen = CSVFileGenerator(temp_dir)
         
         csv_result = csv_gen.generate(
-            target_file="test_data/people.csv",
-            content_spec={'headers': ['name', 'email', 'age', 'city'], 'rows': 5},
+            target_file="test_data/enhanced_test.csv",
+            content_spec={'headers': ['order_id', 'customer_name', 'amount', 'status', 'region', 'department', 'years_experience'], 'rows': 5},
             clutter_spec={'count': 2}
         )
         
         print(f"   Created files: {len(csv_result['files_created'])}")
         print(f"   CSV data rows: {len(csv_result['csv_data'][list(csv_result['csv_data'].keys())[0]])}")
+        
+        # Display sample of enhanced CSV data
+        csv_file = list(csv_result['csv_data'].keys())[0]
+        csv_data = csv_result['csv_data'][csv_file]
+        print(f"   Sample enhanced data:")
+        for i, row in enumerate(csv_data[:3]):  # Show first 3 rows
+            print(f"     Row {i}: {row}")
+        
+        # Test field type detection
+        print("\n   Enhanced field type detection:")
+        data_gen = DataGenerator()
+        for header in ['status', 'department', 'order_id', 'years_experience']:
+            field_type = data_gen.auto_detect_field_type(header)
+            sample = data_gen.generate_field(field_type)
+            print(f"     {header} → {field_type} → {sample}")
         
         # Test lorem content processing
         print("\n3. Testing lorem content processing:")

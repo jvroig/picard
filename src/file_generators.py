@@ -287,6 +287,8 @@ class DataGenerator:
             return 'phone'
         elif header_lower in ['date', 'created_date', 'updated_date']:
             return 'date'
+        elif header_lower in ['customer', 'customer_name', 'client', 'client_name']:
+            return 'person_name'
         # New field types
         elif header_lower in ['status', 'state']:
             return 'status'
@@ -326,6 +328,8 @@ class DataGenerator:
             return 'phone'
         elif 'date' in header_lower:
             return 'date'
+        elif 'customer' in header_lower or 'client' in header_lower:
+            return 'person_name'
         elif 'status' in header_lower:
             return 'status'
         elif 'department' in header_lower or 'dept' in header_lower:

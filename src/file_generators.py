@@ -595,14 +595,25 @@ class CSVFileGenerator(BaseFileGenerator):
         """Generate CSV content based on specification."""
         headers = content_spec.get('headers', ['name', 'email', 'age'])
         row_count = content_spec.get('rows', 10)
+        explicit_types = content_spec.get('header_types', None)
         
         # Start with headers
         csv_data = [headers]
         
-        # Auto-detect field types from headers
-        field_types = []
-        for header in headers:
-            field_types.append(self.data_generator.auto_detect_field_type(header))
+        # Use explicit types if provided, otherwise auto-detect field types from headers
+        if explicit_types:
+            # Validate that header_types length matches headers length
+            if len(explicit_types) != len(headers):
+                raise FileGeneratorError(
+                    f"header_types length ({len(explicit_types)}) must match headers length ({len(headers)}). "
+                    f"Headers: {headers}, Header types: {explicit_types}"
+                )
+            field_types = explicit_types
+        else:
+            # Auto-detect field types from headers (existing behavior)
+            field_types = []
+            for header in headers:
+                field_types.append(self.data_generator.auto_detect_field_type(header))
         
         # Generate data rows
         for _ in range(row_count):
@@ -1100,6 +1111,23 @@ def main():
             field_type = data_gen.auto_detect_field_type(header)
             sample = data_gen.generate_field(field_type)
             print(f"     {header} → {field_type} → {sample}")
+        
+        # Test new header_types feature
+        print("\n   Testing explicit header_types feature:")
+        explicit_result = csv_gen.generate(
+            target_file="test_data/enterprise_test.csv",
+            content_spec={
+                'headers': ['CUST_ID', 'CUST_NM', 'ORD_AMT', 'STAT_CD'], 
+                'header_types': ['id', 'person_name', 'price', 'status'],
+                'rows': 2
+            }
+        )
+        
+        enterprise_file = list(explicit_result['csv_data'].keys())[0]
+        enterprise_data = explicit_result['csv_data'][enterprise_file]
+        print(f"     Enterprise CSV with explicit types:")
+        for i, row in enumerate(enterprise_data[:3]):
+            print(f"       Row {i}: {row}")
         
         # Test lorem content processing
         print("\n3. Testing lorem content processing:")

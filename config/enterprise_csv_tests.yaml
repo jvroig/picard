@@ -1,0 +1,147 @@
+# Enhanced CSV Examples with header_types Feature
+# Demonstrates explicit data type specification for enterprise-style cryptic headers
+
+tests:
+  # Example 1: Enterprise system with cryptic column names
+  - question_id: 301
+    samples: 2
+    template: "What is the total amount from all orders in {{artifacts}}/{{qs_id}}/{{entity1}}/enterprise_data.csv? Reply only with the total."
+    scoring_type: "stringmatch"
+    expected_response: "{{csv_sum:ORD_AMT:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/enterprise_data.csv"
+      content:
+        headers: ["CUST_ID", "CUST_NM", "ORD_AMT", "STAT_CD", "RGN_CD"]
+        header_types: ["id", "person_name", "price", "status", "region"]
+        rows: 25
+
+  # Example 2: Legacy database with abbreviated headers
+  - question_id: 302
+    samples: 2
+    template: "How many active employees are in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}/hr_dump.csv?"
+    scoring_type: "stringmatch"
+    expected_response: "{{csv_count_where:EMP_ID:DEPT_CD:==:Engineering:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/hr_dump.csv"
+      content:
+        headers: ["EMP_ID", "EMP_NM", "DEPT_CD", "SAL_AMT", "STAT_FLG"]
+        header_types: ["id", "person_name", "department", "salary", "status"]
+        rows: 100
+
+  # Example 3: Financial system with mixed naming conventions
+  - question_id: 303
+    samples: 2
+    template: "What is the average transaction amount for completed transactions in {{artifacts}}/{{qs_id}}/{{entity1}}/transactions.csv?"
+    scoring_type: "stringmatch"
+    expected_response: "{{csv_avg_where:$AMT:STATUS_CODE:==:completed:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/transactions.csv"
+      content:
+        headers: ["TXN_ID", "CUST_REF", "$AMT", "STATUS_CODE", "PROC_DT"]
+        header_types: ["id", "person_name", "currency", "status", "date"]
+        rows: 200
+
+  # Example 4: CRM export with unclear headers
+  - question_id: 304
+    samples: 2
+    template: "Create a JSON summary of {{artifacts}}/{{qs_id}}/{{entity1}}/crm_export.csv showing total customers and average age."
+    scoring_type: "jsonmatch"
+    expected_response: '{"total_customers": {{csv_count:C_ID:TARGET_FILE}}, "average_age": {{csv_avg:AGE_YRS:TARGET_FILE}}}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/crm_export.csv"
+      content:
+        headers: ["C_ID", "C_NAME", "AGE_YRS", "LOC_CD", "REG_DT"]
+        header_types: ["id", "person_name", "age", "city", "date"]
+        rows: 75
+
+  # Example 5: Inventory system with product codes
+  - question_id: 305
+    samples: 2
+    template: "How many products in category 'Electronics' are in stock according to {{artifacts}}/{{qs_id}}/{{entity1}}/inventory.csv?"
+    scoring_type: "stringmatch"
+    expected_response: "{{csv_count_where:PROD_CD:CAT_NM:==:Electronics:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/inventory.csv"
+      content:
+        headers: ["PROD_CD", "PROD_DESC", "CAT_NM", "UNIT_PRC", "QTY_AVAIL"]
+        header_types: ["id", "product", "category", "price", "id"]
+        rows: 150
+
+  # Example 6: Mixed clear and cryptic headers (realistic scenario)
+  - question_id: 306
+    samples: 2
+    template: "What is the total revenue from the North region in {{artifacts}}/{{qs_id}}/{{entity1}}/sales_data.csv?"
+    scoring_type: "stringmatch"
+    expected_response: "{{csv_sum_where:$$REVENUE:territory:==:North:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/sales_data.csv"
+      content:
+        headers: ["order_number", "customer_name", "$$REVENUE", "territory", "sales_rep"]
+        header_types: ["id", "person_name", "currency", "region", "person_name"]
+        rows: 80
+
+  # Example 7: Compare implicit vs explicit typing
+  - question_id: 307
+    samples: 2
+    template: "Compare the customer counts between {{artifacts}}/{{qs_id}}/{{entity1}}/good_headers.csv and {{artifacts}}/{{qs_id}}/{{entity1}}/bad_headers.csv. Are they the same?"
+    scoring_type: "stringmatch"
+    expected_response: "yes"
+    sandbox_setup:
+      type: "create_files"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/comparison_setup.txt"
+      content:
+        type: "custom"
+        content: |
+          This test creates two CSV files:
+          1. good_headers.csv - with clear column names (uses implicit typing)
+          2. bad_headers.csv - with cryptic names but explicit types
+          Both should have the same data structure and count.
+
+  # Example 8: Financial data with special characters in headers
+  - question_id: 308
+    samples: 2
+    template: "What is the sum of all amounts where the status contains 'success' in {{artifacts}}/{{qs_id}}/{{entity1}}/payments.csv?"
+    scoring_type: "stringmatch"
+    expected_response: "{{csv_sum_where:$$$:STATUS#:contains:success:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/payments.csv"
+      content:
+        headers: ["ID#", "USER@", "$$$", "STATUS#", "DATE&TIME"]
+        header_types: ["id", "person_name", "currency", "status", "date"]
+        rows: 50
+
+  # Example 9: Test error handling with mismatched types
+  - question_id: 309
+    samples: 1
+    template: "This test should fail during file generation due to mismatched header_types length."
+    scoring_type: "stringmatch"
+    expected_response: "error"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/error_test.csv"
+      content:
+        headers: ["A", "B", "C"]  # 3 headers
+        header_types: ["id", "name"]  # 2 types - MISMATCH!
+        rows: 5
+
+  # Example 10: Enterprise integration scenario
+  - question_id: 310
+    samples: 2
+    template: "Generate a report JSON file at {{artifacts}}/{{qs_id}}/{{entity1}}/report.json analyzing {{artifacts}}/{{qs_id}}/{{entity1}}/system_dump.csv with total records, average salary, and department count."
+    scoring_type: "readfile_jsonmatch"
+    file_to_read: "{{artifacts}}/{{qs_id}}/{{entity1}}/report.json"
+    expected_content: '{"total_records": {{csv_count:E_ID:TARGET_FILE}}, "avg_salary": {{csv_avg:SAL:TARGET_FILE}}, "engineering_count": {{csv_count_where:E_ID:DEPT:==:Engineering:TARGET_FILE}}}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/system_dump.csv"
+      content:
+        headers: ["E_ID", "E_NAME", "DEPT", "SAL", "LOC", "HIRE_DT"]
+        header_types: ["id", "person_name", "department", "salary", "city", "date"]
+        rows: 120

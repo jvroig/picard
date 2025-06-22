@@ -1,8 +1,9 @@
 """
-Sandbox Reset System - Clean and restore test_artifacts directory
+Sandbox Reset System - Clean and restore artifacts directory
 
-Provides functions to reset the test_artifacts sandbox to a known state
-using zip file templates.
+Provides functions to reset the artifacts sandbox to a known state
+using zip file templates. Uses the configured artifacts directory
+from qwen_sense_config.py instead of hardcoded paths.
 """
 import zipfile
 import shutil
@@ -12,7 +13,7 @@ from typing import Optional
 
 
 class SandboxManager:
-    """Manages the test_artifacts sandbox directory."""
+    """Manages the artifacts sandbox directory using configured location."""
     
     def __init__(self, base_dir: str = None):
         """
@@ -26,7 +27,22 @@ class SandboxManager:
             base_dir = Path(__file__).parent.parent
         
         self.base_dir = Path(base_dir)
-        self.test_artifacts_dir = self.base_dir / "test_artifacts"
+        
+        # Use artifacts directory from config instead of hardcoded path
+        try:
+            import sys
+            # Add project root to path to import config
+            if str(self.base_dir) not in sys.path:
+                sys.path.insert(0, str(self.base_dir))
+            
+            import qwen_sense_config
+            self.test_artifacts_dir = Path(qwen_sense_config.get_artifacts_dir())
+        except Exception as e:
+            # Fallback to old behavior if config can't be loaded
+            print(f"⚠️  Warning: Could not load artifacts directory from config ({e})")
+            print(f"   Falling back to default: test_artifacts")
+            self.test_artifacts_dir = self.base_dir / "test_artifacts"
+        
         self.templates_dir = self.base_dir / "test_artifacts_templates"
     
     def list_templates(self) -> list:
@@ -178,6 +194,13 @@ def main():
     print("=" * 30)
     
     manager = SandboxManager()
+    
+    # Show configuration
+    print(f"🔧 Configuration:")
+    print(f"   Base directory: {manager.base_dir}")
+    print(f"   Artifacts directory: {manager.test_artifacts_dir}")
+    print(f"   Templates directory: {manager.templates_dir}")
+    print()
     
     # Show available templates
     templates = manager.list_templates()

@@ -1,5 +1,5 @@
 """
-Test Definition Parser for QwenSense LLM Benchmarking Tool
+Test Definition Parser for PICARD LLM Benchmarking Tool
 
 Handles loading and parsing of YAML test definitions into internal format.
 """
@@ -168,8 +168,8 @@ class TestDefinitionParser:
                 if str(project_root) not in sys.path:
                     sys.path.insert(0, str(project_root))
                 
-                import qwen_sense_config
-                artifacts_dir = qwen_sense_config.get_artifacts_dir()
+                import picard_config
+                artifacts_dir = picard_config.get_artifacts_dir()
             except Exception:
                 # Fallback to default if config can't be loaded
                 artifacts_dir = str(Path(__file__).parent.parent / "test_artifacts")
@@ -279,7 +279,7 @@ class TestDefinitionParser:
     
     def create_sample_definition_file(self, file_path: str):
         """Create a sample test definition file for reference."""
-        sample_content = """# QwenSense Test Definitions
+        sample_content = """# PICARD Test Definitions
 # Example test cases demonstrating different scoring types
 
 tests:

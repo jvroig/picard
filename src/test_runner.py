@@ -1,5 +1,5 @@
 """
-QwenSense Test Runner - Execute LLM benchmark tests
+PICARD Test Runner - Execute LLM benchmark tests
 
 Main command-line tool for running benchmark tests against LLMs.
 Generates precheck files, executes questions, collects responses, and organizes results.
@@ -23,14 +23,14 @@ from template_processor import TemplateProcessor
 
 
 class TestRunner:
-    """Main test runner for QwenSense benchmarks."""
+    """Main test runner for PICARD benchmarks."""
     
     def __init__(self, base_dir: str = None):
         """
         Initialize test runner.
         
         Args:
-            base_dir: Base directory of QwenSense project (optional)
+            base_dir: Base directory of PICARD project (optional)
         """
         if base_dir is None:
             base_dir = Path(__file__).parent.parent
@@ -79,7 +79,7 @@ class TestRunner:
     def run_benchmark(self, test_definitions_file: str = None, 
                      sandbox_template: str = "clean_sandbox",
                      max_retries: int = 3, retry_delay: float = 2.0,
-                     use_real_llm: bool = False, api_endpoint: str = None) -> Dict[str, str]:
+                     use_mock_llm: bool = False, api_endpoint: str = None) -> Dict[str, str]:
         """
         Run complete benchmark test.
         
@@ -88,7 +88,7 @@ class TestRunner:
             sandbox_template: Sandbox template to use
             max_retries: Maximum retry attempts for failed LLM calls
             retry_delay: Delay between retries in seconds
-            use_real_llm: Whether to use real LLM API or mock
+            use_mock_llm: Whether to use mock LLM API or not
             api_endpoint: Optional API endpoint for real LLM
             
         Returns:
@@ -96,13 +96,13 @@ class TestRunner:
         """
         # Import the appropriate LLM module based on parameter
         global execute_with_retry
-        if use_real_llm:
-            print("🔗 Using REAL LLM API")
-            from real_llm import execute_with_retry
-        else:
+        if use_mock_llm:
             print("🤖 Using MOCK LLM")
             from mock_llm import execute_with_retry
-        print("🚀 QwenSense Test Runner")
+        else:
+            print("🔗 Using REAL LLM API")
+            from real_llm import execute_with_retry
+        print("🚀 PICARD Test Runner")
         print("=" * 40)
         
         # Initialize test run
@@ -364,7 +364,7 @@ class TestRunner:
 def main():
     """Command-line interface for the test runner."""
     parser = argparse.ArgumentParser(
-        description='QwenSense LLM Benchmark Test Runner',
+        description='PICARD Framework Benchmark Test Runner',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Examples:
@@ -403,14 +403,14 @@ Examples:
     )
     
     parser.add_argument(
-        '--real-llm',
+        '--mock-llm',
         action='store_true',
-        help='Use real LLM API instead of mock (requires qwen-max-agentic server running)'
+        help='Use mock LLM API instead of real agentic server endpoint'
     )
     
     parser.add_argument(
         '--api-endpoint',
-        help='API endpoint for real LLM (default: http://localhost:5001/api/chat)'
+        help='API endpoint for agentic server (default: http://localhost:5002/api/chat)'
     )
     
     args = parser.parse_args()
@@ -423,7 +423,7 @@ Examples:
             sandbox_template=args.template,
             max_retries=args.retries,
             retry_delay=args.delay,
-            use_real_llm=args.real_llm,
+            use_mock_llm=args.mock_llm,
             api_endpoint=args.api_endpoint
         )
         

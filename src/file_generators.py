@@ -1,8 +1,7 @@
 """
-File Generator Infrastructure for QwenSense LLM Benchmarking Tool
+File Generator Infrastructure for the PICARD framework
 
-Handles dynamic file generation including lorem ipsum content and CSV data.
-Supports {{lorem:20l}}, {{lorem:5p}}, {{lorem:10s}} style content generation.
+Handles dynamic file generation including lorem ipsum content, CSV and sqlite3 data.
 """
 import csv
 import random
@@ -832,7 +831,7 @@ class SQLiteFileGenerator(BaseFileGenerator):
         return db_data
     
     def _map_column_type(self, data_type: str) -> str:
-        """Map QwenSense data types to SQLite types."""
+        """Map PICARD data types to SQLite types."""
         type_mapping = {
             'TEXT': 'TEXT',
             'INTEGER': 'INTEGER', 

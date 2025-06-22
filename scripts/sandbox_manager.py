@@ -3,7 +3,7 @@ Sandbox Reset System - Clean and restore artifacts directory
 
 Provides functions to reset the artifacts sandbox to a known state
 using zip file templates. Uses the configured artifacts directory
-from qwen_sense_config.py instead of hardcoded paths.
+from picard_config.py instead of hardcoded paths.
 """
 import zipfile
 import shutil
@@ -20,7 +20,7 @@ class SandboxManager:
         Initialize sandbox manager.
         
         Args:
-            base_dir: Base directory of the QwenSense project (optional)
+            base_dir: Base directory of the PICARD project (optional)
         """
         if base_dir is None:
             # Default to parent directory of this script
@@ -35,8 +35,8 @@ class SandboxManager:
             if str(self.base_dir) not in sys.path:
                 sys.path.insert(0, str(self.base_dir))
             
-            import qwen_sense_config
-            self.test_artifacts_dir = Path(qwen_sense_config.get_artifacts_dir())
+            import picard_config
+            self.test_artifacts_dir = Path(picard_config.get_artifacts_dir())
         except Exception as e:
             # Fallback to old behavior if config can't be loaded
             print(f"⚠️  Warning: Could not load artifacts directory from config ({e})")

@@ -1,8 +1,7 @@
 """
-Enhanced Template Processor for QwenSense LLM Benchmarking Tool
+Enhanced Template Processor for the PICARD framework
 
 Combines entity substitution with template function evaluation.
-Handles {{entity1}}, {{qs_id}}, and {{file_line:3:path}} style templates.
 """
 import sys
 from pathlib import Path

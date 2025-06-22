@@ -1,0 +1,37 @@
+# JSON Scoring Examples for QwenSense
+# Demonstrates the new jsonmatch and readfile_jsonmatch scoring types
+
+tests:
+  # Basic JSON Response Examples
+  - question_id: 201
+    samples: 2
+    template: "Convert this data to JSON format: name is John, age is 30, city is Boston. Reply with only the JSON."
+    scoring_type: "jsonmatch"
+    expected_response: '{"name": "John", "age": 30, "city": "Boston"}'
+
+  - question_id: 202
+    samples: 2
+    template: "From the CSV file {{artifacts}}/{{qs_id}}/{{entity1}}/customers.csv, return the first customer information as JSON. Reply with only the JSON."
+    scoring_type: "jsonmatch"
+    expected_response: '{"name": "{{csv_value:0:name:TARGET_FILE}}", "age": {{csv_value:0:age:TARGET_FILE}}, "city": "{{csv_value:0:city:TARGET_FILE}}"}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/customers.csv"
+      content:
+        headers: ["name", "age", "city"]
+        rows: 5
+
+    # Complex JSON Structure Examples
+  - question_id: 203
+    samples: 2
+    template: "Create a JSON report at {{artifacts}}/{{qs_id}}/{{entity1}}/analysis.json showing department statistics from {{artifacts}}/{{qs_id}}/{{entity1}}/employees.csv. Include total count and average salary per department."
+    scoring_type: "readfile_jsonmatch"
+    file_to_read: "{{artifacts}}/{{qs_id}}/{{entity1}}/analysis.json"
+    expected_content: '{"departments": {"Engineering": {"count": {{csv_count_where:name:department:==:Engineering:TARGET_FILE}}, "avg_salary": {{csv_avg_where:salary:department:==:Engineering:TARGET_FILE}}}, "Sales": {"count": {{csv_count_where:name:department:==:Sales:TARGET_FILE}}, "avg_salary": {{csv_avg_where:salary:department:==:Sales:TARGET_FILE}}}}}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/employees.csv"
+      content:
+        headers: ["name", "department", "salary", "years_experience"]
+        header_types: ["person_name", "department", "salary", "experience"]
+        rows: 20

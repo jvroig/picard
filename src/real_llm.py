@@ -1,7 +1,7 @@
 """
-Real LLM Integration for QwenSense - Connects to qwen-max-agentic API
+Real LLM Integration for PICARD - Connects to qwen-agentic-server API
 
-Replaces mock_llm.py with actual LLM API calls to your qwen engine.
+Replaces mock_llm.py with actual LLM API calls to the qwen-agentic-server engine.
 Handles streaming responses, tool execution loops, and conversation storage.
 """
 import requests
@@ -12,12 +12,12 @@ from typing import Dict, Any, List, Tuple
 from pathlib import Path
 
 
-class QwenLLMClient:
-    """Client for communicating with qwen-max-agentic API."""
+class LLMEngineClient:
+    """Client for communicating with qwen-agentic-server API."""
     
-    def __init__(self, api_endpoint: str = "http://localhost:5001/api/chat", timeout: int = 300):
+    def __init__(self, api_endpoint: str = "http://localhost:5002/api/chat", timeout: int = 300):
         """
-        Initialize the Qwen LLM client.
+        Initialize the LLM client.
         
         Args:
             api_endpoint: Full API endpoint URL (e.g., "http://example.com/api/chat")
@@ -143,9 +143,9 @@ def real_llm_execute(question: str, api_endpoint: str = None, **kwargs) -> Dict[
         Dictionary with response data (compatible with mock_llm format)
     """
     if api_endpoint:
-        client = QwenLLMClient(api_endpoint=api_endpoint)
+        client = LLMEngineClient(api_endpoint=api_endpoint)
     else:
-        client = QwenLLMClient()
+        client = LLMEngineClient()
     
     try:
         final_response, conversation_history, statistics = client.execute_question(
@@ -159,7 +159,7 @@ def real_llm_execute(question: str, api_endpoint: str = None, **kwargs) -> Dict[
             "execution_successful": True,
             "error_message": None,
             "timestamp": datetime.now().isoformat(),
-            "model_info": "qwen-max-agentic",
+            "model_info": "Unknown [BUG: need to retrieve from server]",
             "conversation_history": conversation_history,
             "statistics": statistics
         }
@@ -170,7 +170,7 @@ def real_llm_execute(question: str, api_endpoint: str = None, **kwargs) -> Dict[
             "execution_successful": False,
             "error_message": str(e),
             "timestamp": datetime.now().isoformat(),
-            "model_info": "qwen-max-agentic",
+            "model_info": "Unknown [BUG: need to retrieve from server]",
             "conversation_history": [{"role": "user", "content": question}],
             "statistics": {
                 "total_messages": 1,
@@ -236,7 +236,7 @@ def main():
     print("=" * 40)
     
     # Test basic execution
-    test_question = "Write 'Hello QwenSense!' to test.txt"
+    test_question = "Write 'Hello Jean-Luc!' to test.txt"
     print(f"📝 Test question: {test_question}")
     
     try:

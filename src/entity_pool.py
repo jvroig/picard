@@ -1,5 +1,5 @@
 """
-Entity Pool Management for QwenSense LLM Benchmarking Tool
+Entity Pool Management for the PICARD framework.
 
 Handles loading and random selection of entities for template substitution.
 """

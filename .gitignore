@@ -60,6 +60,7 @@ dmypy.json
 results/
 test_artifacts/*
 !test_artifacts/.gitkeep
+picard_config.py
 
 # Temporary files
 *.tmp

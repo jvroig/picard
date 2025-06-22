@@ -1,7 +1,10 @@
 """
-QwenSense Configuration File
+PICARD Configuration File - TEMPLATE
+***************************************************************************
+Duplicate as picard_config.py and replace values as needed for your machine
+***************************************************************************
 
-This file contains configuration settings for the QwenSense LLM benchmarking tool.
+This file contains configuration settings for the PICARD benchmarking framework.
 You can modify these settings to customize the behavior for your environment.
 """
 import os
@@ -11,15 +14,12 @@ from pathlib import Path
 # ARTIFACTS DIRECTORY CONFIGURATION
 # =============================================================================
 
-# Default artifacts directory - relative to this config file
-DEFAULT_ARTIFACTS_DIR = "/Users/jvroig/Dev/sandbox/bearnifacts"
-
-# You can override this by setting the QWENSENSE_ARTIFACTS_DIR environment variable
-# or by modifying the ARTIFACTS_DIR setting below
+# Default artifacts directory
+#DEFAULT_ARTIFACTS_DIR = "/Users/jvroig/Dev/sandbox/bearnifacts"
 
 # Primary artifacts directory configuration
 # This is where all test files will be generated and stored
-ARTIFACTS_DIR = os.environ.get('QWENSENSE_ARTIFACTS_DIR', DEFAULT_ARTIFACTS_DIR)
+ARTIFACTS_DIR = "/path/to/your/sandbox/folder"
 
 # Convert to Path object and resolve to absolute path
 ARTIFACTS_DIR = Path(ARTIFACTS_DIR).resolve()
@@ -90,7 +90,7 @@ def validate_config():
     # Check if artifacts directory is writable
     try:
         ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
-        test_file = ARTIFACTS_DIR / ".qwensense_test"
+        test_file = ARTIFACTS_DIR / ".picard_test"
         test_file.write_text("test")
         test_file.unlink()
     except Exception as e:
@@ -108,7 +108,7 @@ def validate_config():
 
 if __name__ == "__main__":
     # Print configuration summary when run directly
-    print("🔧 QwenSense Configuration")
+    print("🔧 PICARD Configuration")
     print("=" * 40)
     
     config = get_config_summary()

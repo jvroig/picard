@@ -1,8 +1,7 @@
 """
-Template Functions for QwenSense LLM Benchmarking Tool
+Template Functions for the PICARD framework
 
-Handles template function evaluation for file and CSV content extraction.
-Functions like {{file_line:3:path}}, {{csv_cell:row:column:path}}, etc.
+Handles template function evaluation for file, CSV and sqlite content extraction.
 """
 import csv
 import re

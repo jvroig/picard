@@ -1,8 +1,5 @@
 """
-Updated Scorer for QwenSense LLM Benchmarking Tool
-
-Works with new test directory structure (results/test_TIMESTAMP/).
-Supports scoring latest test, specific test, or all tests.
+Scorer module for the PICARD framework
 """
 import json
 import sys
@@ -14,7 +11,6 @@ from abc import ABC, abstractmethod
 
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent))
-
 
 class ScoringResult:
     """Represents the result of scoring a single question."""
@@ -52,7 +48,7 @@ class BaseScoringType(ABC):
         pass
 
 
-class QwenSenseScorer:
+class PicardScorer:
     """Main scorer that coordinates all scoring operations."""
     
     def __init__(self, base_dir: str = None):
@@ -71,8 +67,8 @@ class QwenSenseScorer:
             if str(base_dir) not in sys.path:
                 sys.path.insert(0, str(base_dir))
             
-            import qwen_sense_config
-            self.test_artifacts_dir = Path(qwen_sense_config.get_artifacts_dir())
+            import picard_config
+            self.test_artifacts_dir = Path(picard_config.get_artifacts_dir())
         except Exception:
             # Fallback to default if config can't be loaded
             self.test_artifacts_dir = base_dir / "test_artifacts"
@@ -340,7 +336,7 @@ class QwenSenseScorer:
 def main():
     """Command-line interface for the scorer."""
     parser = argparse.ArgumentParser(
-        description='QwenSense LLM Benchmark Scorer',
+        description='PICARD Framework Scorer',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Examples:
@@ -371,7 +367,7 @@ Examples:
     args = parser.parse_args()
     
     try:
-        scorer = QwenSenseScorer()
+        scorer = PicardScorer()
         
         if args.list:
             # List available tests

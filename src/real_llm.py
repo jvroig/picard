@@ -27,7 +27,7 @@ class LLMEngineClient:
         self.timeout = timeout
     
     def execute_question(self, question: str, temperature: float = 0.4, 
-                        max_tokens: int = 1000) -> Tuple[str, List[Dict[str, Any]], Dict[str, Any]]:
+                        max_tokens: int = 1000, max_llm_rounds: int = 20) -> Tuple[str, List[Dict[str, Any]], Dict[str, Any]]:
         """
         Execute a question against the LLM and return final response + full conversation.
         
@@ -92,6 +92,9 @@ class LLMEngineClient:
                             })
                             final_response = current_assistant_message  # Track latest assistant response
                             inference_rounds += 1
+                            if inference_rounds >= max_llm_rounds:
+                                break  # Exit the streaming loop
+
                         current_assistant_message = ""
                 
                 elif data['role'] == 'tool_call':
@@ -103,7 +106,7 @@ class LLMEngineClient:
                     })
                     tool_calls.append(tool_result)
                     
-                    # Extract tool name from result (basic parsing)
+                    #FIXME: Extract tool name from result (basic parsing)
                     if "Tool result:" in tool_result:
                         # This is a bit hacky but works for basic analysis
                         tools_used.add("tool_executed")  # Generic for now
@@ -151,7 +154,8 @@ def real_llm_execute(question: str, api_endpoint: str = None, **kwargs) -> Dict[
         final_response, conversation_history, statistics = client.execute_question(
             question=question,
             temperature=kwargs.get("temperature", 0.4),
-            max_tokens=kwargs.get("max_tokens", 1000)
+            max_tokens=kwargs.get("max_tokens", 1000),
+            max_llm_rounds=kwargs.get("max_llm_rounds", 20),
         )
         
         return {

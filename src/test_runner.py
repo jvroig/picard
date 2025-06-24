@@ -78,7 +78,7 @@ class TestRunner:
     
     def run_benchmark(self, test_definitions_file: str = None, 
                      sandbox_template: str = "clean_sandbox",
-                     max_retries: int = 3, retry_delay: float = 2.0,
+                     max_retries: int = 3, max_llm_rounds: int = 20, retry_delay: float = 2.0,
                      use_mock_llm: bool = False, api_endpoint: str = None) -> Dict[str, str]:
         """
         Run complete benchmark test.
@@ -87,6 +87,7 @@ class TestRunner:
             test_definitions_file: Path to test definitions YAML file
             sandbox_template: Sandbox template to use
             max_retries: Maximum retry attempts for failed LLM calls
+            max_llm_rounds: Maximum rounds of inference an LLM can attempt for each test item
             retry_delay: Delay between retries in seconds
             use_mock_llm: Whether to use mock LLM API or not
             api_endpoint: Optional API endpoint for real LLM
@@ -137,7 +138,7 @@ class TestRunner:
         
         # Execute questions against LLM
         print("🤖 Executing questions against LLM...")
-        responses, conversations = self._execute_questions(precheck_entries, max_retries, retry_delay, api_endpoint)
+        responses, conversations = self._execute_questions(precheck_entries, max_retries, max_llm_rounds, retry_delay, api_endpoint)
         
         # Save responses file
         responses_file = self.test_dir / "responses.jsonl"
@@ -248,12 +249,12 @@ class TestRunner:
         return sandbox_result
     
     def _execute_questions(self, precheck_entries: List[Dict[str, Any]], 
-                          max_retries: int, retry_delay: float, api_endpoint: str = None) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+                          max_retries: int, max_llm_rounds: int, retry_delay: float, api_endpoint: str = None) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """Execute all questions against the LLM."""
         responses = []
         conversations = []
         total_questions = len(precheck_entries)
-        
+            
         for i, entry in enumerate(precheck_entries, 1):
             question_id = entry['question_id']
             sample_number = entry['sample_number']
@@ -274,13 +275,17 @@ class TestRunner:
                 # Prepare execution parameters
                 execution_params = {
                     'max_retries': max_retries,
+                    'max_llm_rounds': max_llm_rounds,
                     'delay': retry_delay
                 }
+        
                 
                 # Add api_endpoint if provided
                 if api_endpoint:
                     execution_params['api_endpoint'] = api_endpoint
-                
+
+
+
                 result = execute_with_retry(question, **execution_params)
                 
                 # Create response entry (for scoring)
@@ -368,7 +373,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Examples:
-  python test_runner.py                                    # Run with defaults (mock LLM)
+  python test_runner.py                                    # Run with defaults
   python test_runner.py --template clean_sandbox           # Specify sandbox template
   python test_runner.py --definitions custom_tests.yaml   # Use custom test definitions
   python test_runner.py --retries 5 --delay 3.0          # Custom retry settings
@@ -387,7 +392,14 @@ Examples:
         default='clean_sandbox',
         help='Sandbox template to use (default: clean_sandbox)'
     )
-    
+
+    parser.add_argument(
+        '--max-llm-rounds',
+        type=int,
+        default=20,
+        help='Maximum rounds of inference an LLM can attempt for each test item.'
+    )
+
     parser.add_argument(
         '--retries', '-r',
         type=int,
@@ -422,6 +434,7 @@ Examples:
             test_definitions_file=args.definitions,
             sandbox_template=args.template,
             max_retries=args.retries,
+            max_llm_rounds=args.max_llm_rounds,
             retry_delay=args.delay,
             use_mock_llm=args.mock_llm,
             api_endpoint=args.api_endpoint

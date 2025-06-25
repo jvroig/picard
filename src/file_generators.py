@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from abc import ABC, abstractmethod
 
+from entity_pool import EntityPool
+
 
 class FileGeneratorError(Exception):
     """Raised when file generation fails."""
@@ -21,6 +23,9 @@ class LoremGenerator:
     """Generates lorem ipsum style content."""
     
     def __init__(self):
+        #Our entity pool, for tag gibberish
+        self.entity_pool = None
+
         # Lorem ipsum word pool - mix of classic and modern words
         self.words = [
             'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit',
@@ -157,7 +162,13 @@ class DataGenerator:
         
         elif field_type == 'last_name':
             return random.choice(self.last_names)
-        
+
+        elif field_type == 'entity_pool':
+            # Import entity pool and pick random word
+            if self.entity_pool is None:
+                self.entity_pool = EntityPool()
+            return self.entity_pool.get_random_word()
+
         elif field_type == 'email':
             first = random.choice(self.first_names).lower()
             last = random.choice(self.last_names).lower()

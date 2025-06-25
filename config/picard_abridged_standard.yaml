@@ -117,3 +117,41 @@ tests:
           - {name: "SAL_AMT", type: "INTEGER", data_type: "salary"}
           - {name: "STAT_FLG", type: "TEXT", data_type: "status"}
         rows: 50
+
+  - question_id: 302
+    samples: 2
+    template: "How many active employees are in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}/hr_dump.csv?"
+    scoring_type: "stringmatch"
+    expected_response: "{{csv_count_where:EMP_ID:DEPT_CD:==:Engineering:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/hr_dump.csv"
+      content:
+        headers: ["EMP_ID", "EMP_NM", "DEPT_CD", "SAL_AMT", "STAT_FLG"]
+        header_types: ["id", "person_name", "department", "salary", "status"]
+        rows: 100
+
+  - question_id: 303
+    samples: 2
+    template: "How many orders above 50000 are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db?"
+    scoring_type: "stringmatch"
+    expected_response: "{{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > 50000:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_sqlite"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}.db"
+      content:
+        tables:
+          - name: "enterprise_customers"
+            columns:
+              - {name: "CUST_ID", type: "auto_id"}
+              - {name: "CUST_NM", type: "TEXT", data_type: "person_name"}
+              - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
+              - {name: "LOC_CD", type: "TEXT", data_type: "region"}
+            rows: 20
+          - name: "enterprise_orders"
+            columns:
+              - {name: "ORD_ID", type: "auto_id"}
+              - {name: "CUST_REF", type: "INTEGER", foreign_key: "enterprise_customers.CUST_ID"}
+              - {name: "ORD_AMT", type: "INTEGER", data_type: "currency"}
+              - {name: "STAT_CD", type: "TEXT", data_type: "status"}
+            rows: 75

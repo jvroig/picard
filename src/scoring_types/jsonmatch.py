@@ -10,8 +10,10 @@ from pathlib import Path
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).parent))
 
 from scorer import BaseScoringType, ScoringResult
+from response_cleaner import ResponseCleaner
 
 
 class JsonMatchScorer(BaseScoringType):
@@ -20,7 +22,10 @@ class JsonMatchScorer(BaseScoringType):
     def score(self, precheck_entry, response_entry, test_artifacts_dir):
         """Score based on semantic JSON matching (structure and values)."""
         expected_response = precheck_entry.get('expected_response', '').strip()
-        actual_response = response_entry.get('response_text', '').strip()
+        raw_actual_response = response_entry.get('response_text', '')
+        
+        # Clean the response using shared utility (remove thinking tags, trim whitespace)
+        cleaned_actual_response = ResponseCleaner.clean_response(raw_actual_response)
         
         # Parse expected JSON
         try:
@@ -34,14 +39,16 @@ class JsonMatchScorer(BaseScoringType):
                 error_message=f"Invalid expected JSON: {e}",
                 details={
                     'expected_raw': expected_response,
-                    'actual_raw': actual_response,
+                    'actual_raw': raw_actual_response,
+                    'actual_cleaned': cleaned_actual_response,
+                    'thinking_tags_found': ResponseCleaner.has_thinking_tags(raw_actual_response),
                     'parse_error': 'expected_json'
                 }
             )
         
-        # Parse actual JSON
+        # Parse actual JSON (use cleaned response)
         try:
-            actual_json = json.loads(actual_response)
+            actual_json = json.loads(cleaned_actual_response)
         except json.JSONDecodeError as e:
             return ScoringResult(
                 question_id=precheck_entry['question_id'],
@@ -51,8 +58,10 @@ class JsonMatchScorer(BaseScoringType):
                 error_message=f"LLM response is not valid JSON: {e}",
                 details={
                     'expected_raw': expected_response,
-                    'actual_raw': actual_response,
+                    'actual_raw': raw_actual_response,
+                    'actual_cleaned': cleaned_actual_response,
                     'expected_json': expected_json,
+                    'thinking_tags_found': ResponseCleaner.has_thinking_tags(raw_actual_response),
                     'parse_error': 'actual_json'
                 }
             )
@@ -62,9 +71,11 @@ class JsonMatchScorer(BaseScoringType):
         
         details = {
             'expected_raw': expected_response,
-            'actual_raw': actual_response,
+            'actual_raw': raw_actual_response,
+            'actual_cleaned': cleaned_actual_response,
             'expected_json': expected_json,
             'actual_json': actual_json,
+            'thinking_tags_found': ResponseCleaner.has_thinking_tags(raw_actual_response),
             'comparison_method': 'semantic_json_match'
         }
         

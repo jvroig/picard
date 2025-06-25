@@ -1,0 +1,119 @@
+#PICARD Abridged Standard Template (PEST)
+# Example test cases demonstrating different scoring types and scenarios that are possible to model
+
+tests:
+
+  #SECTION 100: Basic Tests
+  
+  - question_id: 101
+    samples: 10
+    template: "Create these files: {{entity1}}.log and {{entity2}}.config in the {{artifacts}}/{{entity3}} directory"
+    scoring_type: "files_exist"
+    files_to_check:
+      - "{{artifacts}}/{{entity3}}/{{entity1}}.log"
+      - "{{artifacts}}/{{entity3}}/{{entity2}}.config"
+  
+  - question_id: 102
+    samples: 10
+    template: "Respond only with these three words in the given order: {{entity1}} {{entity2}} {{entity3}}"
+    scoring_type: "stringmatch"
+    expected_response: "{{entity1}} {{entity2}} {{entity3}}"
+  
+
+  - question_id: 103
+    samples: 10
+    template: "Create this directory structure inside the folder `{{artifacts}}`: {{expected_structure}}"
+    scoring_type: "directory_structure"
+    expected_structure:
+      - "{{artifacts}}/{{entity1}}/"
+      - "{{artifacts}}/{{entity1}}/{{entity2}}/"
+      - "{{artifacts}}/{{entity1}}/logs/"
+      - "{{artifacts}}/{{entity1}}/logs/{{entity3}}.log"
+      - "{{artifacts}}/{{entity4}}/"
+      - "{{artifacts}}/{{entity4}}/README.md"
+
+  - question_id: 104
+    samples: 10
+    template: "Read the file {{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt and tell me what line 34 says. Reply only with the contents of that line."
+    scoring_type: "stringmatch"
+    expected_response: "{{file_line:34:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_files"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt"
+      content:
+        type: "lorem_lines"
+        count: 100
+
+  - question_id: 105
+    samples: 10
+    template: "Read the file {{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt and tell me what 35th word is. Reply only with the word."
+    scoring_type: "stringmatch"
+    expected_response: "{{file_word:5:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_files"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt"
+      content:
+        type: "lorem_lines"
+        count: 100
+
+  ############################
+  #Section 200: CSV processing
+  - question_id: 201
+    samples: 10
+    template: "What is the name of the 67th person in {{artifacts}}/{{qs_id}}/{{entity1}}/people.csv? Reply only with the name."
+    scoring_type: "stringmatch"
+    expected_response: "{{csv_value:67:name:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/people.csv" 
+      content:
+        headers: ["name", "age", "city"]
+        rows: 100
+
+  - question_id: 202
+    samples: 10
+    template: "Create a JSON summary of {{artifacts}}/{{qs_id}}/{{entity1}}/crm_export.csv showing total customers and average age. Respond only with the JSON output containing `total_customers` and `average_age`."
+    scoring_type: "jsonmatch"
+    expected_response: '{"total_customers": {{csv_count:C_ID:TARGET_FILE}}, "average_age": {{csv_avg:AGE_YRS:TARGET_FILE}}}'
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/crm_export.csv"
+      content:
+        headers: ["C_ID", "C_NAME", "AGE_YRS", "LOC_CD", "REG_DT"]
+        header_types: ["id", "person_name", "age", "city", "date"]
+        rows: 75
+
+  - question_id: 203
+    samples: 10
+    template: "What is the total amount from all orders in {{artifacts}}/{{qs_id}}/{{entity1}}/enterprise_data.csv? Write down your answer in a file called {{artifacts}}/{{qs_id}}/answer.txt. The file should contain ONLY the final answer, nothing else, as it will be read by other systems and they only execpt to see an amount inside."
+    scoring_type: "readfile_stringmatch"
+    file_to_read: "{{artifacts}}/{{qs_id}}/answer.txt"
+    expected_content: "{{csv_sum:ORD_AMT:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/enterprise_data.csv"
+      content:
+        headers: ["CUST_ID", "CUST_NM", "ORD_AMT", "STAT_CD", "RGN_CD"]
+        header_types: ["id", "person_name", "price", "status", "region"]
+        rows: 25
+
+  #################################
+  #Section 300: Database processing
+
+  - question_id: 301
+    samples: 2
+    template: "Query the database {{artifacts}}/{{qs_id}}/{{entity1}}.db and find the total salary for all Engineering department employees. Reply only with the total."
+    scoring_type: "stringmatch"
+    expected_response: "{{sqlite_query:SELECT SUM(SAL_AMT) FROM enterprise_employees WHERE DEPT_CD = 'Engineering':TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_sqlite"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}.db"
+      content:
+        table_name: "enterprise_employees"
+        columns:
+          - {name: "EMP_ID", type: "auto_id"}
+          - {name: "EMP_NM", type: "TEXT", data_type: "person_name"}
+          - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
+          - {name: "SAL_AMT", type: "INTEGER", data_type: "salary"}
+          - {name: "STAT_FLG", type: "TEXT", data_type: "status"}
+        rows: 50

@@ -1,7 +1,11 @@
-# Example test cases demonstrating different scoring types
+#PICARD Extended Standard Template (PEST)
+# Example test cases demonstrating different scoring types and scenarios that are possible to model
 
 tests:
-  - question_id: 1
+
+  #SECTION 100: Basic Tests
+
+  - question_id: 101
     samples: 2
     template: "Write the text 'Hello {{entity1}}!' inside this file: {{artifacts}}/{{entity2}}.txt"
     scoring_type: "readfile_stringmatch"

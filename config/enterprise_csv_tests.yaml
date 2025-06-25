@@ -86,24 +86,7 @@ tests:
         header_types: ["id", "person_name", "currency", "region", "person_name"]
         rows: 80
 
-  # Example 7: Compare implicit vs explicit typing
-  - question_id: 307
-    samples: 2
-    template: "Compare the customer counts between {{artifacts}}/{{qs_id}}/{{entity1}}/good_headers.csv and {{artifacts}}/{{qs_id}}/{{entity1}}/bad_headers.csv. Are they the same?"
-    scoring_type: "stringmatch"
-    expected_response: "yes"
-    sandbox_setup:
-      type: "create_files"
-      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/comparison_setup.txt"
-      content:
-        type: "custom"
-        content: |
-          This test creates two CSV files:
-          1. good_headers.csv - with clear column names (uses implicit typing)
-          2. bad_headers.csv - with cryptic names but explicit types
-          Both should have the same data structure and count.
-
-  # Example 8: Financial data with special characters in headers
+  # Example 7: Financial data with special characters in headers
   - question_id: 308
     samples: 2
     template: "What is the sum of all amounts where the status contains 'success' in {{artifacts}}/{{qs_id}}/{{entity1}}/payments.csv?"
@@ -116,20 +99,6 @@ tests:
         headers: ["ID#", "USER@", "$$$", "STATUS#", "DATE&TIME"]
         header_types: ["id", "person_name", "currency", "status", "date"]
         rows: 50
-
-  # Example 9: Test error handling with mismatched types
-  - question_id: 309
-    samples: 1
-    template: "This test should fail during file generation due to mismatched header_types length."
-    scoring_type: "stringmatch"
-    expected_response: "error"
-    sandbox_setup:
-      type: "create_csv"
-      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/error_test.csv"
-      content:
-        headers: ["A", "B", "C"]  # 3 headers
-        header_types: ["id", "name"]  # 2 types - MISMATCH!
-        rows: 5
 
   # Example 10: Enterprise integration scenario
   - question_id: 310

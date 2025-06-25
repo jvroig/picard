@@ -44,7 +44,37 @@ class EntityPool:
             raise ValueError(f"No entities found in pool file: {self.pool_file_path}")
         
         return entities
-    
+
+    #FUTURE, for multiple semantic entity pools
+    # def _substitute_pattern(self, text: str, pattern: str, generator_method, used_entities: dict, prefix: str) -> str:
+    #     """
+    #     Substitute a specific pattern in text using the given generator method.
+        
+    #     Args:
+    #         text: Text to process
+    #         pattern: Regex pattern to find (e.g., r'\{\{name(\d+)\}\}')
+    #         generator_method: Method to generate values (e.g., self.get_random_name)
+    #         used_entities: Dictionary to track used entities (modified in place)
+    #         prefix: Prefix for entity keys (e.g., 'name', 'company')
+        
+    #     Returns:
+    #         Text with pattern substituted
+    #     """
+    #     matches = re.findall(pattern, text)
+        
+    #     for num in matches:
+    #         entity_key = f'{prefix}{num}'
+            
+    #         # Generate value if not already used
+    #         if entity_key not in used_entities:
+    #             used_entities[entity_key] = generator_method()
+            
+    #         # Replace the placeholder with the value
+    #         placeholder = f'{{{{{prefix}{num}}}}}'
+    #         text = text.replace(placeholder, used_entities[entity_key])
+        
+    #     return text
+
     def get_random_entity(self) -> str:
         """Get a random entity from the pool."""
         return random.choice(self.entities)
@@ -71,6 +101,18 @@ class EntityPool:
         entity_pattern = r'\{\{(entity\d+)\}\}'
         entity_matches = re.findall(entity_pattern, template)
         
+        #FUTURE: For semantic entity pools, we can do something like:
+        # patterns = {
+        #     r'\{\{entity(\d+)\}\}': 'entity',
+        #     r'\{\{name(\d+)\}\}': 'name', 
+        #     r'\{\{company(\d+)\}\}': 'company',
+        #     r'\{\{city(\d+)\}\}': 'city'
+        # }
+        
+        # for pattern, pool_type in patterns.items():
+        #     template = self._substitute_pattern(template, pattern, pool_type)
+
+
         # Check if we have expected_structure placeholder
         has_expected_structure = '{{expected_structure}}' in template
         

@@ -100,8 +100,8 @@ tests:
   #################################
   #Section 300: Database processing
 
-  - question_id: 301
-    samples: 2
+  - question_d: 301
+    samples: 10
     template: "In the database {{artifacts}}/{{qs_id}}/{{entity1}}.db, find the total salary for all Engineering department employees. Reply only with the total."
     scoring_type: "stringmatch"
     expected_response: "{{sqlite_query:SELECT SUM(SAL_AMT) FROM enterprise_employees WHERE DEPT_CD = 'Engineering':TARGET_FILE}}"
@@ -119,7 +119,7 @@ tests:
         rows: 50
 
   - question_id: 302
-    samples: 2
+    samples: 10
     template: "How many active employees are in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}/hr_dump.csv? After you determine the answer, REPLY ONLY WITH THE ANSWER, no other comments, decorations, or punctuations."
     scoring_type: "stringmatch"
     expected_response: "{{csv_count_where:EMP_ID:DEPT_CD:==:Engineering:TARGET_FILE}}"
@@ -132,7 +132,7 @@ tests:
         rows: 100
 
   - question_id: 303
-    samples: 2
+    samples: 10
     template: "How many orders above 50000 are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db? Create a JSON file {{artifacts}}/{{qs_id}}/big_orders_count.json that contains the answer using 'num_big_orders' as key."
     scoring_type: "readfile_jsonmatch"
     file_to_read: "{{artifacts}}/{{qs_id}}/big_orders_count.json"

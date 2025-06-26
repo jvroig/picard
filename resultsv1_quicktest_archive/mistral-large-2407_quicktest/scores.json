@@ -1,0 +1,1286 @@
+{
+  "metadata": {
+    "test_id": "test_20250626_143646",
+    "timestamp": "20250626_151243",
+    "total_questions": 80,
+    "correct_answers": 7,
+    "accuracy_percentage": 8.75
+  },
+  "by_question": {
+    "301": {
+      "correct": 4,
+      "total": 20,
+      "scoring_type": "readfile_jsonmatch"
+    },
+    "302": {
+      "correct": 3,
+      "total": 20,
+      "scoring_type": "readfile_stringmatch"
+    },
+    "303": {
+      "correct": 0,
+      "total": 20,
+      "scoring_type": "jsonmatch"
+    },
+    "304": {
+      "correct": 0,
+      "total": 20,
+      "scoring_type": "stringmatch"
+    }
+  },
+  "by_scoring_type": {
+    "readfile_jsonmatch": {
+      "correct": 4,
+      "total": 20
+    },
+    "readfile_stringmatch": {
+      "correct": 3,
+      "total": 20
+    },
+    "jsonmatch": {
+      "correct": 0,
+      "total": 20
+    },
+    "stringmatch": {
+      "correct": 0,
+      "total": 20
+    }
+  },
+  "detailed_results": [
+    {
+      "question_id": 301,
+      "sample_number": 1,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s1/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s1/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 4}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224092"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 2,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s2/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 4}",
+        "actual_content": "{\n    \"num_big_orders\": 4\n}",
+        "expected_json": {
+          "num_big_orders": 4
+        },
+        "actual_json": {
+          "num_big_orders": 4
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T15:12:43.224170"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 3,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s3/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s3/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224202"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 4,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s4/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s4/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 1}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224239"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 5,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s5/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s5/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 2}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224278"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 6,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s6/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 4}",
+        "actual_content": "{\"num_big_orders\": 4}",
+        "expected_json": {
+          "num_big_orders": 4
+        },
+        "actual_json": {
+          "num_big_orders": 4
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T15:12:43.224345"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 7,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s7/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 3}",
+        "actual_content": "{\"num_big_orders\": 3}",
+        "expected_json": {
+          "num_big_orders": 3
+        },
+        "actual_json": {
+          "num_big_orders": 3
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T15:12:43.224402"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 8,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s8/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s8/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224435"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 9,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s9/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s9/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 1}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224466"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 10,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s10/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "actual_content": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T15:12:43.224524"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 11,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s11/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s11/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224555"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 12,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s12/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s12/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224592"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 13,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s13/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s13/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 10}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224623"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 14,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s14/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s14/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 6}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224652"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 15,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s15/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s15/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 1}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224681"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 16,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s16/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s16/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224716"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 17,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s17/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 1}",
+        "actual_content": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 1, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T15:12:43.224780"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 18,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s18/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s18/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224814"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 19,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s19/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s19/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 4}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224844"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 20,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s20/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s20/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 5}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224872"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 1,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s1/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s1/big_orders_count.txt",
+        "expected_content": "6",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224909"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 2,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s2/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s2/big_orders_count.txt",
+        "expected_content": "5",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224937"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 3,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s3/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s3/big_orders_count.txt",
+        "expected_content": "5",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224964"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 4,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s4/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s4/big_orders_count.txt",
+        "expected_content": "9",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.224993"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 5,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s5/big_orders_count.txt",
+        "expected_content": "3",
+        "actual_content": "3",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-26T15:12:43.225044"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 6,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s6/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s6/big_orders_count.txt",
+        "expected_content": "6",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225071"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 7,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s7/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s7/big_orders_count.txt",
+        "expected_content": "3",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225100"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 8,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File content mismatch. Expected '8', got 'SQLite error executing query: no such table: orders'",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s8/big_orders_count.txt",
+        "expected_content": "8",
+        "actual_content": "SQLite error executing query: no such table: orders",
+        "file_exists": true,
+        "content_match": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225154"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 9,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s9/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s9/big_orders_count.txt",
+        "expected_content": "2",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225186"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 10,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s10/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s10/big_orders_count.txt",
+        "expected_content": "6",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225215"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 11,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s11/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s11/big_orders_count.txt",
+        "expected_content": "2",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225243"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 12,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File content mismatch. Expected '4', got 'SQLite error executing query: no such table: orders'",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s12/big_orders_count.txt",
+        "expected_content": "4",
+        "actual_content": "SQLite error executing query: no such table: orders",
+        "file_exists": true,
+        "content_match": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225295"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 13,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s13/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s13/big_orders_count.txt",
+        "expected_content": "3",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225332"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 14,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s14/big_orders_count.txt",
+        "expected_content": "7",
+        "actual_content": "7",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-26T15:12:43.225382"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 15,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s15/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s15/big_orders_count.txt",
+        "expected_content": "3",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225409"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 16,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s16/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s16/big_orders_count.txt",
+        "expected_content": "4",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225439"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 17,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File content mismatch. Expected '1', got 'SQLite error executing query: no such table: orders'",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s17/big_orders_count.txt",
+        "expected_content": "1",
+        "actual_content": "SQLite error executing query: no such table: orders",
+        "file_exists": true,
+        "content_match": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225491"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 18,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s18/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s18/big_orders_count.txt",
+        "expected_content": "2",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225523"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 19,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s19/big_orders_count.txt",
+        "expected_content": "1",
+        "actual_content": "1",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-26T15:12:43.225569"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 20,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s20/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s20/big_orders_count.txt",
+        "expected_content": "0",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T15:12:43.225601"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 1,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 2}",
+        "actual_raw": "It seems there was an error executing the query because the table \"Orders\" does not exist in the database. Please verify the table name and try again.",
+        "actual_cleaned": "It seems there was an error executing the query because the table \"Orders\" does not exist in the database. Please verify the table name and try again.",
+        "expected_json": {
+          "num_big_orders": 2
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.225862"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 2,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 4}",
+        "actual_raw": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 4
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.225915"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 3,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 2}",
+        "actual_raw": "```json\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```json\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 2
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.225964"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 4,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 4}",
+        "actual_raw": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 4
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226006"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 5,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 1}",
+        "actual_raw": "The query failed because the table \"orders\" does not exist in the database.",
+        "actual_cleaned": "The query failed because the table \"orders\" does not exist in the database.",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226052"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 6,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 2}",
+        "actual_raw": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 2
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226091"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 7,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "```json\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```json\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226136"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 8,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 8}",
+        "actual_raw": "```json\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```json\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 8
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226173"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 9,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226217"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 10,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 1}",
+        "actual_raw": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226254"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 11,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 3}",
+        "actual_raw": "```json\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```json\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 3
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226297"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 12,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 6}",
+        "actual_raw": "```json\n{\n    \"num_big_orders\": 6\n}\n```",
+        "actual_cleaned": "```json\n{\n    \"num_big_orders\": 6\n}\n```",
+        "expected_json": {
+          "num_big_orders": 6
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226339"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 13,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "```json\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```json\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226379"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 14,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226420"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 15,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226464"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 16,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 11}",
+        "actual_raw": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 11
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226503"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 17,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 2}",
+        "actual_raw": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 2
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226544"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 18,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "actual_cleaned": "```\n{\n    \"num_big_orders\": 0\n}\n```",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226590"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 19,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 1}",
+        "actual_raw": "The query failed because the table \"Orders\" does not exist in the database. Please check the table name and try again.",
+        "actual_cleaned": "The query failed because the table \"Orders\" does not exist in the database. Please check the table name and try again.",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226628"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 20,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "LLM response is not valid JSON: Expecting value: line 1 column 3 (char 2)",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 2}",
+        "actual_raw": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q303_s20/bright.db\",\n        \"query\": \"SELECT COUNT(*) FROM orders WHERE amount > 50000 AND customer_id IN (SELECT id FROM customers WHERE department = 'Engineering')\"\n    }\n}\n```\n",
+        "actual_cleaned": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q303_s20/bright.db\",\n        \"query\": \"SELECT COUNT(*) FROM orders WHERE amount > 50000 AND customer_id IN (SELECT id FROM customers WHERE department = 'Engineering')\"\n    }\n}\n```",
+        "expected_json": {
+          "num_big_orders": 2
+        },
+        "thinking_tags_found": false,
+        "parse_error": "actual_json"
+      },
+      "timestamp": "2025-06-26T15:12:43.226655"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 1,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '3', got '```SQLite error executing query: no such table: orders```'",
+      "details": {
+        "expected": "3",
+        "actual_raw": "```SQLite error executing query: no such table: orders```",
+        "actual_cleaned": "```SQLite error executing query: no such table: orders```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226676"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 2,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '6', got '[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s2/wolf.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE amount > 50000\"\n    }\n}\n```'",
+      "details": {
+        "expected": "6",
+        "actual_raw": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s2/wolf.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE amount > 50000\"\n    }\n}\n```",
+        "actual_cleaned": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s2/wolf.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE amount > 50000\"\n    }\n}\n```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226698"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 3,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '1', got '[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s3/loud.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE purchase_amount > 50000 AND department = 'Engineering'\"\n    }\n}\n```'",
+      "details": {
+        "expected": "1",
+        "actual_raw": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s3/loud.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE purchase_amount > 50000 AND department = 'Engineering'\"\n    }\n}\n```",
+        "actual_cleaned": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s3/loud.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE purchase_amount > 50000 AND department = 'Engineering'\"\n    }\n}\n```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226724"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 4,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '5', got '```SQLite error executing query: no such table: orders```'",
+      "details": {
+        "expected": "5",
+        "actual_raw": "```SQLite error executing query: no such table: orders```",
+        "actual_cleaned": "```SQLite error executing query: no such table: orders```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226749"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 5,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '3', got '```SQLite error executing query: no such table: orders```'",
+      "details": {
+        "expected": "3",
+        "actual_raw": "```SQLite error executing query: no such table: orders```",
+        "actual_cleaned": "```SQLite error executing query: no such table: orders```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226768"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 6,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '4', got '[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_command\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s6/dolphin.db\",\n        \"command\": \"PRAGMA table_info(enterprise_orders);\"\n    }\n}\n```'",
+      "details": {
+        "expected": "4",
+        "actual_raw": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_command\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s6/dolphin.db\",\n        \"command\": \"PRAGMA table_info(enterprise_orders);\"\n    }\n}\n```",
+        "actual_cleaned": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_command\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s6/dolphin.db\",\n        \"command\": \"PRAGMA table_info(enterprise_orders);\"\n    }\n}\n```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226788"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 7,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '2', got '[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s7/mystery.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE amount > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```'",
+      "details": {
+        "expected": "2",
+        "actual_raw": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s7/mystery.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE amount > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```",
+        "actual_cleaned": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s7/mystery.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE amount > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226815"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 8,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '10', got '[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s8/light.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE order_amount > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```'",
+      "details": {
+        "expected": "10",
+        "actual_raw": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s8/light.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE order_amount > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```",
+        "actual_cleaned": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s8/light.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE order_amount > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226840"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 9,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '0', got '```SQLite error executing query: no such table: orders```'",
+      "details": {
+        "expected": "0",
+        "actual_raw": "```SQLite error executing query: no such table: orders```",
+        "actual_cleaned": "```SQLite error executing query: no such table: orders```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226865"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 10,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '10', got '```SQLite error executing query: no such table: orders```'",
+      "details": {
+        "expected": "10",
+        "actual_raw": "```SQLite error executing query: no such table: orders```",
+        "actual_cleaned": "```SQLite error executing query: no such table: orders```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226884"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 11,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '4', got 'The query failed because the table \"orders\" does not exist in the database.'",
+      "details": {
+        "expected": "4",
+        "actual_raw": "The query failed because the table \"orders\" does not exist in the database.",
+        "actual_cleaned": "The query failed because the table \"orders\" does not exist in the database.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226903"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 12,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '2', got '[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s12/black.db\",\n        \"query\": \"PRAGMA table_info(enterprise_orders)\"\n    }\n}\n```'",
+      "details": {
+        "expected": "2",
+        "actual_raw": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s12/black.db\",\n        \"query\": \"PRAGMA table_info(enterprise_orders)\"\n    }\n}\n```",
+        "actual_cleaned": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s12/black.db\",\n        \"query\": \"PRAGMA table_info(enterprise_orders)\"\n    }\n}\n```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226923"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 13,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '1', got 'SQLite error executing query: no such table: orders'",
+      "details": {
+        "expected": "1",
+        "actual_raw": "SQLite error executing query: no such table: orders",
+        "actual_cleaned": "SQLite error executing query: no such table: orders",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226948"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 14,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '0', got '```SQLite error executing query: no such table: orders```'",
+      "details": {
+        "expected": "0",
+        "actual_raw": "```SQLite error executing query: no such table: orders```",
+        "actual_cleaned": "```SQLite error executing query: no such table: orders```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226967"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 15,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '4', got '[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s15/framework.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE order_value > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```'",
+      "details": {
+        "expected": "4",
+        "actual_raw": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s15/framework.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE order_value > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```",
+        "actual_cleaned": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s15/framework.db\",\n        \"query\": \"SELECT COUNT(*) FROM enterprise_orders WHERE order_value > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.226987"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 16,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '1', got '```SQLite error executing query: no such table: orders```'",
+      "details": {
+        "expected": "1",
+        "actual_raw": "```SQLite error executing query: no such table: orders```",
+        "actual_cleaned": "```SQLite error executing query: no such table: orders```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.227012"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 17,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '1', got 'It seems there is an error because the table \"Orders\" does not exist in the database. Please ensure the table name is correct and try again.'",
+      "details": {
+        "expected": "1",
+        "actual_raw": "It seems there is an error because the table \"Orders\" does not exist in the database. Please ensure the table name is correct and try again.",
+        "actual_cleaned": "It seems there is an error because the table \"Orders\" does not exist in the database. Please ensure the table name is correct and try again.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.227031"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 18,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '9', got '```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s18/golden.db\",\n        \"query\": \"SELECT COUNT(*) FROM orders WHERE amount > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```'",
+      "details": {
+        "expected": "9",
+        "actual_raw": "```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s18/golden.db\",\n        \"query\": \"SELECT COUNT(*) FROM orders WHERE amount > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```",
+        "actual_cleaned": "```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s18/golden.db\",\n        \"query\": \"SELECT COUNT(*) FROM orders WHERE amount > 50000 AND customer_department = 'Engineering'\"\n    }\n}\n```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.227053"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 19,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '0', got '[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s19/horse.db\",\n        \"query\": \"PRAGMA table_info(enterprise_orders)\"\n    }\n}\n```'",
+      "details": {
+        "expected": "0",
+        "actual_raw": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s19/horse.db\",\n        \"query\": \"PRAGMA table_info(enterprise_orders)\"\n    }\n}\n```",
+        "actual_cleaned": "[[qwen-tool-start]]\n```\n{\n    \"name\": \"sqlite_execute_query\",\n    \"input\": {\n        \"database_path\": \"/home/jvroig/Dev/sandbox/q304_s19/horse.db\",\n        \"query\": \"PRAGMA table_info(enterprise_orders)\"\n    }\n}\n```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.227078"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 20,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected '2', got '```SQLite error executing query: no such table: orders```'",
+      "details": {
+        "expected": "2",
+        "actual_raw": "```SQLite error executing query: no such table: orders```",
+        "actual_cleaned": "```SQLite error executing query: no such table: orders```",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T15:12:43.227105"
+    }
+  ]
+}

@@ -1,0 +1,1401 @@
+{
+  "metadata": {
+    "test_id": "test_20250626_131340",
+    "timestamp": "20250626_132712",
+    "total_questions": 80,
+    "correct_answers": 36,
+    "accuracy_percentage": 45.0
+  },
+  "by_question": {
+    "301": {
+      "correct": 8,
+      "total": 20,
+      "scoring_type": "readfile_jsonmatch"
+    },
+    "302": {
+      "correct": 2,
+      "total": 20,
+      "scoring_type": "readfile_stringmatch"
+    },
+    "303": {
+      "correct": 6,
+      "total": 20,
+      "scoring_type": "jsonmatch"
+    },
+    "304": {
+      "correct": 20,
+      "total": 20,
+      "scoring_type": "stringmatch"
+    }
+  },
+  "by_scoring_type": {
+    "readfile_jsonmatch": {
+      "correct": 8,
+      "total": 20
+    },
+    "readfile_stringmatch": {
+      "correct": 2,
+      "total": 20
+    },
+    "jsonmatch": {
+      "correct": 6,
+      "total": 20
+    },
+    "stringmatch": {
+      "correct": 20,
+      "total": 20
+    }
+  },
+  "detailed_results": [
+    {
+      "question_id": 301,
+      "sample_number": 1,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s1/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 5}",
+        "actual_content": "{\"num_big_orders\": 5}",
+        "expected_json": {
+          "num_big_orders": 5
+        },
+        "actual_json": {
+          "num_big_orders": 5
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.127144"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 2,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s2/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s2/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 12}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127182"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 3,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s3/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s3/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 1}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127206"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 4,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s4/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s4/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 5}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127225"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 5,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s5/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s5/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 3}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127242"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 6,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s6/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s6/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 3}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127257"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 7,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s7/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s7/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 5}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127276"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 8,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s8/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 1}",
+        "actual_content": "{\"num_big_orders\": 1}",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "actual_json": {
+          "num_big_orders": 1
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.127319"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 9,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s9/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s9/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 14}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127340"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 10,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s10/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s10/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 4}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127356"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 11,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s11/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "actual_content": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.127391"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 12,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s12/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 5}",
+        "actual_content": "{\"num_big_orders\": 5}",
+        "expected_json": {
+          "num_big_orders": 5
+        },
+        "actual_json": {
+          "num_big_orders": 5
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.127423"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 13,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s13/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 7}",
+        "actual_content": "{\"num_big_orders\": 7}",
+        "expected_json": {
+          "num_big_orders": 7
+        },
+        "actual_json": {
+          "num_big_orders": 7
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.127459"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 14,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s14/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 4}",
+        "actual_content": "{\"num_big_orders\": 4}",
+        "expected_json": {
+          "num_big_orders": 4
+        },
+        "actual_json": {
+          "num_big_orders": 4
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.127514"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 15,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s15/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 5}",
+        "actual_content": "{\"num_big_orders\": 5}",
+        "expected_json": {
+          "num_big_orders": 5
+        },
+        "actual_json": {
+          "num_big_orders": 5
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.127590"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 16,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s16/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s16/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 2}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127620"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 17,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s17/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s17/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127641"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 18,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s18/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s18/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127658"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 19,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q301_s19/big_orders_count.json",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s19/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 3}",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127680"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 20,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s20/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 2}",
+        "actual_content": "{\"num_big_orders\": 2}",
+        "expected_json": {
+          "num_big_orders": 2
+        },
+        "actual_json": {
+          "num_big_orders": 2
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.127759"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 1,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s1/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s1/big_orders_count.txt",
+        "expected_content": "5",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127799"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 2,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s2/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s2/big_orders_count.txt",
+        "expected_content": "7",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127831"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 3,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s3/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s3/big_orders_count.txt",
+        "expected_content": "10",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127849"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 4,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s4/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s4/big_orders_count.txt",
+        "expected_content": "8",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127864"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 5,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s5/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s5/big_orders_count.txt",
+        "expected_content": "8",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127879"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 6,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s6/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s6/big_orders_count.txt",
+        "expected_content": "0",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127893"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 7,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s7/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s7/big_orders_count.txt",
+        "expected_content": "4",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127908"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 8,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s8/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s8/big_orders_count.txt",
+        "expected_content": "4",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127922"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 9,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s9/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s9/big_orders_count.txt",
+        "expected_content": "8",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127937"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 10,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s10/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s10/big_orders_count.txt",
+        "expected_content": "4",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.127952"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 11,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s11/big_orders_count.txt",
+        "expected_content": "0",
+        "actual_content": "0",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-26T13:27:12.127988"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 12,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s12/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s12/big_orders_count.txt",
+        "expected_content": "13",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128007"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 13,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s13/big_orders_count.txt",
+        "expected_content": "8",
+        "actual_content": "8",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-26T13:27:12.128039"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 14,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s14/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s14/big_orders_count.txt",
+        "expected_content": "2",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128056"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 15,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s15/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s15/big_orders_count.txt",
+        "expected_content": "5",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128072"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 16,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s16/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s16/big_orders_count.txt",
+        "expected_content": "2",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128087"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 17,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s17/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s17/big_orders_count.txt",
+        "expected_content": "2",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128102"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 18,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s18/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s18/big_orders_count.txt",
+        "expected_content": "3",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128117"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 19,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s19/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s19/big_orders_count.txt",
+        "expected_content": "3",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128131"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 20,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s20/big_orders_count.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s20/big_orders_count.txt",
+        "expected_content": "2",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128146"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 1,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 2}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 2
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 2, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128424"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 2,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 3}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 3
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 3, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128472"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 3,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 3}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 3
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 3, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128500"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 4,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 5}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 5
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 5, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128529"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 5,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 4}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 4
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 4, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128553"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 6,
+      "scoring_type": "jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.128579"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 7,
+      "scoring_type": "jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.128607"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 8,
+      "scoring_type": "jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.128627"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 9,
+      "scoring_type": "jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.128648"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 10,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 9}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 9
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 9, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128669"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 11,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 1}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 1, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128692"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 12,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 10}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 10
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 10, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128718"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 13,
+      "scoring_type": "jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.128739"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 14,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 3}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 3
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 3, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128760"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 15,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 1}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 1, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128786"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 16,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 2}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 2
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 2, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128809"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 17,
+      "scoring_type": "jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 0}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-26T13:27:12.128831"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 18,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 1}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 1, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128855"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 19,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 3}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 3
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 3, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128879"
+    },
+    {
+      "question_id": 303,
+      "sample_number": 20,
+      "scoring_type": "jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_raw": "{\"num_big_orders\": 1}",
+        "actual_raw": "{\"num_big_orders\": 0}",
+        "actual_cleaned": "{\"num_big_orders\": 0}",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "thinking_tags_found": false,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.num_big_orders: Expected 1, got 0"
+        ]
+      },
+      "timestamp": "2025-06-26T13:27:12.128902"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 1,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "8",
+        "actual_raw": "8",
+        "actual_cleaned": "8",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128924"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 2,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "0",
+        "actual_raw": "0",
+        "actual_cleaned": "0",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128943"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 3,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "6",
+        "actual_raw": "6",
+        "actual_cleaned": "6",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128960"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 4,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "5",
+        "actual_raw": "5",
+        "actual_cleaned": "5",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128978"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 5,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "9",
+        "actual_raw": "9",
+        "actual_cleaned": "9",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.128995"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 6,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "3",
+        "actual_raw": "3",
+        "actual_cleaned": "3",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129012"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 7,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "4",
+        "actual_raw": "4",
+        "actual_cleaned": "4",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129029"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 8,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "2",
+        "actual_raw": "2",
+        "actual_cleaned": "2",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129048"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 9,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "8",
+        "actual_raw": "8",
+        "actual_cleaned": "8",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129065"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 10,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "6",
+        "actual_raw": "6",
+        "actual_cleaned": "6",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129082"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 11,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "2",
+        "actual_raw": "2",
+        "actual_cleaned": "2",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129098"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 12,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "0",
+        "actual_raw": "0",
+        "actual_cleaned": "0",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129115"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 13,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "5",
+        "actual_raw": "5",
+        "actual_cleaned": "5",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129133"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 14,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "4",
+        "actual_raw": "4",
+        "actual_cleaned": "4",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129149"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 15,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "4",
+        "actual_raw": "4",
+        "actual_cleaned": "4",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129167"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 16,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "0",
+        "actual_raw": "0",
+        "actual_cleaned": "0",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129184"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 17,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "9",
+        "actual_raw": "9",
+        "actual_cleaned": "9",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129201"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 18,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "4",
+        "actual_raw": "4",
+        "actual_cleaned": "4",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129218"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 19,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "3",
+        "actual_raw": "3",
+        "actual_cleaned": "3",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129235"
+    },
+    {
+      "question_id": 304,
+      "sample_number": 20,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "2",
+        "actual_raw": "2",
+        "actual_cleaned": "2",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-26T13:27:12.129252"
+    }
+  ]
+}

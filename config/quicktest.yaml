@@ -27,7 +27,7 @@ tests:
 
   - question_id: 302
     samples: 2
-    template: "How many orders above 50000 are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db? Create a JSON file {{artifacts}}/{{qs_id}}/big_orders_count.txt that contains ONLY the answer"
+    template: "How many orders above 50000 are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db? Write a file {{artifacts}}/{{qs_id}}/big_orders_count.txt that contains ONLY the answer"
     scoring_type: "readfile_stringmatch"
     file_to_read: "{{artifacts}}/{{qs_id}}/big_orders_count.txt"
     expected_content: "{{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > 50000:TARGET_FILE}}"

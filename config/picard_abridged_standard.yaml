@@ -102,7 +102,7 @@ tests:
 
   - question_id: 301
     samples: 2
-    template: "Query the database {{artifacts}}/{{qs_id}}/{{entity1}}.db and find the total salary for all Engineering department employees. Reply only with the total."
+    template: "In the database {{artifacts}}/{{qs_id}}/{{entity1}}.db, find the total salary for all Engineering department employees. Reply only with the total."
     scoring_type: "stringmatch"
     expected_response: "{{sqlite_query:SELECT SUM(SAL_AMT) FROM enterprise_employees WHERE DEPT_CD = 'Engineering':TARGET_FILE}}"
     sandbox_setup:
@@ -120,7 +120,7 @@ tests:
 
   - question_id: 302
     samples: 2
-    template: "How many active employees are in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}/hr_dump.csv?"
+    template: "How many active employees are in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}/hr_dump.csv? After you determine the answer, REPLY ONLY WITH THE ANSWER, no other comments, decorations, or punctuations."
     scoring_type: "stringmatch"
     expected_response: "{{csv_count_where:EMP_ID:DEPT_CD:==:Engineering:TARGET_FILE}}"
     sandbox_setup:
@@ -136,7 +136,7 @@ tests:
     template: "How many orders above 50000 are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db? Create a JSON file {{artifacts}}/{{qs_id}}/big_orders_count.json that contains the answer using 'num_big_orders' as key."
     scoring_type: "readfile_jsonmatch"
     file_to_read: "{{artifacts}}/{{qs_id}}/big_orders_count.json"
-    expected_response: "{\"num_big_orders\": {{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > 50000:TARGET_FILE}}}"
+    expected_content: "{\"num_big_orders\": {{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > 50000:TARGET_FILE}}}"
     sandbox_setup:
       type: "create_sqlite"
       target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}.db"

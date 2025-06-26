@@ -196,7 +196,7 @@ class PrecheckGenerator:
             precheck_entry['file_to_read'] = substituted_file
             
             # Handle expected_content substitution for readfile_stringmatch
-            if test_def.scoring_type == 'readfile_stringmatch' and test_def.expected_content:
+            if test_def.scoring_type in ['readfile_stringmatch', 'readfile_jsonmatch'] and test_def.expected_content:
                 substituted_expected_content = self.entity_pool.substitute_with_entities(
                     test_def.expected_content, entity_values
                 )

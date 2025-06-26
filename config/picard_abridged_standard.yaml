@@ -100,7 +100,7 @@ tests:
   #################################
   #Section 300: Database processing
 
-  - question_d: 301
+  - question_id: 301
     samples: 10
     template: "In the database {{artifacts}}/{{qs_id}}/{{entity1}}.db, find the total salary for all Engineering department employees. Reply only with the total."
     scoring_type: "stringmatch"

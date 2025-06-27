@@ -1,0 +1,4794 @@
+{
+  "metadata": {
+    "test_id": "test_20250628_063519",
+    "timestamp": "20250628_072055",
+    "total_questions": 200,
+    "correct_answers": 159,
+    "accuracy_percentage": 79.5
+  },
+  "by_question": {
+    "101": {
+      "correct": 18,
+      "total": 20,
+      "scoring_type": "files_exist"
+    },
+    "102": {
+      "correct": 20,
+      "total": 20,
+      "scoring_type": "stringmatch"
+    },
+    "103": {
+      "correct": 20,
+      "total": 20,
+      "scoring_type": "stringmatch"
+    },
+    "104": {
+      "correct": 18,
+      "total": 20,
+      "scoring_type": "directory_structure"
+    },
+    "201": {
+      "correct": 20,
+      "total": 20,
+      "scoring_type": "stringmatch"
+    },
+    "202": {
+      "correct": 0,
+      "total": 20,
+      "scoring_type": "stringmatch"
+    },
+    "301": {
+      "correct": 8,
+      "total": 20,
+      "scoring_type": "readfile_jsonmatch"
+    },
+    "302": {
+      "correct": 16,
+      "total": 20,
+      "scoring_type": "readfile_stringmatch"
+    },
+    "401": {
+      "correct": 19,
+      "total": 20,
+      "scoring_type": "readfile_stringmatch"
+    },
+    "402": {
+      "correct": 20,
+      "total": 20,
+      "scoring_type": "readfile_jsonmatch"
+    }
+  },
+  "by_scoring_type": {
+    "files_exist": {
+      "correct": 18,
+      "total": 20
+    },
+    "stringmatch": {
+      "correct": 60,
+      "total": 80
+    },
+    "directory_structure": {
+      "correct": 18,
+      "total": 20
+    },
+    "readfile_jsonmatch": {
+      "correct": 28,
+      "total": 40
+    },
+    "readfile_stringmatch": {
+      "correct": 35,
+      "total": 40
+    }
+  },
+  "detailed_results": [
+    {
+      "question_id": 101,
+      "sample_number": 1,
+      "scoring_type": "files_exist",
+      "correct": false,
+      "error_message": "Missing files: ['/home/jvroig/Dev/sandbox/device/protocol.log', '/home/jvroig/Dev/sandbox/device/epic.config']",
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/device/protocol.log",
+          "/home/jvroig/Dev/sandbox/device/epic.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/device/protocol.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/device/protocol.log",
+            "exists": false,
+            "is_file": false
+          },
+          "/home/jvroig/Dev/sandbox/device/epic.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/device/epic.config",
+            "exists": false,
+            "is_file": false
+          }
+        },
+        "all_files_exist": false,
+        "missing_files": [
+          "/home/jvroig/Dev/sandbox/device/protocol.log",
+          "/home/jvroig/Dev/sandbox/device/epic.config"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.774826"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 2,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/module/grove.log",
+          "/home/jvroig/Dev/sandbox/module/journey.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/module/grove.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/module/grove.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/module/journey.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/module/journey.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.774868"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 3,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/falcon/tower.log",
+          "/home/jvroig/Dev/sandbox/falcon/analysis.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/falcon/tower.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/falcon/tower.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/falcon/analysis.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/falcon/analysis.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.774898"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 4,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/thunder/lightning.log",
+          "/home/jvroig/Dev/sandbox/thunder/workshop.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/thunder/lightning.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/thunder/lightning.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/thunder/workshop.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/thunder/workshop.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.774922"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 5,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/tower/creek.log",
+          "/home/jvroig/Dev/sandbox/tower/library.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/tower/creek.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/tower/creek.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/tower/library.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/tower/library.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.774945"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 6,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/calm/golden.log",
+          "/home/jvroig/Dev/sandbox/calm/stormy.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/calm/golden.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/calm/golden.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/calm/stormy.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/calm/stormy.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.774968"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 7,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/archive/sanctuary.log",
+          "/home/jvroig/Dev/sandbox/archive/kernel.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/archive/sanctuary.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/archive/sanctuary.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/archive/kernel.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/archive/kernel.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.774990"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 8,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/note/serenity.log",
+          "/home/jvroig/Dev/sandbox/note/monitor.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/note/serenity.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/note/serenity.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/note/monitor.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/note/monitor.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775014"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 9,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/black/deer.log",
+          "/home/jvroig/Dev/sandbox/black/report.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/black/deer.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/black/deer.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/black/report.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/black/report.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775037"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 10,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/lake/portal.log",
+          "/home/jvroig/Dev/sandbox/lake/swift.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/lake/portal.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/lake/portal.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/lake/swift.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/lake/swift.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775061"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 11,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/deer/palace.log",
+          "/home/jvroig/Dev/sandbox/deer/monitor.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/deer/palace.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/deer/palace.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/deer/monitor.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/deer/monitor.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775082"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 12,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/cat/whale.log",
+          "/home/jvroig/Dev/sandbox/cat/platform.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/cat/whale.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/cat/whale.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/cat/platform.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/cat/platform.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775103"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 13,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/forest/vault.log",
+          "/home/jvroig/Dev/sandbox/forest/whisper.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/forest/vault.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/forest/vault.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/forest/whisper.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/forest/whisper.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775124"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 14,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/device/lantern.log",
+          "/home/jvroig/Dev/sandbox/device/dark.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/device/lantern.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/device/lantern.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/device/dark.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/device/dark.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775145"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 15,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/loud/green.log",
+          "/home/jvroig/Dev/sandbox/loud/peak.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/loud/green.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/loud/green.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/loud/peak.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/loud/peak.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775172"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 16,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/forest/fox.log",
+          "/home/jvroig/Dev/sandbox/forest/deer.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/forest/fox.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/forest/fox.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/forest/deer.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/forest/deer.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775219"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 17,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/deer/wonder.log",
+          "/home/jvroig/Dev/sandbox/deer/tower.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/deer/wonder.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/deer/wonder.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/deer/tower.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/deer/tower.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775247"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 18,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/modern/loud.log",
+          "/home/jvroig/Dev/sandbox/modern/rustic.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/modern/loud.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/modern/loud.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/modern/rustic.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/modern/rustic.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775274"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 19,
+      "scoring_type": "files_exist",
+      "correct": false,
+      "error_message": "Missing files: ['/home/jvroig/Dev/sandbox/chamber/sparrow.log', '/home/jvroig/Dev/sandbox/chamber/sunrise.config']",
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/chamber/sparrow.log",
+          "/home/jvroig/Dev/sandbox/chamber/sunrise.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/chamber/sparrow.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/chamber/sparrow.log",
+            "exists": false,
+            "is_file": false
+          },
+          "/home/jvroig/Dev/sandbox/chamber/sunrise.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/chamber/sunrise.config",
+            "exists": false,
+            "is_file": false
+          }
+        },
+        "all_files_exist": false,
+        "missing_files": [
+          "/home/jvroig/Dev/sandbox/chamber/sparrow.log",
+          "/home/jvroig/Dev/sandbox/chamber/sunrise.config"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.775298"
+    },
+    {
+      "question_id": 101,
+      "sample_number": 20,
+      "scoring_type": "files_exist",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "files_to_check": [
+          "/home/jvroig/Dev/sandbox/lightning/lion.log",
+          "/home/jvroig/Dev/sandbox/lightning/meadow.config"
+        ],
+        "file_status": {
+          "/home/jvroig/Dev/sandbox/lightning/lion.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/lightning/lion.log",
+            "exists": true,
+            "is_file": true
+          },
+          "/home/jvroig/Dev/sandbox/lightning/meadow.config": {
+            "expected_path": "/home/jvroig/Dev/sandbox/lightning/meadow.config",
+            "exists": true,
+            "is_file": true
+          }
+        },
+        "all_files_exist": true,
+        "missing_files": []
+      },
+      "timestamp": "2025-06-28T07:20:55.775327"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 1,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "massive",
+        "actual_raw": "massive",
+        "actual_cleaned": "massive",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775560"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 2,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "analysis",
+        "actual_raw": "analysis",
+        "actual_cleaned": "analysis",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775583"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 3,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "azure",
+        "actual_raw": "azure",
+        "actual_cleaned": "azure",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775602"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 4,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "processor",
+        "actual_raw": "processor",
+        "actual_cleaned": "processor",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775619"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 5,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "theater",
+        "actual_raw": "theater",
+        "actual_cleaned": "theater",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775637"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 6,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "valley",
+        "actual_raw": "valley",
+        "actual_cleaned": "valley",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775655"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 7,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "modern",
+        "actual_raw": "modern",
+        "actual_cleaned": "modern",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775672"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 8,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "outline",
+        "actual_raw": "outline",
+        "actual_cleaned": "outline",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775689"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 9,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "database",
+        "actual_raw": "database",
+        "actual_cleaned": "database",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775712"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 10,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "system",
+        "actual_raw": "system",
+        "actual_cleaned": "system",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775729"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 11,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "sunset",
+        "actual_raw": "sunset",
+        "actual_cleaned": "sunset",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775746"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 12,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "dolphin",
+        "actual_raw": "dolphin",
+        "actual_cleaned": "dolphin",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775762"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 13,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "orange",
+        "actual_raw": "orange",
+        "actual_cleaned": "orange",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775779"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 14,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "hill",
+        "actual_raw": "hill",
+        "actual_cleaned": "hill",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775799"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 15,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "horse",
+        "actual_raw": "horse",
+        "actual_cleaned": "horse",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775816"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 16,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "epic",
+        "actual_raw": "epic",
+        "actual_cleaned": "epic",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775834"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 17,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "swift",
+        "actual_raw": "swift",
+        "actual_cleaned": "swift",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775851"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 18,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "report",
+        "actual_raw": "report",
+        "actual_cleaned": "report",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775868"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 19,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "library",
+        "actual_raw": "library",
+        "actual_cleaned": "library",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775885"
+    },
+    {
+      "question_id": 102,
+      "sample_number": 20,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "gentle",
+        "actual_raw": "gentle",
+        "actual_cleaned": "gentle",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775901"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 1,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "thunder compass ocean",
+        "actual_raw": "thunder compass ocean",
+        "actual_cleaned": "thunder compass ocean",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775918"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 2,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "tiny tiny dark",
+        "actual_raw": "tiny tiny dark",
+        "actual_cleaned": "tiny tiny dark",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775935"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 3,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "vision yellow draft",
+        "actual_raw": "vision yellow draft",
+        "actual_cleaned": "vision yellow draft",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775952"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 4,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "silver database wonder",
+        "actual_raw": "silver database wonder",
+        "actual_cleaned": "silver database wonder",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775969"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 5,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "chaos heavy memo",
+        "actual_raw": "chaos heavy memo",
+        "actual_cleaned": "chaos heavy memo",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.775986"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 6,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "console note rabbit",
+        "actual_raw": "console note rabbit",
+        "actual_cleaned": "console note rabbit",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776002"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 7,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "router fierce red",
+        "actual_raw": "router fierce red",
+        "actual_cleaned": "router fierce red",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776019"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 8,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "driver energy cave",
+        "actual_raw": "driver energy cave",
+        "actual_cleaned": "driver energy cave",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776036"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 9,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "river network falcon",
+        "actual_raw": "river network falcon",
+        "actual_cleaned": "river network falcon",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776054"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 10,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "server chaos fox",
+        "actual_raw": "server chaos fox",
+        "actual_cleaned": "server chaos fox",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776070"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 11,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "gentle library moonlight",
+        "actual_raw": "gentle library moonlight",
+        "actual_cleaned": "gentle library moonlight",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776086"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 12,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "bridge processor cave",
+        "actual_raw": "bridge processor cave",
+        "actual_cleaned": "bridge processor cave",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776103"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 13,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "compass protocol echo",
+        "actual_raw": "compass protocol echo",
+        "actual_cleaned": "compass protocol echo",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776120"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 14,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "lantern interface sunset",
+        "actual_raw": "lantern interface sunset",
+        "actual_cleaned": "lantern interface sunset",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776137"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 15,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "thunder white network",
+        "actual_raw": "thunder white network",
+        "actual_cleaned": "thunder white network",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776154"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 16,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "cliff deer studio",
+        "actual_raw": "cliff deer studio",
+        "actual_cleaned": "cliff deer studio",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776171"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 17,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "router wolf loud",
+        "actual_raw": "router wolf loud",
+        "actual_cleaned": "router wolf loud",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776187"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 18,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "lightning yellow review",
+        "actual_raw": "lightning yellow review",
+        "actual_cleaned": "lightning yellow review",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776204"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 19,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "falcon plaza black",
+        "actual_raw": "falcon plaza black",
+        "actual_cleaned": "falcon plaza black",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776220"
+    },
+    {
+      "question_id": 103,
+      "sample_number": 20,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "magic spirit thunder",
+        "actual_raw": "magic spirit thunder",
+        "actual_cleaned": "magic spirit thunder",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.776237"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 1,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/tiger/",
+          "/home/jvroig/Dev/sandbox/tiger/archive/",
+          "/home/jvroig/Dev/sandbox/tiger/logs/",
+          "/home/jvroig/Dev/sandbox/tiger/logs/marsh.log",
+          "/home/jvroig/Dev/sandbox/ancient/",
+          "/home/jvroig/Dev/sandbox/ancient/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/tiger/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/tiger/",
+            "full_path": "/home/jvroig/Dev/sandbox/tiger",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/tiger/archive/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/tiger/archive/",
+            "full_path": "/home/jvroig/Dev/sandbox/tiger/archive",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/tiger/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/tiger/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/tiger/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/tiger/logs/marsh.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/tiger/logs/marsh.log",
+            "full_path": "/home/jvroig/Dev/sandbox/tiger/logs/marsh.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/ancient/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/ancient/",
+            "full_path": "/home/jvroig/Dev/sandbox/ancient",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/ancient/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/ancient/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/ancient/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776309"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 2,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/stream/",
+          "/home/jvroig/Dev/sandbox/stream/sunrise/",
+          "/home/jvroig/Dev/sandbox/stream/logs/",
+          "/home/jvroig/Dev/sandbox/stream/logs/red.log",
+          "/home/jvroig/Dev/sandbox/massive/",
+          "/home/jvroig/Dev/sandbox/massive/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/stream/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/stream/",
+            "full_path": "/home/jvroig/Dev/sandbox/stream",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/stream/sunrise/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/stream/sunrise/",
+            "full_path": "/home/jvroig/Dev/sandbox/stream/sunrise",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/stream/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/stream/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/stream/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/stream/logs/red.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/stream/logs/red.log",
+            "full_path": "/home/jvroig/Dev/sandbox/stream/logs/red.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/massive/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/massive/",
+            "full_path": "/home/jvroig/Dev/sandbox/massive",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/massive/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/massive/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/massive/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776372"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 3,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/butterfly/",
+          "/home/jvroig/Dev/sandbox/butterfly/sanctuary/",
+          "/home/jvroig/Dev/sandbox/butterfly/logs/",
+          "/home/jvroig/Dev/sandbox/butterfly/logs/note.log",
+          "/home/jvroig/Dev/sandbox/orange/",
+          "/home/jvroig/Dev/sandbox/orange/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/butterfly/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/butterfly/",
+            "full_path": "/home/jvroig/Dev/sandbox/butterfly",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/butterfly/sanctuary/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/butterfly/sanctuary/",
+            "full_path": "/home/jvroig/Dev/sandbox/butterfly/sanctuary",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/butterfly/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/butterfly/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/butterfly/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/butterfly/logs/note.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/butterfly/logs/note.log",
+            "full_path": "/home/jvroig/Dev/sandbox/butterfly/logs/note.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/orange/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/orange/",
+            "full_path": "/home/jvroig/Dev/sandbox/orange",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/orange/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/orange/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/orange/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776428"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 4,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/forest/",
+          "/home/jvroig/Dev/sandbox/forest/mirror/",
+          "/home/jvroig/Dev/sandbox/forest/logs/",
+          "/home/jvroig/Dev/sandbox/forest/logs/echo.log",
+          "/home/jvroig/Dev/sandbox/system/",
+          "/home/jvroig/Dev/sandbox/system/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/forest/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/forest/",
+            "full_path": "/home/jvroig/Dev/sandbox/forest",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/forest/mirror/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/forest/mirror/",
+            "full_path": "/home/jvroig/Dev/sandbox/forest/mirror",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/forest/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/forest/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/forest/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/forest/logs/echo.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/forest/logs/echo.log",
+            "full_path": "/home/jvroig/Dev/sandbox/forest/logs/echo.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/system/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/system/",
+            "full_path": "/home/jvroig/Dev/sandbox/system",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/system/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/system/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/system/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776482"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 5,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/stormy/",
+          "/home/jvroig/Dev/sandbox/stormy/cliff/",
+          "/home/jvroig/Dev/sandbox/stormy/logs/",
+          "/home/jvroig/Dev/sandbox/stormy/logs/deer.log",
+          "/home/jvroig/Dev/sandbox/golden/",
+          "/home/jvroig/Dev/sandbox/golden/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/stormy/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/stormy/",
+            "full_path": "/home/jvroig/Dev/sandbox/stormy",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/stormy/cliff/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/stormy/cliff/",
+            "full_path": "/home/jvroig/Dev/sandbox/stormy/cliff",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/stormy/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/stormy/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/stormy/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/stormy/logs/deer.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/stormy/logs/deer.log",
+            "full_path": "/home/jvroig/Dev/sandbox/stormy/logs/deer.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/golden/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/golden/",
+            "full_path": "/home/jvroig/Dev/sandbox/golden",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/golden/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/golden/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/golden/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776543"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 6,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/server/",
+          "/home/jvroig/Dev/sandbox/server/quiet/",
+          "/home/jvroig/Dev/sandbox/server/logs/",
+          "/home/jvroig/Dev/sandbox/server/logs/system.log",
+          "/home/jvroig/Dev/sandbox/creek/",
+          "/home/jvroig/Dev/sandbox/creek/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/server/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/server/",
+            "full_path": "/home/jvroig/Dev/sandbox/server",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/server/quiet/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/server/quiet/",
+            "full_path": "/home/jvroig/Dev/sandbox/server/quiet",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/server/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/server/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/server/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/server/logs/system.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/server/logs/system.log",
+            "full_path": "/home/jvroig/Dev/sandbox/server/logs/system.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/creek/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/creek/",
+            "full_path": "/home/jvroig/Dev/sandbox/creek",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/creek/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/creek/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/creek/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776601"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 7,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/whisper/",
+          "/home/jvroig/Dev/sandbox/whisper/engine/",
+          "/home/jvroig/Dev/sandbox/whisper/logs/",
+          "/home/jvroig/Dev/sandbox/whisper/logs/wonder.log",
+          "/home/jvroig/Dev/sandbox/gentle/",
+          "/home/jvroig/Dev/sandbox/gentle/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/whisper/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/whisper/",
+            "full_path": "/home/jvroig/Dev/sandbox/whisper",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/whisper/engine/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/whisper/engine/",
+            "full_path": "/home/jvroig/Dev/sandbox/whisper/engine",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/whisper/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/whisper/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/whisper/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/whisper/logs/wonder.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/whisper/logs/wonder.log",
+            "full_path": "/home/jvroig/Dev/sandbox/whisper/logs/wonder.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/gentle/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/gentle/",
+            "full_path": "/home/jvroig/Dev/sandbox/gentle",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/gentle/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/gentle/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/gentle/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776658"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 8,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/marsh/",
+          "/home/jvroig/Dev/sandbox/marsh/interface/",
+          "/home/jvroig/Dev/sandbox/marsh/logs/",
+          "/home/jvroig/Dev/sandbox/marsh/logs/vault.log",
+          "/home/jvroig/Dev/sandbox/studio/",
+          "/home/jvroig/Dev/sandbox/studio/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/marsh/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/marsh/",
+            "full_path": "/home/jvroig/Dev/sandbox/marsh",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/marsh/interface/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/marsh/interface/",
+            "full_path": "/home/jvroig/Dev/sandbox/marsh/interface",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/marsh/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/marsh/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/marsh/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/marsh/logs/vault.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/marsh/logs/vault.log",
+            "full_path": "/home/jvroig/Dev/sandbox/marsh/logs/vault.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/studio/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/studio/",
+            "full_path": "/home/jvroig/Dev/sandbox/studio",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/studio/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/studio/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/studio/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776718"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 9,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/draft/",
+          "/home/jvroig/Dev/sandbox/draft/kernel/",
+          "/home/jvroig/Dev/sandbox/draft/logs/",
+          "/home/jvroig/Dev/sandbox/draft/logs/energy.log",
+          "/home/jvroig/Dev/sandbox/studio/",
+          "/home/jvroig/Dev/sandbox/studio/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/draft/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/draft/",
+            "full_path": "/home/jvroig/Dev/sandbox/draft",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/draft/kernel/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/draft/kernel/",
+            "full_path": "/home/jvroig/Dev/sandbox/draft/kernel",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/draft/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/draft/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/draft/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/draft/logs/energy.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/draft/logs/energy.log",
+            "full_path": "/home/jvroig/Dev/sandbox/draft/logs/energy.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/studio/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/studio/",
+            "full_path": "/home/jvroig/Dev/sandbox/studio",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/studio/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/studio/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/studio/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776774"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 10,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/fox/",
+          "/home/jvroig/Dev/sandbox/fox/story/",
+          "/home/jvroig/Dev/sandbox/fox/logs/",
+          "/home/jvroig/Dev/sandbox/fox/logs/turtle.log",
+          "/home/jvroig/Dev/sandbox/sunset/",
+          "/home/jvroig/Dev/sandbox/sunset/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/fox/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/fox/",
+            "full_path": "/home/jvroig/Dev/sandbox/fox",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/fox/story/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/fox/story/",
+            "full_path": "/home/jvroig/Dev/sandbox/fox/story",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/fox/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/fox/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/fox/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/fox/logs/turtle.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/fox/logs/turtle.log",
+            "full_path": "/home/jvroig/Dev/sandbox/fox/logs/turtle.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/sunset/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/sunset/",
+            "full_path": "/home/jvroig/Dev/sandbox/sunset",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/sunset/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/sunset/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/sunset/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776831"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 11,
+      "scoring_type": "directory_structure",
+      "correct": false,
+      "error_message": "Missing paths: ['/home/jvroig/Dev/sandbox/whisper/stream/', '/home/jvroig/Dev/sandbox/whisper/logs/falcon.log', '/home/jvroig/Dev/sandbox/river/', '/home/jvroig/Dev/sandbox/river/README.md']",
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/whisper/",
+          "/home/jvroig/Dev/sandbox/whisper/stream/",
+          "/home/jvroig/Dev/sandbox/whisper/logs/",
+          "/home/jvroig/Dev/sandbox/whisper/logs/falcon.log",
+          "/home/jvroig/Dev/sandbox/river/",
+          "/home/jvroig/Dev/sandbox/river/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/whisper/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/whisper/",
+            "full_path": "/home/jvroig/Dev/sandbox/whisper",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/whisper/stream/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/whisper/stream/",
+            "full_path": "/home/jvroig/Dev/sandbox/whisper/stream",
+            "exists": false,
+            "expected_type": "directory",
+            "actual_type": null,
+            "type_matches": false
+          },
+          "/home/jvroig/Dev/sandbox/whisper/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/whisper/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/whisper/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/whisper/logs/falcon.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/whisper/logs/falcon.log",
+            "full_path": "/home/jvroig/Dev/sandbox/whisper/logs/falcon.log",
+            "exists": false,
+            "expected_type": "file",
+            "actual_type": null,
+            "type_matches": false
+          },
+          "/home/jvroig/Dev/sandbox/river/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/river/",
+            "full_path": "/home/jvroig/Dev/sandbox/river",
+            "exists": false,
+            "expected_type": "directory",
+            "actual_type": null,
+            "type_matches": false
+          },
+          "/home/jvroig/Dev/sandbox/river/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/river/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/river/README.md",
+            "exists": false,
+            "expected_type": "file",
+            "actual_type": null,
+            "type_matches": false
+          }
+        },
+        "all_paths_correct": false,
+        "missing_paths": [
+          "/home/jvroig/Dev/sandbox/whisper/stream/",
+          "/home/jvroig/Dev/sandbox/whisper/logs/falcon.log",
+          "/home/jvroig/Dev/sandbox/river/",
+          "/home/jvroig/Dev/sandbox/river/README.md"
+        ],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776891"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 12,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/mirror/",
+          "/home/jvroig/Dev/sandbox/mirror/stream/",
+          "/home/jvroig/Dev/sandbox/mirror/logs/",
+          "/home/jvroig/Dev/sandbox/mirror/logs/cliff.log",
+          "/home/jvroig/Dev/sandbox/prairie/",
+          "/home/jvroig/Dev/sandbox/prairie/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/mirror/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/mirror/",
+            "full_path": "/home/jvroig/Dev/sandbox/mirror",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/mirror/stream/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/mirror/stream/",
+            "full_path": "/home/jvroig/Dev/sandbox/mirror/stream",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/mirror/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/mirror/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/mirror/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/mirror/logs/cliff.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/mirror/logs/cliff.log",
+            "full_path": "/home/jvroig/Dev/sandbox/mirror/logs/cliff.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/prairie/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/prairie/",
+            "full_path": "/home/jvroig/Dev/sandbox/prairie",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/prairie/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/prairie/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/prairie/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.776951"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 13,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/router/",
+          "/home/jvroig/Dev/sandbox/router/fierce/",
+          "/home/jvroig/Dev/sandbox/router/logs/",
+          "/home/jvroig/Dev/sandbox/router/logs/vault.log",
+          "/home/jvroig/Dev/sandbox/dark/",
+          "/home/jvroig/Dev/sandbox/dark/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/router/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/router/",
+            "full_path": "/home/jvroig/Dev/sandbox/router",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/router/fierce/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/router/fierce/",
+            "full_path": "/home/jvroig/Dev/sandbox/router/fierce",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/router/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/router/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/router/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/router/logs/vault.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/router/logs/vault.log",
+            "full_path": "/home/jvroig/Dev/sandbox/router/logs/vault.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/dark/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/dark/",
+            "full_path": "/home/jvroig/Dev/sandbox/dark",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/dark/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/dark/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/dark/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.777007"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 14,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/cat/",
+          "/home/jvroig/Dev/sandbox/cat/yellow/",
+          "/home/jvroig/Dev/sandbox/cat/logs/",
+          "/home/jvroig/Dev/sandbox/cat/logs/prairie.log",
+          "/home/jvroig/Dev/sandbox/treasure/",
+          "/home/jvroig/Dev/sandbox/treasure/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/cat/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/cat/",
+            "full_path": "/home/jvroig/Dev/sandbox/cat",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/cat/yellow/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/cat/yellow/",
+            "full_path": "/home/jvroig/Dev/sandbox/cat/yellow",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/cat/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/cat/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/cat/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/cat/logs/prairie.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/cat/logs/prairie.log",
+            "full_path": "/home/jvroig/Dev/sandbox/cat/logs/prairie.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/treasure/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/treasure/",
+            "full_path": "/home/jvroig/Dev/sandbox/treasure",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/treasure/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/treasure/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/treasure/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.777062"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 15,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/heavy/",
+          "/home/jvroig/Dev/sandbox/heavy/vision/",
+          "/home/jvroig/Dev/sandbox/heavy/logs/",
+          "/home/jvroig/Dev/sandbox/heavy/logs/interface.log",
+          "/home/jvroig/Dev/sandbox/yellow/",
+          "/home/jvroig/Dev/sandbox/yellow/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/heavy/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/heavy/",
+            "full_path": "/home/jvroig/Dev/sandbox/heavy",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/heavy/vision/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/heavy/vision/",
+            "full_path": "/home/jvroig/Dev/sandbox/heavy/vision",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/heavy/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/heavy/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/heavy/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/heavy/logs/interface.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/heavy/logs/interface.log",
+            "full_path": "/home/jvroig/Dev/sandbox/heavy/logs/interface.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/yellow/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/yellow/",
+            "full_path": "/home/jvroig/Dev/sandbox/yellow",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/yellow/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/yellow/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/yellow/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.777120"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 16,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/mirror/",
+          "/home/jvroig/Dev/sandbox/mirror/archive/",
+          "/home/jvroig/Dev/sandbox/mirror/logs/",
+          "/home/jvroig/Dev/sandbox/mirror/logs/amber.log",
+          "/home/jvroig/Dev/sandbox/framework/",
+          "/home/jvroig/Dev/sandbox/framework/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/mirror/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/mirror/",
+            "full_path": "/home/jvroig/Dev/sandbox/mirror",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/mirror/archive/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/mirror/archive/",
+            "full_path": "/home/jvroig/Dev/sandbox/mirror/archive",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/mirror/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/mirror/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/mirror/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/mirror/logs/amber.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/mirror/logs/amber.log",
+            "full_path": "/home/jvroig/Dev/sandbox/mirror/logs/amber.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/framework/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/framework/",
+            "full_path": "/home/jvroig/Dev/sandbox/framework",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/framework/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/framework/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/framework/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.777177"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 17,
+      "scoring_type": "directory_structure",
+      "correct": false,
+      "error_message": "Missing paths: ['/home/jvroig/Dev/sandbox/archive/summary/']",
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/archive/",
+          "/home/jvroig/Dev/sandbox/archive/summary/",
+          "/home/jvroig/Dev/sandbox/archive/logs/",
+          "/home/jvroig/Dev/sandbox/archive/logs/archive.log",
+          "/home/jvroig/Dev/sandbox/record/",
+          "/home/jvroig/Dev/sandbox/record/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/archive/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/archive/",
+            "full_path": "/home/jvroig/Dev/sandbox/archive",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/archive/summary/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/archive/summary/",
+            "full_path": "/home/jvroig/Dev/sandbox/archive/summary",
+            "exists": false,
+            "expected_type": "directory",
+            "actual_type": null,
+            "type_matches": false
+          },
+          "/home/jvroig/Dev/sandbox/archive/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/archive/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/archive/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/archive/logs/archive.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/archive/logs/archive.log",
+            "full_path": "/home/jvroig/Dev/sandbox/archive/logs/archive.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/record/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/record/",
+            "full_path": "/home/jvroig/Dev/sandbox/record",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/record/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/record/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/record/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": false,
+        "missing_paths": [
+          "/home/jvroig/Dev/sandbox/archive/summary/"
+        ],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.777239"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 18,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/horse/",
+          "/home/jvroig/Dev/sandbox/horse/smooth/",
+          "/home/jvroig/Dev/sandbox/horse/logs/",
+          "/home/jvroig/Dev/sandbox/horse/logs/device.log",
+          "/home/jvroig/Dev/sandbox/bridge/",
+          "/home/jvroig/Dev/sandbox/bridge/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/horse/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/horse/",
+            "full_path": "/home/jvroig/Dev/sandbox/horse",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/horse/smooth/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/horse/smooth/",
+            "full_path": "/home/jvroig/Dev/sandbox/horse/smooth",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/horse/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/horse/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/horse/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/horse/logs/device.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/horse/logs/device.log",
+            "full_path": "/home/jvroig/Dev/sandbox/horse/logs/device.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/bridge/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/bridge/",
+            "full_path": "/home/jvroig/Dev/sandbox/bridge",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/bridge/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/bridge/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/bridge/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.777298"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 19,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/snake/",
+          "/home/jvroig/Dev/sandbox/snake/journal/",
+          "/home/jvroig/Dev/sandbox/snake/logs/",
+          "/home/jvroig/Dev/sandbox/snake/logs/wolf.log",
+          "/home/jvroig/Dev/sandbox/chronicle/",
+          "/home/jvroig/Dev/sandbox/chronicle/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/snake/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/snake/",
+            "full_path": "/home/jvroig/Dev/sandbox/snake",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/snake/journal/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/snake/journal/",
+            "full_path": "/home/jvroig/Dev/sandbox/snake/journal",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/snake/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/snake/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/snake/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/snake/logs/wolf.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/snake/logs/wolf.log",
+            "full_path": "/home/jvroig/Dev/sandbox/snake/logs/wolf.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/chronicle/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/chronicle/",
+            "full_path": "/home/jvroig/Dev/sandbox/chronicle",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/chronicle/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/chronicle/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/chronicle/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.777353"
+    },
+    {
+      "question_id": 104,
+      "sample_number": 20,
+      "scoring_type": "directory_structure",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_paths": [
+          "/home/jvroig/Dev/sandbox/draft/",
+          "/home/jvroig/Dev/sandbox/draft/terminal/",
+          "/home/jvroig/Dev/sandbox/draft/logs/",
+          "/home/jvroig/Dev/sandbox/draft/logs/protocol.log",
+          "/home/jvroig/Dev/sandbox/loud/",
+          "/home/jvroig/Dev/sandbox/loud/README.md"
+        ],
+        "path_status": {
+          "/home/jvroig/Dev/sandbox/draft/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/draft/",
+            "full_path": "/home/jvroig/Dev/sandbox/draft",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/draft/terminal/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/draft/terminal/",
+            "full_path": "/home/jvroig/Dev/sandbox/draft/terminal",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/draft/logs/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/draft/logs/",
+            "full_path": "/home/jvroig/Dev/sandbox/draft/logs",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/draft/logs/protocol.log": {
+            "expected_path": "/home/jvroig/Dev/sandbox/draft/logs/protocol.log",
+            "full_path": "/home/jvroig/Dev/sandbox/draft/logs/protocol.log",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/loud/": {
+            "expected_path": "/home/jvroig/Dev/sandbox/loud/",
+            "full_path": "/home/jvroig/Dev/sandbox/loud",
+            "exists": true,
+            "expected_type": "directory",
+            "actual_type": "directory",
+            "type_matches": true
+          },
+          "/home/jvroig/Dev/sandbox/loud/README.md": {
+            "expected_path": "/home/jvroig/Dev/sandbox/loud/README.md",
+            "full_path": "/home/jvroig/Dev/sandbox/loud/README.md",
+            "exists": true,
+            "expected_type": "file",
+            "actual_type": "file",
+            "type_matches": true
+          }
+        },
+        "all_paths_correct": true,
+        "missing_paths": [],
+        "wrong_type_paths": []
+      },
+      "timestamp": "2025-06-28T07:20:55.777406"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 1,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Aute vitae officia aut laudantium sint vero nisi.",
+        "actual_raw": "Aute vitae officia aut laudantium sint vero nisi.",
+        "actual_cleaned": "Aute vitae officia aut laudantium sint vero nisi.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777430"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 2,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Minim nulla excepteur eiusmod incididunt duis sit nulla ut architecto voluptas incididunt lorem.",
+        "actual_raw": "Minim nulla excepteur eiusmod incididunt duis sit nulla ut architecto voluptas incididunt lorem.",
+        "actual_cleaned": "Minim nulla excepteur eiusmod incididunt duis sit nulla ut architecto voluptas incididunt lorem.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777449"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 3,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Anim dolore cupidatat quae esse rem enim nostrud magnam culpa dolorem.",
+        "actual_raw": "Anim dolore cupidatat quae esse rem enim nostrud magnam culpa dolorem.",
+        "actual_cleaned": "Anim dolore cupidatat quae esse rem enim nostrud magnam culpa dolorem.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777466"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 4,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Aliquip enim cillum non exercitation in aspernatur at aspernatur et.",
+        "actual_raw": "Aliquip enim cillum non exercitation in aspernatur at aspernatur et.",
+        "actual_cleaned": "Aliquip enim cillum non exercitation in aspernatur at aspernatur et.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777483"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 5,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Dolor aut ipsam ullamco non aut in reprehenderit quis sit vero lorem id.",
+        "actual_raw": "Dolor aut ipsam ullamco non aut in reprehenderit quis sit vero lorem id.",
+        "actual_cleaned": "Dolor aut ipsam ullamco non aut in reprehenderit quis sit vero lorem id.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777501"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 6,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Ut velit ullamco sunt velit nemo exercitation id.",
+        "actual_raw": "Ut velit ullamco sunt velit nemo exercitation id.",
+        "actual_cleaned": "Ut velit ullamco sunt velit nemo exercitation id.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777518"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 7,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Voluptas sequi ipsam quisquam quasi sint beatae sequi eos ex laborum.",
+        "actual_raw": "Voluptas sequi ipsam quisquam quasi sint beatae sequi eos ex laborum.",
+        "actual_cleaned": "Voluptas sequi ipsam quisquam quasi sint beatae sequi eos ex laborum.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777535"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 8,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Veniam nesciunt tempor irure totam commodo sit fugiat ullamco quisquam laborum aliquip in.",
+        "actual_raw": "Veniam nesciunt tempor irure totam commodo sit fugiat ullamco quisquam laborum aliquip in.",
+        "actual_cleaned": "Veniam nesciunt tempor irure totam commodo sit fugiat ullamco quisquam laborum aliquip in.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777552"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 9,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Culpa aperiam dicta reprehenderit rem quis porro ea aliqua.",
+        "actual_raw": "Culpa aperiam dicta reprehenderit rem quis porro ea aliqua.",
+        "actual_cleaned": "Culpa aperiam dicta reprehenderit rem quis porro ea aliqua.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777569"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 10,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Nulla totam sint sunt quae officia ut in et aperiam aute velit tempor explicabo doloremque.",
+        "actual_raw": "Nulla totam sint sunt quae officia ut in et aperiam aute velit tempor explicabo doloremque.",
+        "actual_cleaned": "Nulla totam sint sunt quae officia ut in et aperiam aute velit tempor explicabo doloremque.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777587"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 11,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Quasi elit at sequi rem nostrud fugit id veniam inventore neque illo.",
+        "actual_raw": "Quasi elit at sequi rem nostrud fugit id veniam inventore neque illo.",
+        "actual_cleaned": "Quasi elit at sequi rem nostrud fugit id veniam inventore neque illo.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777604"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 12,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Quasi pariatur eos anim officia culpa consequat nostrud.",
+        "actual_raw": "Quasi pariatur eos anim officia culpa consequat nostrud.",
+        "actual_cleaned": "Quasi pariatur eos anim officia culpa consequat nostrud.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777621"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 13,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Ipsum aspernatur eaque tempor culpa sit elit dolore ipsum anim at eaque mollit.",
+        "actual_raw": "Ipsum aspernatur eaque tempor culpa sit elit dolore ipsum anim at eaque mollit.",
+        "actual_cleaned": "Ipsum aspernatur eaque tempor culpa sit elit dolore ipsum anim at eaque mollit.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777640"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 14,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Voluptate ullamco nemo rem aut consequat nemo neque laudantium ut consequat veniam dolorem sequi.",
+        "actual_raw": "Voluptate ullamco nemo rem aut consequat nemo neque laudantium ut consequat veniam dolorem sequi.",
+        "actual_cleaned": "Voluptate ullamco nemo rem aut consequat nemo neque laudantium ut consequat veniam dolorem sequi.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777657"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 15,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Sunt consequat veritatis aut eos accusamus voluptas quia.",
+        "actual_raw": "Sunt consequat veritatis aut eos accusamus voluptas quia.",
+        "actual_cleaned": "Sunt consequat veritatis aut eos accusamus voluptas quia.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777674"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 16,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Id proident fugiat voluptas dolor dolore inventore inventore dolorem lorem.",
+        "actual_raw": "Id proident fugiat voluptas dolor dolore inventore inventore dolorem lorem.",
+        "actual_cleaned": "Id proident fugiat voluptas dolor dolore inventore inventore dolorem lorem.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777691"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 17,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Pariatur dicta elit tempor est ipsum occaecat in dicta eiusmod aut labore nisi.",
+        "actual_raw": "Pariatur dicta elit tempor est ipsum occaecat in dicta eiusmod aut labore nisi.",
+        "actual_cleaned": "Pariatur dicta elit tempor est ipsum occaecat in dicta eiusmod aut labore nisi.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777711"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 18,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Deserunt ex ex sed sequi nemo minim do architecto quia labore sed.",
+        "actual_raw": "Deserunt ex ex sed sequi nemo minim do architecto quia labore sed.",
+        "actual_cleaned": "Deserunt ex ex sed sequi nemo minim do architecto quia labore sed.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777734"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 19,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Nisi aspernatur architecto anim ut explicabo vitae nisi ipsum.",
+        "actual_raw": "Nisi aspernatur architecto anim ut explicabo vitae nisi ipsum.",
+        "actual_cleaned": "Nisi aspernatur architecto anim ut explicabo vitae nisi ipsum.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777752"
+    },
+    {
+      "question_id": 201,
+      "sample_number": 20,
+      "scoring_type": "stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected": "Totam sequi laborum adipiscing porro accusantium incididunt et.",
+        "actual_raw": "Totam sequi laborum adipiscing porro accusantium incididunt et.",
+        "actual_cleaned": "Totam sequi laborum adipiscing porro accusantium incididunt et.",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777769"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 1,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'do', got 'labore'",
+      "details": {
+        "expected": "do",
+        "actual_raw": "labore",
+        "actual_cleaned": "labore",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777786"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 2,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'amet', got 'sequi'",
+      "details": {
+        "expected": "amet",
+        "actual_raw": "sequi",
+        "actual_cleaned": "sequi",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777805"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 3,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'vero', got 'sequi'",
+      "details": {
+        "expected": "vero",
+        "actual_raw": "sequi",
+        "actual_cleaned": "sequi",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777824"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 4,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'Inventore', got 'voluptate'",
+      "details": {
+        "expected": "Inventore",
+        "actual_raw": "voluptate",
+        "actual_cleaned": "voluptate",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777852"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 5,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'Quae', got 'labore'",
+      "details": {
+        "expected": "Quae",
+        "actual_raw": "labore",
+        "actual_cleaned": "labore",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777885"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 6,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'reprehenderit', got 'sequi'",
+      "details": {
+        "expected": "reprehenderit",
+        "actual_raw": "sequi",
+        "actual_cleaned": "sequi",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777912"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 7,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'excepteur', got 'accusantium'",
+      "details": {
+        "expected": "excepteur",
+        "actual_raw": "accusantium",
+        "actual_cleaned": "accusantium",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777932"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 8,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'ipsum', got 'voluptate'",
+      "details": {
+        "expected": "ipsum",
+        "actual_raw": "voluptate",
+        "actual_cleaned": "voluptate",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777951"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 9,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'deserunt', got 'consectetur'",
+      "details": {
+        "expected": "deserunt",
+        "actual_raw": "consectetur",
+        "actual_cleaned": "consectetur",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777970"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 10,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'quia', got 'doloremque'",
+      "details": {
+        "expected": "quia",
+        "actual_raw": "doloremque",
+        "actual_cleaned": "doloremque",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.777989"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 11,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'ipsam', got 'doloremque'",
+      "details": {
+        "expected": "ipsam",
+        "actual_raw": "doloremque",
+        "actual_cleaned": "doloremque",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.778008"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 12,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'eiusmod', got 'aute'",
+      "details": {
+        "expected": "eiusmod",
+        "actual_raw": "aute",
+        "actual_cleaned": "aute",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.778027"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 13,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'amet', got 'labore'",
+      "details": {
+        "expected": "amet",
+        "actual_raw": "labore",
+        "actual_cleaned": "labore",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.778048"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 14,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'eos', got 'sequi'",
+      "details": {
+        "expected": "eos",
+        "actual_raw": "sequi",
+        "actual_cleaned": "sequi",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.778066"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 15,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'Duis', got 'ipsa'",
+      "details": {
+        "expected": "Duis",
+        "actual_raw": "ipsa",
+        "actual_cleaned": "ipsa",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.778085"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 16,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'vitae', got 'accusantium'",
+      "details": {
+        "expected": "vitae",
+        "actual_raw": "accusantium",
+        "actual_cleaned": "accusantium",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.778103"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 17,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'consequat', got 'doloremque'",
+      "details": {
+        "expected": "consequat",
+        "actual_raw": "doloremque",
+        "actual_cleaned": "doloremque",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.778121"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 18,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'explicabo', got 'accusamus'",
+      "details": {
+        "expected": "explicabo",
+        "actual_raw": "accusamus",
+        "actual_cleaned": "accusamus",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.778139"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 19,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'sit.', got 'doloremque'",
+      "details": {
+        "expected": "sit.",
+        "actual_raw": "doloremque",
+        "actual_cleaned": "doloremque",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.778157"
+    },
+    {
+      "question_id": 202,
+      "sample_number": 20,
+      "scoring_type": "stringmatch",
+      "correct": false,
+      "error_message": "Expected 'tempor', got 'labore'",
+      "details": {
+        "expected": "tempor",
+        "actual_raw": "labore",
+        "actual_cleaned": "labore",
+        "comparison_method": "exact_match_trimmed_thinking_tags_removed",
+        "thinking_tags_found": false
+      },
+      "timestamp": "2025-06-28T07:20:55.778176"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 1,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s1/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 45.56}",
+        "actual_content": "{\"total_customers\":75,\"average_age\":45.56}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 45.56
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 45.56
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.778230"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 2,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s2/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 41.29333333333334}",
+        "actual_content": "{\n  \"total_customers\": 99,\n  \"average_age\": 40.86\n}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 41.29333333333334
+        },
+        "actual_json": {
+          "total_customers": 99,
+          "average_age": 40.86
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.total_customers: Expected 75, got 99",
+          "root.average_age: Expected 41.29333333333334, got 40.86"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778286"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 3,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s3/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 44.946666666666665}",
+        "actual_content": "{\"total_customers\": 75, \"average_age\": 0}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 44.946666666666665
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.average_age: Expected float, got int"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778338"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 4,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s4/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 43.82666666666667}",
+        "actual_content": "{\"total_customers\": 75, \"average_age\": 43.82666666666667}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 43.82666666666667
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 43.82666666666667
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.778391"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 5,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s5/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 42.57333333333333}",
+        "actual_content": "{\"total_customers\": 75, \"average_age\": 42.57333333333333}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 42.57333333333333
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 42.57333333333333
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.778429"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 6,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s6/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 41.93333333333333}",
+        "actual_content": "{\"total_customers\": 75, \"average_age\": 41.93333333333333}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 41.93333333333333
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 41.93333333333333
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.778462"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 7,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s7/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 43.333333333333336}",
+        "actual_content": "{\n    \"total_customers\": 75,\n    \"average_age\": 0\n}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 43.333333333333336
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.average_age: Expected float, got int"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778494"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 8,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s8/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 45.96}",
+        "actual_content": "{\"total_customers\": 75, \"average_age\": null}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 45.96
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": null
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.average_age: Expected float, got NoneType"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778527"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 9,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s9/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 39.85333333333333}",
+        "actual_content": "{\"total_customers\": 75, \"average_age\": 39.85333333333333}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 39.85333333333333
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 39.85333333333333
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.778560"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 10,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s10/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 41.49333333333333}",
+        "actual_content": "{\n    \"total_customers\": 75,\n    \"average_age\": 41.49\n}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 41.49333333333333
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 41.49
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.average_age: Expected 41.49333333333333, got 41.49"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778608"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 11,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s11/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 42.96}",
+        "actual_content": "{\n    \"total_customers\": 75,\n    \"average_age\": 42.96\n}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 42.96
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 42.96
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.778642"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 12,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s12/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 44.346666666666664}",
+        "actual_content": "{\"total_customers\":75,\"average_age\":44.3466666667}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 44.346666666666664
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 44.3466666667
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.average_age: Expected 44.346666666666664, got 44.3466666667"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778677"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 13,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s13/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 44.973333333333336}",
+        "actual_content": "{\"total_customers\": 75, \"average_age\": 0}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 44.973333333333336
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.average_age: Expected float, got int"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778721"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 14,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s14/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 44.85333333333333}",
+        "actual_content": "{\n    \"total_customers\": 75,\n    \"average_age\": null\n}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 44.85333333333333
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": null
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.average_age: Expected float, got NoneType"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778759"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 15,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s15/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 43.346666666666664}",
+        "actual_content": "{\n    \"total_customers\": 75,\n    \"average_age\": 0\n}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 43.346666666666664
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.average_age: Expected float, got int"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778792"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 16,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s16/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 45.86666666666667}",
+        "actual_content": "{\"total_customers\":75,\"average_age\":45.8666666667}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 45.86666666666667
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 45.8666666667
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.average_age: Expected 45.86666666666667, got 45.8666666667"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778827"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 17,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s17/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 40.46666666666667}",
+        "actual_content": "{\"total_customers\": 75, \"average_age\": 40.46666666666667}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 40.46666666666667
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 40.46666666666667
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.778862"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 18,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s18/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 40.46666666666667}",
+        "actual_content": "{\n  \"total_customers\": 65,\n  \"average_age\": 40.7\n}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 40.46666666666667
+        },
+        "actual_json": {
+          "total_customers": 65,
+          "average_age": 40.7
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.total_customers: Expected 75, got 65",
+          "root.average_age: Expected 40.46666666666667, got 40.7"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778893"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 19,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": false,
+      "error_message": "JSON structures do not match",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s19/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 44.56}",
+        "actual_content": "{\"total_customers\": 75, \"average_age\": null}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 44.56
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": null
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match",
+        "differences": [
+          "root.average_age: Expected float, got NoneType"
+        ]
+      },
+      "timestamp": "2025-06-28T07:20:55.778926"
+    },
+    {
+      "question_id": 301,
+      "sample_number": 20,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q301_s20/cust.json",
+        "expected_content": "{\"total_customers\": 75, \"average_age\": 42.76}",
+        "actual_content": "{\"total_customers\": 75, \"average_age\": 42.76}",
+        "expected_json": {
+          "total_customers": 75,
+          "average_age": 42.76
+        },
+        "actual_json": {
+          "total_customers": 75,
+          "average_age": 42.76
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.778958"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 1,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s1/employees_count_eng.txt",
+        "expected_content": "11",
+        "actual_content": "11",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.778988"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 2,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s2/employees_count_eng.txt",
+        "expected_content": "11",
+        "actual_content": "11",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779013"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 3,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s3/employees_count_eng.txt",
+        "expected_content": "12",
+        "actual_content": "12",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779035"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 4,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s4/employees_count_eng.txt",
+        "expected_content": "7",
+        "actual_content": "7",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779058"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 5,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File content mismatch. Expected '5', got '0'",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s5/employees_count_eng.txt",
+        "expected_content": "5",
+        "actual_content": "0",
+        "file_exists": true,
+        "content_match": false
+      },
+      "timestamp": "2025-06-28T07:20:55.779081"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 6,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File does not exist: /home/jvroig/Dev/sandbox/q302_s6/employees_count_eng.txt",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s6/employees_count_eng.txt",
+        "expected_content": "11",
+        "file_exists": false
+      },
+      "timestamp": "2025-06-28T07:20:55.779102"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 7,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s7/employees_count_eng.txt",
+        "expected_content": "14",
+        "actual_content": "14",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779128"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 8,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File content mismatch. Expected '7', got '0'",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s8/employees_count_eng.txt",
+        "expected_content": "7",
+        "actual_content": "0",
+        "file_exists": true,
+        "content_match": false
+      },
+      "timestamp": "2025-06-28T07:20:55.779151"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 9,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s9/employees_count_eng.txt",
+        "expected_content": "16",
+        "actual_content": "16",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779179"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 10,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s10/employees_count_eng.txt",
+        "expected_content": "7",
+        "actual_content": "7",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779202"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 11,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s11/employees_count_eng.txt",
+        "expected_content": "13",
+        "actual_content": "13",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779223"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 12,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s12/employees_count_eng.txt",
+        "expected_content": "8",
+        "actual_content": "8",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779245"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 13,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s13/employees_count_eng.txt",
+        "expected_content": "8",
+        "actual_content": "8",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779267"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 14,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s14/employees_count_eng.txt",
+        "expected_content": "11",
+        "actual_content": "11",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779289"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 15,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s15/employees_count_eng.txt",
+        "expected_content": "6",
+        "actual_content": "6",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779310"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 16,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s16/employees_count_eng.txt",
+        "expected_content": "7",
+        "actual_content": "7",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779332"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 17,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File content mismatch. Expected '7', got '0'",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s17/employees_count_eng.txt",
+        "expected_content": "7",
+        "actual_content": "0",
+        "file_exists": true,
+        "content_match": false
+      },
+      "timestamp": "2025-06-28T07:20:55.779352"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 18,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s18/employees_count_eng.txt",
+        "expected_content": "11",
+        "actual_content": "11",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779375"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 19,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s19/employees_count_eng.txt",
+        "expected_content": "6",
+        "actual_content": "6",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779397"
+    },
+    {
+      "question_id": 302,
+      "sample_number": 20,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q302_s20/employees_count_eng.txt",
+        "expected_content": "11",
+        "actual_content": "11",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779418"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 1,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s1/total_salary_eng.txt",
+        "expected_content": "555236",
+        "actual_content": "555236",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779440"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 2,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s2/total_salary_eng.txt",
+        "expected_content": "697546",
+        "actual_content": "697546",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779462"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 3,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s3/total_salary_eng.txt",
+        "expected_content": "538014",
+        "actual_content": "538014",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779484"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 4,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s4/total_salary_eng.txt",
+        "expected_content": "359875",
+        "actual_content": "359875",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779505"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 5,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s5/total_salary_eng.txt",
+        "expected_content": "243313",
+        "actual_content": "243313",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779530"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 6,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s6/total_salary_eng.txt",
+        "expected_content": "346475",
+        "actual_content": "346475",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779552"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 7,
+      "scoring_type": "readfile_stringmatch",
+      "correct": false,
+      "error_message": "File content mismatch. Expected '544962', got 'Total Salary for Engineering Department: NULL'",
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s7/total_salary_eng.txt",
+        "expected_content": "544962",
+        "actual_content": "Total Salary for Engineering Department: NULL",
+        "file_exists": true,
+        "content_match": false
+      },
+      "timestamp": "2025-06-28T07:20:55.779573"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 8,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s8/total_salary_eng.txt",
+        "expected_content": "346471",
+        "actual_content": "346471",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779597"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 9,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s9/total_salary_eng.txt",
+        "expected_content": "342425",
+        "actual_content": "342425",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779619"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 10,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s10/total_salary_eng.txt",
+        "expected_content": "190174",
+        "actual_content": "190174",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779640"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 11,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s11/total_salary_eng.txt",
+        "expected_content": "484391",
+        "actual_content": "484391",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779661"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 12,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s12/total_salary_eng.txt",
+        "expected_content": "735475",
+        "actual_content": "735475",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779683"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 13,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s13/total_salary_eng.txt",
+        "expected_content": "342946",
+        "actual_content": "342946",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779703"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 14,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s14/total_salary_eng.txt",
+        "expected_content": "907615",
+        "actual_content": "907615",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779759"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 15,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s15/total_salary_eng.txt",
+        "expected_content": "604890",
+        "actual_content": "604890",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779782"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 16,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s16/total_salary_eng.txt",
+        "expected_content": "410303",
+        "actual_content": "410303",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779804"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 17,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s17/total_salary_eng.txt",
+        "expected_content": "758414",
+        "actual_content": "758414",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779825"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 18,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s18/total_salary_eng.txt",
+        "expected_content": "289787",
+        "actual_content": "289787",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779850"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 19,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s19/total_salary_eng.txt",
+        "expected_content": "698955",
+        "actual_content": "698955",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779872"
+    },
+    {
+      "question_id": 401,
+      "sample_number": 20,
+      "scoring_type": "readfile_stringmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q401_s20/total_salary_eng.txt",
+        "expected_content": "653705",
+        "actual_content": "653705",
+        "file_exists": true,
+        "content_match": true
+      },
+      "timestamp": "2025-06-28T07:20:55.779893"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 1,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s1/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 3}",
+        "actual_content": "{\n  \"num_big_orders\": 3\n}",
+        "expected_json": {
+          "num_big_orders": 3
+        },
+        "actual_json": {
+          "num_big_orders": 3
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.779923"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 2,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s2/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 1}",
+        "actual_content": "{\n  \"num_big_orders\": 1\n}",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "actual_json": {
+          "num_big_orders": 1
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.779949"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 3,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s3/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 3}",
+        "actual_content": "{\n  \"num_big_orders\": 3\n}",
+        "expected_json": {
+          "num_big_orders": 3
+        },
+        "actual_json": {
+          "num_big_orders": 3
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.779975"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 4,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s4/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 4}",
+        "actual_content": "{\n  \"num_big_orders\": 4\n}",
+        "expected_json": {
+          "num_big_orders": 4
+        },
+        "actual_json": {
+          "num_big_orders": 4
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780000"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 5,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s5/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "actual_content": "{\n  \"num_big_orders\": 0\n}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780028"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 6,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s6/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 6}",
+        "actual_content": "{\"num_big_orders\": 6}",
+        "expected_json": {
+          "num_big_orders": 6
+        },
+        "actual_json": {
+          "num_big_orders": 6
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780054"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 7,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s7/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "actual_content": "{\n  \"num_big_orders\": 0\n}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780083"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 8,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s8/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 1}",
+        "actual_content": "{\n  \"num_big_orders\": 1\n}",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "actual_json": {
+          "num_big_orders": 1
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780108"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 9,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s9/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 6}",
+        "actual_content": "{\"num_big_orders\": 6}",
+        "expected_json": {
+          "num_big_orders": 6
+        },
+        "actual_json": {
+          "num_big_orders": 6
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780133"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 10,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s10/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 6}",
+        "actual_content": "{\n  \"num_big_orders\": 6\n}",
+        "expected_json": {
+          "num_big_orders": 6
+        },
+        "actual_json": {
+          "num_big_orders": 6
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780161"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 11,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s11/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 5}",
+        "actual_content": "{\n  \"num_big_orders\": 5\n}",
+        "expected_json": {
+          "num_big_orders": 5
+        },
+        "actual_json": {
+          "num_big_orders": 5
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780190"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 12,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s12/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 5}",
+        "actual_content": "{\n  \"num_big_orders\": 5\n}",
+        "expected_json": {
+          "num_big_orders": 5
+        },
+        "actual_json": {
+          "num_big_orders": 5
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780218"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 13,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s13/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 2}",
+        "actual_content": "{\"num_big_orders\": 2}",
+        "expected_json": {
+          "num_big_orders": 2
+        },
+        "actual_json": {
+          "num_big_orders": 2
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780244"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 14,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s14/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 1}",
+        "actual_content": "{\n  \"num_big_orders\": 1\n}",
+        "expected_json": {
+          "num_big_orders": 1
+        },
+        "actual_json": {
+          "num_big_orders": 1
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780269"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 15,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s15/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "actual_content": "{\n  \"num_big_orders\": 0\n}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780294"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 16,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s16/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 2}",
+        "actual_content": "{\n  \"num_big_orders\": 2\n}",
+        "expected_json": {
+          "num_big_orders": 2
+        },
+        "actual_json": {
+          "num_big_orders": 2
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780319"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 17,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s17/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "actual_content": "{\n  \"num_big_orders\": 0\n}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780344"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 18,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s18/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 2}",
+        "actual_content": "{\n  \"num_big_orders\": 2\n}",
+        "expected_json": {
+          "num_big_orders": 2
+        },
+        "actual_json": {
+          "num_big_orders": 2
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780369"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 19,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s19/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 0}",
+        "actual_content": "{\n  \"num_big_orders\": 0\n}",
+        "expected_json": {
+          "num_big_orders": 0
+        },
+        "actual_json": {
+          "num_big_orders": 0
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780394"
+    },
+    {
+      "question_id": 402,
+      "sample_number": 20,
+      "scoring_type": "readfile_jsonmatch",
+      "correct": true,
+      "error_message": null,
+      "details": {
+        "expected_file": "/home/jvroig/Dev/sandbox/q402_s20/big_orders_count.json",
+        "expected_content": "{\"num_big_orders\": 4}",
+        "actual_content": "{\"num_big_orders\": 4}",
+        "expected_json": {
+          "num_big_orders": 4
+        },
+        "actual_json": {
+          "num_big_orders": 4
+        },
+        "file_exists": true,
+        "comparison_method": "semantic_json_match"
+      },
+      "timestamp": "2025-06-28T07:20:55.780419"
+    }
+  ]
+}

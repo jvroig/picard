@@ -1,0 +1,27 @@
+tests:
+
+  ######################################
+  #SECTION 200: Finding needles in files
+  - question_id: 201
+    samples: 5
+    template: "Read the file {{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt and tell me what line 34 says. Reply ONLY with the contents of that line. Do not mention anything else other than the line."
+    scoring_type: "stringmatch"
+    expected_response: "{{file_line:34:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_files"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt"
+      content:
+        type: "lorem_lines"
+        count: 100
+
+  - question_id: 202
+    samples: 5
+    template: "Read the file {{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt and tell me what 35th word is. Reply ONLY with the word."
+    scoring_type: "stringmatch"
+    expected_response: "{{file_word:35:TARGET_FILE}}"
+    sandbox_setup:
+      type: "create_files"
+      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt"
+      content:
+        type: "lorem_lines"
+        count: 100

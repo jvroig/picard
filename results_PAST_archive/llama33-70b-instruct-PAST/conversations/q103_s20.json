@@ -1,0 +1,28 @@
+{
+  "question_id": 103,
+  "sample_number": 20,
+  "timestamp": "2025-06-27T13:22:27.496687",
+  "initial_question": "Respond only with these three words in the given order: stream wonder amber",
+  "conversation_history": [
+    {
+      "role": "user",
+      "content": "Respond only with these three words in the given order: stream wonder amber"
+    },
+    {
+      "role": "assistant",
+      "content": "stream wonder amber"
+    }
+  ],
+  "statistics": {
+    "total_messages": 2,
+    "inference_rounds": 1,
+    "tool_calls": 0,
+    "tools_used": [],
+    "execution_time_seconds": 1.74,
+    "total_tokens_estimated": 24.7
+  },
+  "final_response": "stream wonder amber",
+  "execution_successful": true,
+  "error_message": null,
+  "model_info": "Unknown [BUG: need to retrieve from server]"
+}

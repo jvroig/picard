@@ -1,0 +1,28 @@
+{
+  "question_id": 102,
+  "sample_number": 20,
+  "timestamp": "2025-06-27T11:55:46.647702",
+  "initial_question": "Respond only with this word: mountain",
+  "conversation_history": [
+    {
+      "role": "user",
+      "content": "Respond only with this word: mountain"
+    },
+    {
+      "role": "assistant",
+      "content": "mountain"
+    }
+  ],
+  "statistics": {
+    "total_messages": 2,
+    "inference_rounds": 1,
+    "tool_calls": 0,
+    "tools_used": [],
+    "execution_time_seconds": 1.54,
+    "total_tokens_estimated": 10.4
+  },
+  "final_response": "mountain",
+  "execution_successful": true,
+  "error_message": null,
+  "model_info": "Unknown [BUG: need to retrieve from server]"
+}

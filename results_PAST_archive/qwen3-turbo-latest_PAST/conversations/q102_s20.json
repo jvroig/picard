@@ -1,0 +1,28 @@
+{
+  "question_id": 102,
+  "sample_number": 20,
+  "timestamp": "2025-06-27T20:17:31.421328",
+  "initial_question": "Respond only with this word: theater",
+  "conversation_history": [
+    {
+      "role": "user",
+      "content": "Respond only with this word: theater"
+    },
+    {
+      "role": "assistant",
+      "content": "theater"
+    }
+  ],
+  "statistics": {
+    "total_messages": 2,
+    "inference_rounds": 1,
+    "tool_calls": 0,
+    "tools_used": [],
+    "execution_time_seconds": 1.67,
+    "total_tokens_estimated": 9.1
+  },
+  "final_response": "theater",
+  "execution_successful": true,
+  "error_message": null,
+  "model_info": "Unknown [BUG: need to retrieve from server]"
+}

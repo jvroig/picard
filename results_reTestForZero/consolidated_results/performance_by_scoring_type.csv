@@ -1,0 +1,11 @@
+LLM_Name,Scoring_Type,Correct,Total,Accuracy_Percentage
+nova-pro-run2_PAST,files_exist,20,20,100.0
+nova-pro-run2_PAST,stringmatch,30,80,37.5
+nova-pro-run2_PAST,directory_structure,19,20,95.0
+nova-pro-run2_PAST,readfile_jsonmatch,2,40,5.0
+nova-pro-run2_PAST,readfile_stringmatch,1,40,2.5
+nova-premier-run2_PAST,files_exist,20,20,100.0
+nova-premier-run2_PAST,stringmatch,17,80,21.25
+nova-premier-run2_PAST,directory_structure,19,20,95.0
+nova-premier-run2_PAST,readfile_jsonmatch,20,40,50.0
+nova-premier-run2_PAST,readfile_stringmatch,4,40,10.0

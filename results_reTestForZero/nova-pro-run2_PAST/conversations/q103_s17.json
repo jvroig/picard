@@ -1,0 +1,28 @@
+{
+  "question_id": 103,
+  "sample_number": 17,
+  "timestamp": "2025-06-28T16:23:54.214179",
+  "initial_question": "Respond only with these three words in the given order: blue bridge red",
+  "conversation_history": [
+    {
+      "role": "user",
+      "content": "Respond only with these three words in the given order: blue bridge red"
+    },
+    {
+      "role": "assistant",
+      "content": "blue bridge red"
+    }
+  ],
+  "statistics": {
+    "total_messages": 2,
+    "inference_rounds": 1,
+    "tool_calls": 0,
+    "tools_used": [],
+    "execution_time_seconds": 3.99,
+    "total_tokens_estimated": 19.5
+  },
+  "final_response": "blue bridge red",
+  "execution_successful": true,
+  "error_message": null,
+  "model_info": "Unknown [BUG: need to retrieve from server]"
+}

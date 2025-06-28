@@ -1,0 +1,28 @@
+{
+  "question_id": 102,
+  "sample_number": 16,
+  "timestamp": "2025-06-28T16:21:40.273929",
+  "initial_question": "Respond only with this word: calm",
+  "conversation_history": [
+    {
+      "role": "user",
+      "content": "Respond only with this word: calm"
+    },
+    {
+      "role": "assistant",
+      "content": "calm"
+    }
+  ],
+  "statistics": {
+    "total_messages": 2,
+    "inference_rounds": 1,
+    "tool_calls": 0,
+    "tools_used": [],
+    "execution_time_seconds": 3.9,
+    "total_tokens_estimated": 5.2
+  },
+  "final_response": "calm",
+  "execution_successful": true,
+  "error_message": null,
+  "model_info": "Unknown [BUG: need to retrieve from server]"
+}

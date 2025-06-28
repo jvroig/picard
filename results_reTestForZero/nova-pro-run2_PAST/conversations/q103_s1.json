@@ -1,0 +1,28 @@
+{
+  "question_id": 103,
+  "sample_number": 1,
+  "timestamp": "2025-06-28T16:22:26.425827",
+  "initial_question": "Respond only with these three words in the given order: framework harmony device",
+  "conversation_history": [
+    {
+      "role": "user",
+      "content": "Respond only with these three words in the given order: framework harmony device"
+    },
+    {
+      "role": "assistant",
+      "content": "Framework harmony device."
+    }
+  ],
+  "statistics": {
+    "total_messages": 2,
+    "inference_rounds": 1,
+    "tool_calls": 0,
+    "tools_used": [],
+    "execution_time_seconds": 3.94,
+    "total_tokens_estimated": 32.5
+  },
+  "final_response": "Framework harmony device.",
+  "execution_successful": true,
+  "error_message": null,
+  "model_info": "Unknown [BUG: need to retrieve from server]"
+}

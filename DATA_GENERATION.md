@@ -6,14 +6,41 @@ This document provides a comprehensive reference for all data types that can be 
 
 - [Overview](#overview)
 - [People & Identity](#people--identity)
+  - [`person_name`](#person_name) - Full names with first and last
+  - [`first_name`](#first_name) - First names only
+  - [`last_name`](#last_name) - Last names/surnames only
 - [Business & Finance](#business--finance)
+  - [`company`](#company) - Company names
+  - [`department`](#department) - Business departments
+  - [`salary`](#salary) - Annual salary amounts
+  - [`currency`](#currency) - General monetary amounts
+  - [`price`](#price) - Product/service prices with decimals
+  - [`product`](#product) - Product names
 - [Location & Geography](#location--geography)
+  - [`city`](#city) - US city names
+  - [`region`](#region) - Geographic regions
+  - [`phone`](#phone) - US phone numbers
 - [Time & Dates](#time--dates)
+  - [`date`](#date) - Dates in ISO format
+  - [`age`](#age) - Person ages
+  - [`experience`](#experience) - Years of experience
 - [Status & Categories](#status--categories)
+  - [`status`](#status) - General status values
+  - [`boolean`](#boolean) - True/false values
+  - [`category`](#category) - Product/content categories
 - [Identifiers & Numbers](#identifiers--numbers)
+  - [`id`](#id) - Random ID numbers
+  - [`auto_id`](#auto_id) - Auto-incrementing primary key (SQLite only)
+  - [`score`](#score) - Scores, grades, or ratings
 - [Communication](#communication)
+  - [`email`](#email) - Email addresses
 - [Education & Skills](#education--skills)
+  - [`course`](#course) - Academic course names
+  - [`semester`](#semester) - Academic terms
 - [Content & Text](#content--text)
+  - [`entity_pool`](#entity_pool) - Random words from PICARD's entity pool
+  - [`lorem_word`](#lorem_word) - Single lorem ipsum word
+  - [`lorem_words`](#lorem_words) - Multiple lorem ipsum words
 - [Auto-Detection Rules](#auto-detection-rules)
 - [Usage Examples](#usage-examples)
 
@@ -227,6 +254,12 @@ header_types: ["person_name", "email", "salary", "department"]
 ---
 
 ## Content & Text
+
+### `entity_pool`
+**Description**: Random words from PICARD's entity pool  
+**Examples**: "crimson", "harbor", "whisper", "ancient", "mountain", "legend"
+
+**Usage**: Draws from the same 154-word entity pool used for `{{entity1}}` placeholders
 
 ### `lorem_word`
 **Description**: Single lorem ipsum word  

@@ -167,7 +167,7 @@ class DataGenerator:
             # Import entity pool and pick random word
             if self.entity_pool is None:
                 self.entity_pool = EntityPool()
-            return self.entity_pool.get_random_word()
+            return self.entity_pool.get_random_entity()
 
         elif field_type == 'email':
             first = random.choice(self.first_names).lower()

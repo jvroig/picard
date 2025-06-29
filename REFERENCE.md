@@ -2,6 +2,8 @@
 
 This document provides detailed reference information for PICARD's core components: scoring types, template functions, and sandbox setup options.
 
+For the list of all supported semantic data types for data generation, see [Data Generation Reference](DATA_GENERATION.md).
+
 ## Table of Contents
 
 - [Scoring Types](#scoring-types)

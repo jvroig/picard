@@ -5,7 +5,46 @@ This document provides detailed reference information for PICARD's core componen
 ## Table of Contents
 
 - [Scoring Types](#scoring-types)
-- [Template Functions](#template-functions) *(Coming Soon)*
+  - [Response Preprocessing](#response-preprocessing)
+  - [Special Placeholders](#special-placeholders)
+    - [`{{artifacts}}`](#artifacts)
+    - [`{{qs_id}}`](#qs_id)
+  - [Scoring Type Reference](#scoring-type-reference)
+    - [`stringmatch`](#stringmatch) - Direct text comparison
+    - [`jsonmatch`](#jsonmatch) - Semantic JSON comparison
+    - [`files_exist`](#files_exist) - File existence verification
+    - [`directory_structure`](#directory_structure) - Directory hierarchy validation
+    - [`readfile_stringmatch`](#readfile_stringmatch) - File content text verification
+    - [`readfile_jsonmatch`](#readfile_jsonmatch) - File content JSON verification
+  - [Scoring Type Selection Guide](#scoring-type-selection-guide)
+  - [Advanced Features](#advanced-features)
+- [Template Functions](#template-functions)
+  - [TARGET_FILE Keyword](#target_file-keyword)
+  - [File Content Functions](#file-content-functions)
+    - [`file_line`](#file_line) - Get specific line number
+    - [`file_word`](#file_word) - Get Nth word from file
+    - [`file_line_count`](#file_line_count) - Count total lines
+    - [`file_word_count`](#file_word_count) - Count total words
+  - [CSV Functions](#csv-functions)
+    - [Basic CSV Access](#basic-csv-access)
+      - [`csv_cell`](#csv_cell) - Get cell by row/column indices
+      - [`csv_value`](#csv_value) - Get cell by row/header name
+      - [`csv_row`](#csv_row) - Get entire row
+      - [`csv_column`](#csv_column) - Get entire column
+    - [CSV Aggregation Functions](#csv-aggregation-functions)
+      - [`csv_count`](#csv_count) - Count non-empty values
+      - [`csv_sum`](#csv_sum) - Sum numeric values
+      - [`csv_avg`](#csv_avg) - Average numeric values
+    - [CSV Filtered Aggregation](#csv-filtered-aggregation)
+      - [`csv_count_where`](#csv_count_where) - Count with filter
+      - [`csv_sum_where`](#csv_sum_where) - Sum with filter
+      - [`csv_avg_where`](#csv_avg_where) - Average with filter
+  - [SQLite Functions](#sqlite-functions)
+    - [`sqlite_query`](#sqlite_query) - Execute arbitrary SQL
+    - [`sqlite_value`](#sqlite_value) - Get specific value by row/column
+  - [Template Function Examples](#template-function-examples)
+  - [Error Handling](#error-handling)
+  - [Performance Notes](#performance-notes)
 - [Sandbox Setup](#sandbox-setup) *(Coming Soon)*
 
 ---
@@ -335,9 +374,260 @@ All scorers provide detailed error information:
 ### Template Integration
 All `expected_content` and `expected_response` fields support:
 - Entity substitution (`{{entity1}}`)
-- Template functions (`{{csv_count:COLUMN:TARGET_FILE}}`)
+- Template functions such as (`{{csv_count:COLUMN:TARGET_FILE}}`)
 - Dynamic answer key generation
 
 ---
 
-*Next sections: [Template Functions](#template-functions) and [Sandbox Setup](#sandbox-setup) coming soon...*
+## Template Functions
+
+Template functions enable dynamic answer key generation by extracting data from files created during test execution. They use the format `{{function_name:arg1:arg2:...}}` and are evaluated at runtime to create deterministic expected responses.
+
+### TARGET_FILE Keyword
+
+Most template functions accept `TARGET_FILE` as a file path argument, which gets replaced with the actual target file path from `sandbox_setup`:
+
+```yaml
+sandbox_setup:
+  target_file: "{{artifacts}}/{{qs_id}}/data.csv"
+expected_content: "{{csv_count:ID:TARGET_FILE}}"
+# TARGET_FILE becomes: /sandbox/q301_s5/data.csv
+```
+
+---
+
+### File Content Functions
+
+Extract specific content from text files.
+
+#### `file_line`
+**Purpose**: Get a specific line number from a text file.
+**Usage**: `{{file_line:line_number:file_path}}`
+**Parameters**:
+- `line_number`: Line number (1-based indexing)
+- `file_path`: Path to text file (or `TARGET_FILE`)
+
+**Example**:
+```yaml
+template: "What does line 34 say in {{artifacts}}/notes.txt?"
+expected_response: "{{file_line:34:TARGET_FILE}}"
+sandbox_setup:
+  target_file: "{{artifacts}}/notes.txt"
+  content:
+    type: "lorem_lines"
+    count: 100
+```
+
+#### `file_word`
+**Purpose**: Get the Nth word from entire file content.
+**Usage**: `{{file_word:word_number:file_path}}`
+**Parameters**:
+- `word_number`: Word number (1-based indexing)
+- `file_path`: Path to text file
+
+**Example**:
+```yaml
+expected_response: "{{file_word:35:TARGET_FILE}}"
+# Returns the 35th word in the file
+```
+
+#### `file_line_count`
+**Purpose**: Count total lines in a text file.
+**Usage**: `{{file_line_count:file_path}}`
+
+#### `file_word_count`
+**Purpose**: Count total words in a text file.
+**Usage**: `{{file_word_count:file_path}}`
+
+---
+
+### CSV Functions
+
+Extract and process data from CSV files with headers.
+
+#### Basic CSV Access
+
+##### `csv_cell`
+**Purpose**: Get specific cell by row and column indices.
+**Usage**: `{{csv_cell:row:column:file_path}}`
+**Parameters**:
+- `row`: Row number (0-based, 0 = header row)
+- `column`: Column number (0-based)
+
+**Example**:
+```yaml
+# Get first data row, second column
+expected_response: "{{csv_cell:1:1:TARGET_FILE}}"
+```
+
+##### `csv_value`
+**Purpose**: Get cell by row number and column header name.
+**Usage**: `{{csv_value:row:header:file_path}}`
+**Parameters**:
+- `row`: Data row number (0-based, excludes header)
+- `header`: Column header name
+
+**Example**:
+```yaml
+# Get age of first customer (row 0, "AGE" column)
+expected_content: "{{csv_value:0:AGE:TARGET_FILE}}"
+```
+
+##### `csv_row`
+**Purpose**: Get entire row as comma-separated string.
+**Usage**: `{{csv_row:row_number:file_path}}`
+
+##### `csv_column`
+**Purpose**: Get entire column as comma-separated string.
+**Usage**: `{{csv_column:header:file_path}}`
+
+#### CSV Aggregation Functions
+
+##### `csv_count`
+**Purpose**: Count non-empty values in a column.
+**Usage**: `{{csv_count:column:file_path}}`
+
+**Example**:
+```yaml
+expected_content: '{"total_customers": {{csv_count:C_ID:TARGET_FILE}}}'
+# Counts non-empty values in C_ID column
+```
+
+##### `csv_sum`
+**Purpose**: Sum all numeric values in a column.
+**Usage**: `{{csv_sum:column:file_path}}`
+
+##### `csv_avg`
+**Purpose**: Average all numeric values in a column.
+**Usage**: `{{csv_avg:column:file_path}}`
+
+**Example**:
+```yaml
+expected_content: '{"avg_age": {{csv_avg:AGE_YRS:TARGET_FILE}}}'
+```
+
+#### CSV Filtered Aggregation
+
+Advanced functions that apply filters before aggregation.
+
+##### `csv_count_where`
+**Purpose**: Count rows matching a filter condition.
+**Usage**: `{{csv_count_where:column:filter_column:operator:value:file_path}}`
+
+**Parameters**:
+- `column`: Column to count (usually same as filter_column)
+- `filter_column`: Column to apply filter on
+- `operator`: Comparison operator (`==`, `!=`, `>`, `<`, `>=`, `<=`, `contains`, `startswith`, `endswith`)
+- `value`: Value to compare against
+
+**Example**:
+```yaml
+# Count Engineering department employees
+expected_content: "{{csv_count_where:EMP_ID:DEPT_CD:==:Engineering:TARGET_FILE}}"
+
+# Count high earners
+expected_content: "{{csv_count_where:EMP_ID:SALARY:>:50000:TARGET_FILE}}"
+```
+
+##### `csv_sum_where`
+**Purpose**: Sum values in a column where filter condition is met.
+**Usage**: `{{csv_sum_where:column:filter_column:operator:value:file_path}}`
+
+**Example**:
+```yaml
+# Total salary for Engineering department
+expected_content: "{{csv_sum_where:SAL_AMT:DEPT_CD:==:Engineering:TARGET_FILE}}"
+```
+
+##### `csv_avg_where`
+**Purpose**: Average values in a column where filter condition is met.
+**Usage**: `{{csv_avg_where:column:filter_column:operator:value:file_path}}`
+
+**Supported Operators**:
+- **Equality**: `==`, `!=`
+- **Numeric comparison**: `>`, `<`, `>=`, `<=` (tries numeric first, falls back to string)
+- **String operations**: `contains`, `startswith`, `endswith`
+
+---
+
+### SQLite Functions
+
+Execute SQL queries against SQLite databases.
+
+#### `sqlite_query`
+**Purpose**: Execute arbitrary SQL query and return first result.
+**Usage**: `{{sqlite_query:sql_statement:file_path}}`
+
+**Parameters**:
+- `sql_statement`: Complete SQL query
+- `file_path`: Path to SQLite database file
+
+**Example**:
+```yaml
+expected_content: "{{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > 50000:TARGET_FILE}}"
+```
+
+**Return Value**: First column of first result row as string
+
+#### `sqlite_value`
+**Purpose**: Get specific value by row and column from a table.
+**Usage**: `{{sqlite_value:row:column:file_path}}` or `{{sqlite_value:row:column:table:file_path}}`
+
+**Parameters**:
+- `row`: Row number (0-based)
+- `column`: Column name or index
+- `table`: Table name (optional, uses first table if omitted)
+- `file_path`: Path to SQLite database
+
+---
+
+### Template Function Examples
+
+#### Complex CSV Processing
+```yaml
+question_id: 301
+template: "Create JSON summary with total customers and average age"
+expected_content: |
+  {
+    "total_customers": {{csv_count:C_ID:TARGET_FILE}},
+    "average_age": {{csv_avg:AGE_YRS:TARGET_FILE}},
+    "engineering_count": {{csv_count_where:C_ID:DEPT_CD:==:Engineering:TARGET_FILE}},
+    "high_earner_avg_age": {{csv_avg_where:AGE_YRS:SALARY:>:60000:TARGET_FILE}}
+  }
+```
+
+#### Database Query with Business Logic
+```yaml
+question_id: 402
+template: "How many high-value orders from Engineering customers?"
+expected_content: "{{sqlite_query:SELECT COUNT(*) FROM orders o JOIN customers c ON o.customer_id = c.id WHERE c.department = 'Engineering' AND o.amount > 50000:TARGET_FILE}}"
+```
+
+#### File Content Needle-in-Haystack
+```yaml
+question_id: 201
+template: "Find the 35th word in the generated document"
+expected_response: "{{file_word:35:TARGET_FILE}}"
+sandbox_setup:
+  target_file: "{{artifacts}}/{{qs_id}}/document.txt"
+  content:
+    type: "lorem_lines"
+    count: 100
+```
+
+### Error Handling
+
+Template functions provide detailed error messages:
+- **File not found**: Clear path information
+- **Invalid parameters**: Parameter validation with suggestions
+- **CSV/SQL errors**: Column/table not found with available options
+- **Type errors**: Numeric conversion failures in aggregation functions
+
+### Performance Notes
+
+- **CSV functions**: Load entire file into memory (suitable for test-sized data)
+- **SQLite functions**: Use database connections (better for larger datasets)
+- **File functions**: Stream-read for better memory efficiency
+- **Caching**: Functions re-read files on each call (acceptable for test scenarios)
+
+---

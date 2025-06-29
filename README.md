@@ -184,7 +184,9 @@ PICARD is designed for community extension:
 ## 🔗 Links
 
 - **Paper**: [arXiv link upon publication]
-- **Documentation**: [Wiki with detailed guides]
+- **Documentation**:
+  - [Framework Reference](REFERENCE.md)
+  - [Data Generation Reference](DATA_GENERATION.md)
 
 ---
 

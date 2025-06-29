@@ -56,9 +56,17 @@ PICARD can generate realistic data for CSV files and SQLite databases using eith
 # Automatic detection
 headers: ["customer_name", "email", "salary", "department"]
 
-# Explicit specification  
+# Explicit specification (CSV)
 headers: ["CUST_NM", "EMAIL_ADDR", "SAL_AMT", "DEPT_CD"]
 header_types: ["person_name", "email", "salary", "department"]
+
+# Explicit specification (SQLite)
+tables:
+  - name: "enterprise_customers"
+    columns:
+      - {name: "CUST_NM", type: "TEXT", data_type: "person_name"}
+      - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
+
 ```
 
 ---

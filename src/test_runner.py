@@ -377,7 +377,7 @@ Examples:
   python test_runner.py --template clean_sandbox           # Specify sandbox template
   python test_runner.py --definitions custom_tests.yaml   # Use custom test definitions
   python test_runner.py --retries 5 --delay 3.0          # Custom retry settings
-  python test_runner.py --real-llm                        # Use real LLM (localhost:5001)
+  python test_runner.py --real-llm                        # Use real LLM (localhost:5002)
   python test_runner.py --real-llm --api-endpoint http://example.com/api/chat  # Custom endpoint
 '''
     )

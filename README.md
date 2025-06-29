@@ -183,7 +183,6 @@ PICARD is designed for community extension:
 
 - **Paper**: [arXiv link upon publication]
 - **Documentation**: [Wiki with detailed guides]
-- **Community**: [Discussion forum/Discord]
 
 ---
 

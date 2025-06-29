@@ -14,9 +14,6 @@ from pathlib import Path
 # ARTIFACTS DIRECTORY CONFIGURATION
 # =============================================================================
 
-# Default artifacts directory
-#DEFAULT_ARTIFACTS_DIR = "/Users/jvroig/Dev/sandbox/bearnifacts"
-
 # Primary artifacts directory configuration
 # This is where all test files will be generated and stored
 ARTIFACTS_DIR = "/path/to/your/sandbox/folder"
@@ -32,7 +29,7 @@ ARTIFACTS_DIR = Path(ARTIFACTS_DIR).resolve()
 ENTITY_POOL_FILE = Path(__file__).parent / "config" / "entity_pool.txt"
 
 # Test definitions file location (relative to config directory)  
-TEST_DEFINITIONS_FILE = Path(__file__).parent / "config" / "test_definitions.yaml"
+TEST_DEFINITIONS_FILE = Path(__file__).parent / "config" / "picard_abridged_standard.yaml"
 
 # Maximum number of clutter files to generate
 MAX_CLUTTER_FILES = 10

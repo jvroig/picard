@@ -83,6 +83,8 @@ This creates 20 unique test instances with:
 - Dynamically generated CSV files with 50 random rows
 - Deterministic answer keys computed from the generated data
 
+See [PICARD Framework Reference](REFERENCE.md) for the full list of available scoring types, template functions, and sandbox data generation features.
+
 ## 🎲 Anti-Memorization Mathematics
 
 PICARD's combinatorial explosion makes memorization impossible:

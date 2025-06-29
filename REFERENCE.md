@@ -45,8 +45,25 @@ This document provides detailed reference information for PICARD's core componen
   - [Template Function Examples](#template-function-examples)
   - [Error Handling](#error-handling)
   - [Performance Notes](#performance-notes)
-- [Sandbox Setup](#sandbox-setup) *(Coming Soon)*
-
+- [Sandbox Setup](#sandbox-setup)
+  - [Overview](#overview)
+  - [Basic Configuration](#basic-configuration)
+  - [Text File Generation (`create_files`)](#text-file-generation-create_files)
+    - [Content Types](#content-types)
+    - [Clutter Files](#clutter-files)
+  - [CSV File Generation (`create_csv`)](#csv-file-generation-create_csv)
+    - [Basic CSV Structure](#basic-csv-structure)
+    - [Automatic Field Type Detection](#automatic-field-type-detection)
+    - [Explicit Field Types](#explicit-field-types)
+    - [Advanced CSV Examples](#advanced-csv-examples)
+    - [CSV Clutter](#csv-clutter)
+  - [SQLite Database Generation (`create_sqlite`)](#sqlite-database-generation-create_sqlite)
+    - [Single Table Database](#single-table-database)
+    - [Multi-Table Database with Relationships](#multi-table-database-with-relationships)
+    - [SQLite Column Specifications](#sqlite-column-specifications)
+  - [Advanced Sandbox Features](#advanced-sandbox-features)
+  - [Sandbox Best Practices](#sandbox-best-practices)
+  - [Error Handling](#error-handling-1)
 ---
 
 ## Scoring Types
@@ -631,3 +648,363 @@ Template functions provide detailed error messages:
 - **Caching**: Functions re-read files on each call (acceptable for test scenarios)
 
 ---
+
+## Sandbox Setup
+
+The sandbox setup system creates realistic test environments by generating files, databases, and directory structures dynamically. Each test gets isolated data that prevents memorization while testing genuine agentic capabilities.
+
+### Overview
+
+Sandbox setup operates through three main generator types:
+- **`create_files`**: Text files with lorem ipsum content
+- **`create_csv`**: CSV files with realistic business data
+- **`create_sqlite`**: SQLite databases with tables and relationships
+
+### Basic Configuration
+
+```yaml
+sandbox_setup:
+  type: "create_csv"                           # Generator type
+  target_file: "{{artifacts}}/{{qs_id}}/data.csv"   # Output file path
+  content:                                     # Content specification
+    headers: ["ID", "NAME", "AGE", "CITY"]
+    rows: 50
+```
+
+---
+
+### Text File Generation (`create_files`)
+
+Creates text files with lorem ipsum content for reading and processing tasks.
+
+#### Content Types
+
+##### `lorem_lines`
+```yaml
+sandbox_setup:
+  type: "create_files"
+  target_file: "{{artifacts}}/{{qs_id}}/notes.txt"
+  content:
+    type: "lorem_lines"
+    count: 100                    # Generate 100 lines of text
+```
+
+##### `lorem_sentences`
+```yaml
+content:
+  type: "lorem_sentences"
+  count: 20                       # Generate 20 sentences
+```
+
+##### `lorem_paragraphs`
+```yaml
+content:
+  type: "lorem_paragraphs"
+  count: 5                        # Generate 5 paragraphs
+```
+
+##### `lorem_words`
+```yaml
+content:
+  type: "lorem_words"
+  count: 500                      # Generate 500 words
+```
+
+##### `custom` with Placeholders
+```yaml
+content:
+  type: "custom"
+  content: |
+    Document Header
+    {{lorem:10l}}                 # 10 lines
+    
+    Section 2
+    {{lorem:5s}}                  # 5 sentences
+    
+    Footer
+    {{lorem:3p}}                  # 3 paragraphs
+```
+
+**Placeholder Formats**:
+- `{{lorem:Nl}}` - N lines
+- `{{lorem:Ns}}` - N sentences  
+- `{{lorem:Np}}` - N paragraphs
+
+#### Clutter Files
+
+Add realistic "noise" files to simulate authentic environments:
+
+```yaml
+sandbox_setup:
+  type: "create_files"
+  target_file: "{{artifacts}}/{{qs_id}}/main.txt"
+  content:
+    type: "lorem_lines"
+    count: 50
+  clutter:
+    count: 5                      # Generate 5 random clutter files
+    pattern: "**/*.txt"           # File pattern (future feature)
+```
+
+**Clutter Generation**:
+- Creates random subdirectories (`dir_1`, `dir_42`, etc.)
+- Generates files with random names (`file_123.txt`, `clutter_45.log`)
+- Adds realistic content to distract from target files
+- Tests LLM's ability to focus on correct files
+
+---
+
+### CSV File Generation (`create_csv`)
+
+Creates realistic business data in CSV format with intelligent field type detection.
+
+#### Basic CSV Structure
+
+```yaml
+sandbox_setup:
+  type: "create_csv"
+  target_file: "{{artifacts}}/{{qs_id}}/customers.csv"
+  content:
+    headers: ["C_ID", "C_NAME", "AGE_YRS", "LOC_CD", "REG_DT"]
+    rows: 75
+```
+
+#### Automatic Field Type Detection
+
+PICARD automatically detects appropriate data types from header names:
+
+| Header Pattern | Generated Data | Example |
+|----------------|---------------|---------|
+| `name`, `customer_name` | Person names | "John Smith" |
+| `email`, `email_address` | Email addresses | "john.smith@company.com" |
+| `age`, `age_yrs` | Ages 18-70 | "34" |
+| `city`, `location` | City names | "New York" |
+| `salary`, `income` | Salary ranges | "65000" |
+| `price`, `cost`, `amount` | Prices | "123.45" |
+| `phone`, `telephone` | Phone numbers | "(555) 123-4567" |
+| `date`, `reg_dt` | Dates | "2024-03-15" |
+| `status`, `state` | Status values | "active", "inactive" |
+| `department`, `dept` | Departments | "Engineering", "Sales" |
+| `region`, `area` | Regions | "North", "Southeast" |
+| `*_id`, `id` | ID numbers | "1247" |
+
+#### Explicit Field Types
+
+Override automatic detection with explicit `header_types`:
+
+```yaml
+content:
+  headers: ["CUST_ID", "CUST_NM", "ORD_AMT", "STAT_CD"]
+  header_types: ["id", "person_name", "currency", "status"]
+  rows: 100
+```
+
+**Available Data Types**:
+- **People**: `person_name`, `first_name`, `last_name`, `email`
+- **Business**: `company`, `department`, `salary`, `currency`, `price`
+- **Location**: `city`, `region`, `phone`
+- **Time**: `date`, `age`, `experience`
+- **Status**: `status`, `boolean`, `category`
+- **IDs**: `id` (numbers), `auto_id` (auto-increment)
+- **Content**: `lorem_word`, `lorem_words`
+
+#### Advanced CSV Examples
+
+**Enterprise Employee Data**:
+```yaml
+content:
+  headers: ["EMP_ID", "EMP_NM", "DEPT_CD", "SAL_AMT", "YRS_EXP", "STATUS"]
+  header_types: ["id", "person_name", "department", "salary", "experience", "status"]  
+  rows: 150
+```
+
+**E-commerce Orders**:
+```yaml
+content:
+  headers: ["ORDER_ID", "CUSTOMER", "PRODUCT", "PRICE", "CATEGORY", "ORDER_DATE"]
+  header_types: ["id", "person_name", "product", "price", "category", "date"]
+  rows: 200
+```
+
+#### CSV Clutter
+
+```yaml
+clutter:
+  count: 3                        # Creates 3 additional CSV/text files
+  # Generates: clutter_42.csv, random_data.txt, etc.
+```
+
+---
+
+### SQLite Database Generation (`create_sqlite`)
+
+Creates relational databases with tables, data, and foreign key relationships.
+
+#### Single Table Database
+
+```yaml
+sandbox_setup:
+  type: "create_sqlite"
+  target_file: "{{artifacts}}/{{qs_id}}/employees.db"
+  content:
+    table_name: "enterprise_employees"
+    columns:
+      - {name: "EMP_ID", type: "auto_id"}
+      - {name: "EMP_NM", type: "TEXT", data_type: "person_name"}
+      - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
+      - {name: "SAL_AMT", type: "INTEGER", data_type: "salary"}
+      - {name: "STAT_FLG", type: "TEXT", data_type: "status"}
+    rows: 50
+```
+
+#### Multi-Table Database with Relationships
+
+```yaml
+sandbox_setup:
+  type: "create_sqlite"
+  target_file: "{{artifacts}}/{{qs_id}}/business.db"
+  content:
+    tables:
+      - name: "enterprise_customers"
+        columns:
+          - {name: "CUST_ID", type: "auto_id"}
+          - {name: "CUST_NM", type: "TEXT", data_type: "person_name"}
+          - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
+          - {name: "LOC_CD", type: "TEXT", data_type: "region"}
+        rows: 20
+      
+      - name: "enterprise_orders"
+        columns:
+          - {name: "ORD_ID", type: "auto_id"}
+          - {name: "CUST_REF", type: "INTEGER", foreign_key: "enterprise_customers.CUST_ID"}
+          - {name: "ORD_AMT", type: "INTEGER", data_type: "currency"}
+          - {name: "STAT_CD", type: "TEXT", data_type: "status"}
+        rows: 75
+```
+
+#### SQLite Column Specifications
+
+**Column Definition**:
+```yaml
+columns:
+  - name: "COLUMN_NAME"           # Column name
+    type: "SQL_TYPE"              # SQLite data type
+    data_type: "DATA_GENERATOR"   # PICARD data generator type (optional)
+    foreign_key: "table.column"   # Foreign key reference (optional)
+```
+
+**SQLite Data Types**:
+- `INTEGER` - Numeric values
+- `TEXT` - String values  
+- `REAL` - Floating-point numbers
+- `auto_id` - Auto-incrementing primary key
+
+**Foreign Key Relationships**:
+```yaml
+foreign_key: "enterprise_customers.CUST_ID"  # References parent table
+```
+
+Foreign keys automatically reference existing parent table IDs, creating realistic relational data.
+
+---
+
+### Advanced Sandbox Features
+
+#### File Path Templating
+
+All file paths support full templating:
+
+```yaml
+target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/data.csv"
+# Becomes: /sandbox/q301_s5/crimson/data.csv
+```
+
+#### Realistic Directory Structures
+
+Create complex enterprise-like environments:
+
+```yaml
+- question_id: 501
+  template: "Process all customer data files in the corporate directory structure"
+  sandbox_setup:
+    type: "create_csv"
+    target_file: "{{artifacts}}/{{qs_id}}/corporate/{{entity1}}/customers/master_data.csv"
+    content:
+      headers: ["CUST_ID", "COMPANY", "REVENUE", "INDUSTRY"] 
+      header_types: ["id", "company", "currency", "category"]
+      rows: 100
+    clutter:
+      count: 8                    # Creates realistic corporate file chaos
+```
+
+#### Complex Business Scenarios
+
+**Multi-Department Analysis**:
+```yaml
+sandbox_setup:
+  type: "create_sqlite" 
+  target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}_analytics.db"
+  content:
+    tables:
+      - name: "departments"
+        columns:
+          - {name: "dept_id", type: "auto_id"}
+          - {name: "dept_name", type: "TEXT", data_type: "department"}
+          - {name: "budget", type: "INTEGER", data_type: "currency"}
+        rows: 5
+      
+      - name: "employees"  
+        columns:
+          - {name: "emp_id", type: "auto_id"}
+          - {name: "name", type: "TEXT", data_type: "person_name"}
+          - {name: "dept_ref", type: "INTEGER", foreign_key: "departments.dept_id"}
+          - {name: "salary", type: "INTEGER", data_type: "salary"}
+          - {name: "years_exp", type: "INTEGER", data_type: "experience"}
+        rows: 200
+        
+      - name: "projects"
+        columns:
+          - {name: "proj_id", type: "auto_id"}
+          - {name: "proj_name", type: "TEXT", data_type: "product"}
+          - {name: "dept_ref", type: "INTEGER", foreign_key: "departments.dept_id"}
+          - {name: "budget", type: "INTEGER", data_type: "currency"}
+          - {name: "status", type: "TEXT", data_type: "status"}
+        rows: 50
+```
+
+### Sandbox Best Practices
+
+#### For File Processing Tasks
+- Use meaningful nested directories (`{{entity1}}/data/{{entity2}}.csv`)
+- Add clutter files to test focus and filtering
+- Mix file types (CSV, TXT, LOG) for realism
+
+#### For Database Tasks  
+- Create realistic table relationships
+- Use business-appropriate column names (`CUST_ID`, `ORD_AMT`)
+- Include enough rows for meaningful aggregation (50-200)
+
+#### For Multi-Step Workflows
+- Generate multiple related files
+- Create dependencies between data sources
+- Test both reading and writing capabilities
+
+#### Sample Size Considerations
+- **Simple tasks**: 10-50 rows adequate
+- **Aggregation tasks**: 50-200 rows for stable statistics  
+- **Complex queries**: 100+ rows to test query optimization
+- **Performance tests**: 500+ rows to stress test algorithms
+
+### Error Handling
+
+Sandbox generation provides detailed error reporting:
+- **File creation failures**: Permission and disk space issues
+- **Data generation errors**: Invalid field type specifications
+- **Foreign key violations**: Broken table relationships
+- **Template substitution errors**: Invalid placeholder usage
+
+All errors are captured in precheck entries for debugging while allowing tests to continue.
+
+---
+
+*This completes the comprehensive PICARD Framework Reference covering all scoring types, template functions, and sandbox capabilities.*

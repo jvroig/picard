@@ -173,11 +173,13 @@ PICARD is designed for community extension:
 ## 📚 Citation
 
 ```bibtex
-@article{roig2025picard,
+@techreport{roig2025picard,
   title={Testing What Models Can Do, Not What They've Seen: PICARD: Probing Intelligent Capabilities via Artificial Randomized Data},
   author={Roig, JV},
-  journal={arXiv preprint arXiv:XXXX.XXXXX},
-  year={2025}
+  year={2025},
+  institution={Independent Research},
+  type={Technical Report},
+  url={https://picard.jvroig.com/picard_paper1.pdf}
 }
 ```
 

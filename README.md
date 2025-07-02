@@ -185,7 +185,7 @@ PICARD is designed for community extension:
 
 ## 🔗 Links
 
-- **Paper**: [arXiv link upon publication]
+- **Paper**: [https://picard.jvroig.com](https://picard.jvroig.com/)
 - **Documentation**:
   - [Framework Reference](REFERENCE.md)
   - [Data Generation Reference](DATA_GENERATION.md)

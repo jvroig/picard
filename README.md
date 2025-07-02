@@ -4,7 +4,7 @@
 
 PICARD is a framework for evaluating agentic AI capabilities while preventing memorization through systematic multi-layered randomization. 
 
-This project is the reference implementation of the PICARD framework, as described in the PICARD paper [arXiv link here when available]
+This project is the reference implementation of the PICARD framework, as described in the [PICARD paper](https://picard.jvroig.com/picard_paper1.pdf).
 
 ## 🎯 Why PICARD?
 

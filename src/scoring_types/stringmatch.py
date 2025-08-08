@@ -29,8 +29,9 @@ class StringMatchScorer(BaseScoringType):
             'expected': expected_response,
             'actual_raw': raw_actual_response,
             'actual_cleaned': cleaned_actual_response,
-            'comparison_method': 'exact_match_trimmed_thinking_tags_removed',
-            'thinking_tags_found': ResponseCleaner.has_thinking_tags(raw_actual_response)
+            'comparison_method': 'exact_match_trimmed_cleaned',
+            'thinking_tags_found': ResponseCleaner.has_thinking_tags(raw_actual_response),
+            'harmony_format_found': ResponseCleaner.has_harmony_format(raw_actual_response)
         }
         
         error_message = None

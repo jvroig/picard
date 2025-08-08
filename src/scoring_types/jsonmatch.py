@@ -42,6 +42,7 @@ class JsonMatchScorer(BaseScoringType):
                     'actual_raw': raw_actual_response,
                     'actual_cleaned': cleaned_actual_response,
                     'thinking_tags_found': ResponseCleaner.has_thinking_tags(raw_actual_response),
+                    'harmony_format_found': ResponseCleaner.has_harmony_format(raw_actual_response),
                     'parse_error': 'expected_json'
                 }
             )
@@ -62,6 +63,7 @@ class JsonMatchScorer(BaseScoringType):
                     'actual_cleaned': cleaned_actual_response,
                     'expected_json': expected_json,
                     'thinking_tags_found': ResponseCleaner.has_thinking_tags(raw_actual_response),
+                    'harmony_format_found': ResponseCleaner.has_harmony_format(raw_actual_response),
                     'parse_error': 'actual_json'
                 }
             )
@@ -76,6 +78,7 @@ class JsonMatchScorer(BaseScoringType):
             'expected_json': expected_json,
             'actual_json': actual_json,
             'thinking_tags_found': ResponseCleaner.has_thinking_tags(raw_actual_response),
+            'harmony_format_found': ResponseCleaner.has_harmony_format(raw_actual_response),
             'comparison_method': 'semantic_json_match'
         }
         

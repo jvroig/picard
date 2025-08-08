@@ -46,11 +46,11 @@ Once the agentic server is up, you can run tests
 
 
 ```bash
-# Run the default sample test
-python src/test_runner.py
+# Run the default sample test, specify your Agentic Server endpoint - this example uses the Qwen-Agentic-Server above
+python src/test_runner.py --api-endpoint "http://localhost:5002/api/chat"
 
 # Run tests using your own PICARD-based test
-python src/test_runner.py --definitions "configs/your-test-definition.yml"
+python src/test_runner.py --definitions "config/your-test-definition.yml --api-endpoint "http://localhost:5002/api/chat"
 
 # Score a successful test run (e.g., "test_20250529")
 python src/scorer.py --test-dir results/test_20250529 

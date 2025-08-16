@@ -43,9 +43,11 @@ We follow a **small, frequent commits** approach:
 
 3. **Test**
    - **ALWAYS activate virtual environment first**: `source venv/bin/activate`
+   - **MANDATORY**: Run tests after ANY code work (new code, edits, refactoring)
    - Run relevant tests after each commit
    - Ensure no regressions introduced
    - Add tests for new functionality
+   - **Verify project status**: Always check that existing functionality still works
 
 ### Benefits of This Approach
 - **Reduced Risk**: Smaller changes are easier to debug and revert
@@ -61,6 +63,9 @@ We follow a **small, frequent commits** approach:
 # Make small, focused changes to code
 # ...
 
+# ALWAYS TEST AFTER CODE CHANGES
+source venv/bin/activate && pytest
+
 # Stage and commit changes
 git add <files>
 git commit -m "Brief description
@@ -72,7 +77,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 # Push to remote
 git push
 
-# Run tests (must use venv)
+# Run tests again after commit (verification)
 source venv/bin/activate && pytest
 ```
 
@@ -122,10 +127,13 @@ pytest -v
 - Use type hints where beneficial
 
 ### Testing Philosophy
+- **Testing is non-negotiable**: ALWAYS run tests after ANY code changes
 - Write tests for new functionality
 - Maintain existing test coverage
 - Prefer deterministic tests over probabilistic ones
 - Use fixtures for reusable test data
+- **Test early, test often**: Catch issues immediately, not later
+- **All tests must pass**: Never commit with failing tests
 
 ### Documentation
 - Update relevant documentation when making changes

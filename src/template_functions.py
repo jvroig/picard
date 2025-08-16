@@ -99,6 +99,13 @@ class TemplateFunctions:
             'json_value': self._json_value,
             'json_count': self._json_count,
             'json_keys': self._json_keys,
+            'json_sum': self._json_sum,
+            'json_avg': self._json_avg,
+            'json_max': self._json_max,
+            'json_min': self._json_min,
+            'json_collect': self._json_collect,
+            'json_count_where': self._json_count_where,
+            'json_filter': self._json_filter,
         }
         
         if function_name not in function_map:
@@ -853,4 +860,359 @@ class TemplateFunctions:
                 current = current[part]
         
         return current
+    
+    def _expand_wildcard_path(self, data: Any, path_expr: str) -> List[Any]:
+        """
+        Expand JSONPath wildcards like $.projects[*].budget into list of values.
+        Supports multiple wildcards: $.departments[*].employees[*].name
+        """
+        # Remove leading $ if present
+        if path_expr.startswith('$'):
+            path_expr = path_expr[1:]
+        if path_expr.startswith('.'):
+            path_expr = path_expr[1:]
+        
+        if not path_expr:
+            return [data]
+        
+        # Split path and handle wildcards
+        current_values = [data]
+        
+        # Parse path components
+        parts = []
+        current_part = ""
+        bracket_depth = 0
+        
+        for char in path_expr:
+            if char == '[':
+                bracket_depth += 1
+                current_part += char
+            elif char == ']':
+                bracket_depth -= 1
+                current_part += char
+            elif char == '.' and bracket_depth == 0:
+                if current_part:
+                    parts.append(current_part)
+                current_part = ""
+            else:
+                current_part += char
+        
+        if current_part:
+            parts.append(current_part)
+        
+        # Process each path component
+        for part in parts:
+            new_values = []
+            
+            for current_value in current_values:
+                if '[*]' in part:
+                    # Handle wildcard array access
+                    key_part = part.replace('[*]', '') if part != '[*]' else ''
+                    
+                    if key_part:
+                        # Navigate to the array first
+                        if isinstance(current_value, dict) and key_part in current_value:
+                            array_value = current_value[key_part]
+                        else:
+                            continue  # Skip if key doesn't exist
+                    else:
+                        # Direct array wildcard
+                        array_value = current_value
+                    
+                    if isinstance(array_value, list):
+                        new_values.extend(array_value)
+                    else:
+                        # If not an array, treat as single value
+                        new_values.append(array_value)
+                        
+                elif '[' in part and ']' in part:
+                    # Handle specific array index
+                    key_part = part[:part.index('[')]
+                    index_part = part[part.index('[') + 1:part.rindex(']')]
+                    
+                    try:
+                        if key_part:
+                            if isinstance(current_value, dict) and key_part in current_value:
+                                array_value = current_value[key_part]
+                            else:
+                                continue
+                        else:
+                            array_value = current_value
+                        
+                        if isinstance(array_value, list):
+                            index = int(index_part)
+                            if 0 <= index < len(array_value):
+                                new_values.append(array_value[index])
+                    except (ValueError, TypeError):
+                        continue
+                        
+                else:
+                    # Simple key navigation
+                    if isinstance(current_value, dict) and part in current_value:
+                        new_values.append(current_value[part])
+            
+            current_values = new_values
+            
+        return current_values
+    
+    def _is_numeric(self, value: Any) -> bool:
+        """Check if a value can be converted to a number."""
+        try:
+            float(str(value))
+            return True
+        except (ValueError, TypeError):
+            return False
+    
+    def _parse_filter_expression(self, expr: str) -> callable:
+        """Parse filter expressions like [?budget>60000] into filter functions."""
+        # Remove brackets and question mark
+        expr = expr.strip()
+        if expr.startswith('[?') and expr.endswith(']'):
+            expr = expr[2:-1]
+        elif expr.startswith('?'):
+            expr = expr[1:]
+        
+        # Parse comparison operators
+        operators = ['>=', '<=', '!=', '==', '>', '<', 'contains', 'startswith', 'endswith']
+        
+        for op in operators:
+            if op in expr:
+                field, value = expr.split(op, 1)
+                field = field.strip()
+                value = value.strip()
+                
+                # Remove quotes from string values
+                if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+                    value = value[1:-1]
+                
+                def create_filter(field_name, operator, target_value):
+                    def filter_func(item):
+                        if not isinstance(item, dict) or field_name not in item:
+                            return False
+                        
+                        item_value = item[field_name]
+                        
+                        # Convert to appropriate types for comparison
+                        if operator in ['>', '<', '>=', '<=']:
+                            try:
+                                item_val = float(str(item_value))
+                                target_val = float(str(target_value))
+                                if operator == '>':
+                                    return item_val > target_val
+                                elif operator == '<':
+                                    return item_val < target_val
+                                elif operator == '>=':
+                                    return item_val >= target_val
+                                elif operator == '<=':
+                                    return item_val <= target_val
+                            except (ValueError, TypeError):
+                                return False
+                        
+                        elif operator == '==':
+                            return str(item_value) == str(target_value)
+                        elif operator == '!=':
+                            return str(item_value) != str(target_value)
+                        elif operator == 'contains':
+                            return str(target_value) in str(item_value)
+                        elif operator == 'startswith':
+                            return str(item_value).startswith(str(target_value))
+                        elif operator == 'endswith':
+                            return str(item_value).endswith(str(target_value))
+                        
+                        return False
+                    
+                    return filter_func
+                
+                return create_filter(field, op, value)
+        
+        # If no operator found, assume equality check
+        raise TemplateFunctionError(f"Invalid filter expression: {expr}")
+    
+    def _json_sum(self, args: List[str], target_file_path: str = None) -> str:
+        """Sum numeric values in array. Usage: {{json_sum:$.projects[*].budget:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("json_sum requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_json_data(file_path)
+        
+        try:
+            values = self._expand_wildcard_path(data, path_expr)
+            numeric_values = [float(str(v)) for v in values if self._is_numeric(v)]
+            return str(sum(numeric_values))
+        except Exception as e:
+            raise TemplateFunctionError(f"Error calculating JSON sum for '{path_expr}': {e}")
+    
+    def _json_avg(self, args: List[str], target_file_path: str = None) -> str:
+        """Average numeric values in array. Usage: {{json_avg:$.projects[*].budget:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("json_avg requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_json_data(file_path)
+        
+        try:
+            values = self._expand_wildcard_path(data, path_expr)
+            numeric_values = [float(str(v)) for v in values if self._is_numeric(v)]
+            if not numeric_values:
+                return "0"
+            return str(sum(numeric_values) / len(numeric_values))
+        except Exception as e:
+            raise TemplateFunctionError(f"Error calculating JSON average for '{path_expr}': {e}")
+    
+    def _json_max(self, args: List[str], target_file_path: str = None) -> str:
+        """Get maximum value in array. Usage: {{json_max:$.projects[*].budget:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("json_max requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_json_data(file_path)
+        
+        try:
+            values = self._expand_wildcard_path(data, path_expr)
+            numeric_values = [float(str(v)) for v in values if self._is_numeric(v)]
+            if not numeric_values:
+                return "0"
+            return str(max(numeric_values))
+        except Exception as e:
+            raise TemplateFunctionError(f"Error finding JSON maximum for '{path_expr}': {e}")
+    
+    def _json_min(self, args: List[str], target_file_path: str = None) -> str:
+        """Get minimum value in array. Usage: {{json_min:$.projects[*].budget:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("json_min requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_json_data(file_path)
+        
+        try:
+            values = self._expand_wildcard_path(data, path_expr)
+            numeric_values = [float(str(v)) for v in values if self._is_numeric(v)]
+            if not numeric_values:
+                return "0"
+            return str(min(numeric_values))
+        except Exception as e:
+            raise TemplateFunctionError(f"Error finding JSON minimum for '{path_expr}': {e}")
+    
+    def _json_collect(self, args: List[str], target_file_path: str = None) -> str:
+        """Collect values into comma-separated string. Usage: {{json_collect:$.projects[*].name:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("json_collect requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_json_data(file_path)
+        
+        try:
+            values = self._expand_wildcard_path(data, path_expr)
+            string_values = [str(v) for v in values if v is not None]
+            return ','.join(string_values)
+        except Exception as e:
+            raise TemplateFunctionError(f"Error collecting JSON values for '{path_expr}': {e}")
+    
+    def _json_count_where(self, args: List[str], target_file_path: str = None) -> str:
+        """Count array elements matching filter. Usage: {{json_count_where:$.projects[?budget>60000]:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("json_count_where requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_json_data(file_path)
+        
+        try:
+            # Parse path and filter
+            if '[?' not in path_expr:
+                raise TemplateFunctionError("json_count_where requires a filter expression with [?...]")
+            
+            # Split path and filter
+            filter_start = path_expr.index('[?')
+            base_path = path_expr[:filter_start]
+            filter_end = path_expr.index(']', filter_start) + 1
+            filter_expr = path_expr[filter_start:filter_end]
+            
+            # Get the array to filter
+            if base_path.startswith('$.'):
+                base_path = base_path[2:]
+            elif base_path.startswith('$'):
+                base_path = base_path[1:]
+            
+            if base_path:
+                target_array = self._navigate_json_keys(data, base_path)
+            else:
+                target_array = data
+            
+            if not isinstance(target_array, list):
+                return "0"
+            
+            # Apply filter
+            filter_func = self._parse_filter_expression(filter_expr)
+            filtered_items = [item for item in target_array if filter_func(item)]
+            
+            return str(len(filtered_items))
+        except Exception as e:
+            raise TemplateFunctionError(f"Error counting filtered JSON elements for '{path_expr}': {e}")
+    
+    def _json_filter(self, args: List[str], target_file_path: str = None) -> str:
+        """Filter array and collect values. Usage: {{json_filter:$.projects[?budget>60000].name:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("json_filter requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_json_data(file_path)
+        
+        try:
+            # Parse path and filter
+            if '[?' not in path_expr:
+                raise TemplateFunctionError("json_filter requires a filter expression with [?...]")
+            
+            # Split path, filter, and remaining path
+            filter_start = path_expr.index('[?')
+            base_path = path_expr[:filter_start]
+            filter_end = path_expr.index(']', filter_start) + 1
+            filter_expr = path_expr[filter_start:filter_end]
+            remaining_path = path_expr[filter_end:]
+            
+            # Remove leading dot from remaining path
+            if remaining_path.startswith('.'):
+                remaining_path = remaining_path[1:]
+            
+            # Get the array to filter
+            if base_path.startswith('$.'):
+                base_path = base_path[2:]
+            elif base_path.startswith('$'):
+                base_path = base_path[1:]
+            
+            if base_path:
+                target_array = self._navigate_json_keys(data, base_path)
+            else:
+                target_array = data
+            
+            if not isinstance(target_array, list):
+                return ""
+            
+            # Apply filter
+            filter_func = self._parse_filter_expression(filter_expr)
+            filtered_items = [item for item in target_array if filter_func(item)]
+            
+            # Extract values from remaining path
+            if remaining_path:
+                values = []
+                for item in filtered_items:
+                    try:
+                        value = self._navigate_json_keys(item, remaining_path)
+                        values.append(str(value))
+                    except:
+                        continue
+                return ','.join(values)
+            else:
+                # Return the filtered objects as JSON strings
+                return ','.join([str(item) for item in filtered_items])
+                
+        except Exception as e:
+            raise TemplateFunctionError(f"Error filtering JSON elements for '{path_expr}': {e}")
 

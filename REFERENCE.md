@@ -44,6 +44,21 @@ For the list of all supported semantic data types for data generation, see [Data
   - [SQLite Functions](#sqlite-functions)
     - [`sqlite_query`](#sqlite_query) - Execute arbitrary SQL
     - [`sqlite_value`](#sqlite_value) - Get specific value by row/column
+  - [JSON Functions](#json-functions)
+    - [Basic JSON Access](#basic-json-access)
+      - [`json_path`](#json_path) - JSONPath-like extraction
+      - [`json_value`](#json_value) - Dot notation navigation
+      - [`json_count`](#json_count) - Count array/object elements
+      - [`json_keys`](#json_keys) - Extract object keys
+    - [JSON Aggregation Functions](#json-aggregation-functions)
+      - [`json_sum`](#json_sum) - Sum numeric values with wildcards
+      - [`json_avg`](#json_avg) - Average numeric values
+      - [`json_max`](#json_max) - Maximum value in array
+      - [`json_min`](#json_min) - Minimum value in array
+    - [JSON Collection and Filtering](#json-collection-and-filtering)
+      - [`json_collect`](#json_collect) - Collect values as comma-separated
+      - [`json_count_where`](#json_count_where) - Count with filter conditions
+      - [`json_filter`](#json_filter) - Filter and extract values
   - [Template Function Examples](#template-function-examples)
   - [Error Handling](#error-handling)
   - [Performance Notes](#performance-notes)
@@ -63,6 +78,12 @@ For the list of all supported semantic data types for data generation, see [Data
     - [Single Table Database](#single-table-database)
     - [Multi-Table Database with Relationships](#multi-table-database-with-relationships)
     - [SQLite Column Specifications](#sqlite-column-specifications)
+  - [JSON File Generation (`create_json`)](#json-file-generation-create_json)
+    - [Schema-Driven Generation](#schema-driven-generation)
+    - [Semantic Data Types](#semantic-data-types)
+    - [Complex Nested Structures](#complex-nested-structures)
+    - [Array Generation](#array-generation)
+    - [Type Constraints](#type-constraints)
   - [Advanced Sandbox Features](#advanced-sandbox-features)
   - [Sandbox Best Practices](#sandbox-best-practices)
   - [Error Handling](#error-handling-1)
@@ -600,6 +621,175 @@ expected_content: "{{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN 
 
 ---
 
+### JSON Functions
+
+Extract and process data from JSON files with powerful querying, aggregation, and filtering capabilities.
+
+#### Basic JSON Access
+
+##### `json_path`
+**Purpose**: Extract values using JSONPath-like syntax.
+**Usage**: `{{json_path:$.path.to.value:file_path}}`
+
+**Parameters**:
+- `path_expression`: JSONPath-like expression (e.g., `$.users[0].name`)
+- `file_path`: Path to JSON file
+
+**Examples**:
+```yaml
+# Get employee name
+expected_response: "{{json_path:$.employee.name:TARGET_FILE}}"
+
+# Get first project budget
+expected_response: "{{json_path:$.employee.projects[0].budget:TARGET_FILE}}"
+
+# Get nested contact info
+expected_response: "{{json_path:$.employee.manager.contact.phone:TARGET_FILE}}"
+```
+
+##### `json_value`
+**Purpose**: Navigate JSON using simple dot notation.
+**Usage**: `{{json_value:key1.key2[0]:file_path}}`
+
+**Parameters**:
+- `key_path`: Dot notation path (e.g., `employee.manager.email`)
+- `file_path`: Path to JSON file
+
+**Example**:
+```yaml
+expected_response: "{{json_value:employee.manager.email:TARGET_FILE}}"
+```
+
+##### `json_count`
+**Purpose**: Count elements in JSON arrays or object keys.
+**Usage**: `{{json_count:$.path.to.array:file_path}}`
+
+**Example**:
+```yaml
+# Count total projects
+expected_response: "{{json_count:$.employee.projects:TARGET_FILE}}"
+```
+
+##### `json_keys`
+**Purpose**: Extract object keys as comma-separated string.
+**Usage**: `{{json_keys:$.path.to.object:file_path}}`
+
+**Example**:
+```yaml
+# Get all employee object keys
+expected_response: "{{json_keys:$.employee:TARGET_FILE}}"
+# Result: "name,email,department,manager,projects"
+```
+
+#### JSON Aggregation Functions
+
+Perform mathematical operations on arrays using wildcard notation.
+
+##### `json_sum`
+**Purpose**: Sum all numeric values in an array.
+**Usage**: `{{json_sum:$.array[*].field:file_path}}`
+
+**Example**:
+```yaml
+# Total project budgets
+expected_response: "{{json_sum:$.employee.projects[*].budget:TARGET_FILE}}"
+```
+
+##### `json_avg`
+**Purpose**: Calculate average of numeric values.
+**Usage**: `{{json_avg:$.array[*].field:file_path}}`
+
+**Example**:
+```yaml
+# Average project budget
+expected_response: "{{json_avg:$.employee.projects[*].budget:TARGET_FILE}}"
+```
+
+##### `json_max`
+**Purpose**: Find maximum value in array.
+**Usage**: `{{json_max:$.array[*].field:file_path}}`
+
+##### `json_min`
+**Purpose**: Find minimum value in array.
+**Usage**: `{{json_min:$.array[*].field:file_path}}`
+
+#### JSON Collection and Filtering
+
+Advanced functions for gathering and filtering data.
+
+##### `json_collect`
+**Purpose**: Collect values into comma-separated string.
+**Usage**: `{{json_collect:$.array[*].field:file_path}}`
+
+**Examples**:
+```yaml
+# Get all project names
+expected_response: "{{json_collect:$.employee.projects[*].name:TARGET_FILE}}"
+# Result: "Widget Pro,Super Gadget"
+
+# Get all team members across projects  
+expected_response: "{{json_collect:$.employee.projects[*].team[*]:TARGET_FILE}}"
+# Result: "Alice,Bob,Charlie,Diana,Eve"
+```
+
+##### `json_count_where`
+**Purpose**: Count array elements matching filter condition.
+**Usage**: `{{json_count_where:$.array[?field>value]:file_path}}`
+
+**Filter Operators**:
+- **Numeric**: `>`, `<`, `>=`, `<=`, `==`, `!=`
+- **String**: `contains`, `startswith`, `endswith`
+
+**Examples**:
+```yaml
+# Count high-budget projects
+expected_response: "{{json_count_where:$.employee.projects[?budget>60000]:TARGET_FILE}}"
+
+# Count Engineering employees
+expected_response: "{{json_count_where:$.employees[?department==Engineering]:TARGET_FILE}}"
+```
+
+##### `json_filter`
+**Purpose**: Filter array and extract values from matching elements.
+**Usage**: `{{json_filter:$.array[?condition].field:file_path}}`
+
+**Examples**:
+```yaml
+# Get names of high-budget projects
+expected_response: "{{json_filter:$.employee.projects[?budget>60000].name:TARGET_FILE}}"
+
+# Get emails of senior developers
+expected_response: "{{json_filter:$.employees[?level==senior].email:TARGET_FILE}}"
+```
+
+#### Advanced JSON Examples
+
+**Complex Enterprise Analysis**:
+```yaml
+question_id: 501
+template: "What's the total budget for Engineering department projects?"
+expected_response: "{{json_sum:$.departments[?name==Engineering].projects[*].budget:TARGET_FILE}}"
+
+question_id: 502
+template: "List all senior team members across high-priority projects"
+expected_response: "{{json_collect:$.projects[?priority==high].team[?role==senior].name:TARGET_FILE}}"
+```
+
+**Multi-Level Aggregation**:
+```yaml
+question_id: 503
+template: "What's the average team size for projects over $50k?"
+# Note: Uses nested aggregation - sum team sizes, then average
+expected_response: "{{json_avg:$.projects[?budget>50000].team_size:TARGET_FILE}}"
+```
+
+**Wildcard Support**:
+- **Single level**: `$.projects[*].budget`
+- **Multi-level**: `$.departments[*].teams[*].members[*].name`
+- **With filtering**: `$.projects[?active==true][*].budget`
+
+---
+
 ### Template Function Examples
 
 #### Complex CSV Processing
@@ -657,10 +847,11 @@ The sandbox setup system creates realistic test environments by generating files
 
 ### Overview
 
-Sandbox setup operates through three main generator types:
+Sandbox setup operates through four main generator types:
 - **`create_files`**: Text files with lorem ipsum content
 - **`create_csv`**: CSV files with realistic business data
 - **`create_sqlite`**: SQLite databases with tables and relationships
+- **`create_json`**: JSON files with schema-driven structured data
 
 ### Basic Configuration
 
@@ -907,6 +1098,162 @@ foreign_key: "enterprise_customers.CUST_ID"  # References parent table
 ```
 
 Foreign keys automatically reference existing parent table IDs, creating realistic relational data.
+
+---
+
+### JSON File Generation (`create_json`)
+
+Creates structured JSON files with schema-driven generation, supporting complex nested objects, arrays, and type constraints.
+
+#### Schema-Driven Generation
+
+```yaml
+sandbox_setup:
+  type: "create_json"
+  target_file: "{{artifacts}}/{{qs_id}}/data.json"
+  content:
+    schema:
+      name: "person_name"
+      email: "email"
+      age: "age"
+      active: "boolean"
+```
+
+**Generated JSON**:
+```json
+{
+  "name": "John Smith",
+  "email": "john.smith@gmail.com",
+  "age": "34",
+  "active": "true"
+}
+```
+
+#### Semantic Data Types
+
+JSON generation supports all existing semantic data types from CSV and SQLite:
+
+```yaml
+content:
+  schema:
+    employee:
+      name: "person_name"           # Same as CSV
+      department: "department"      # Same as CSV  
+      salary: "salary"             # Same as CSV
+      city: "city"                 # Same as CSV
+```
+
+#### Complex Nested Structures
+
+**Object Nesting**:
+```yaml
+content:
+  schema:
+    employee:
+      name: "person_name"
+      contact:
+        email: "email"
+        phone: "phone"
+        address:
+          city: "city"
+          region: "region"
+```
+
+**Array Generation**:
+```yaml
+content:
+  schema:
+    projects:
+      type: "array"
+      count: [2, 5]                # Random count between 2-5
+      items:
+        name: "product"
+        budget: "currency"
+        team:
+          type: "array"
+          count: 3
+          items: "person_name"
+```
+
+#### Type Constraints
+
+Unlike CSV/SQLite, JSON supports configurable constraints:
+
+```yaml
+content:
+  schema:
+    metrics:
+      score:
+        type: "integer"
+        minimum: 1
+        maximum: 100
+      rating:
+        type: "number"  
+        minimum: 1.0
+        maximum: 5.0
+      description:
+        type: "string"
+        min_length: 10
+        max_length: 100
+```
+
+#### Advanced JSON Examples
+
+**Enterprise Employee Data**:
+```yaml
+sandbox_setup:
+  type: "create_json"
+  target_file: "{{artifacts}}/{{qs_id}}/company.json"
+  content:
+    schema:
+      company: "company"
+      departments:
+        type: "array"
+        count: [2, 4]
+        items:
+          name: "department"
+          manager:
+            name: "person_name"
+            email: "email"
+          employees:
+            type: "array"
+            count: [5, 15]
+            items:
+              name: "person_name"
+              salary: "salary"
+              experience: "experience"
+              projects:
+                type: "array"
+                count: [1, 3]
+                items:
+                  name: "product"
+                  budget:
+                    type: "integer"
+                    minimum: 10000
+                    maximum: 100000
+```
+
+**API Response Simulation**:
+```yaml
+content:
+  schema:
+    status: "status"
+    data:
+      users:
+        type: "array"
+        count: 10
+        items:
+          id: "id"
+          profile:
+            name: "person_name"
+            preferences:
+              theme: "category"
+              notifications: "boolean"
+    metadata:
+      page: "id"
+      total: "id"
+      generated: "date"
+```
 
 ---
 

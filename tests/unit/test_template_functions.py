@@ -238,6 +238,176 @@ class TestJSONTemplateFunctions:
         # Array index out of range
         with pytest.raises(TemplateFunctionError, match="Array index 10 out of range"):
             template_functions.evaluate_all_functions(f"{{{{json_path:$.users[10].name:{json_file}}}}}")
+    
+    def test_json_aggregation_functions(self, template_functions, temp_workspace):
+        """Test new JSON aggregation functions: sum, avg, max, min."""
+        # Create test JSON with numeric data
+        test_data = {
+            "projects": [
+                {"name": "Project A", "budget": 50000, "team_size": 5},
+                {"name": "Project B", "budget": 75000, "team_size": 3},
+                {"name": "Project C", "budget": 25000, "team_size": 8}
+            ],
+            "departments": [
+                {"name": "Engineering", "budget": 100000},
+                {"name": "Marketing", "budget": 50000}
+            ]
+        }
+        
+        json_file = temp_workspace / "aggregation_test.json"
+        with open(json_file, 'w') as f:
+            json.dump(test_data, f)
+        
+        # Test json_sum
+        result = template_functions.evaluate_all_functions(f"{{{{json_sum:$.projects[*].budget:{json_file}}}}}")
+        assert result == "150000.0"  # 50000 + 75000 + 25000
+        
+        # Test json_avg
+        result = template_functions.evaluate_all_functions(f"{{{{json_avg:$.projects[*].budget:{json_file}}}}}")
+        assert result == "50000.0"  # 150000 / 3
+        
+        # Test json_max
+        result = template_functions.evaluate_all_functions(f"{{{{json_max:$.projects[*].budget:{json_file}}}}}")
+        assert result == "75000.0"
+        
+        # Test json_min
+        result = template_functions.evaluate_all_functions(f"{{{{json_min:$.projects[*].budget:{json_file}}}}}")
+        assert result == "25000.0"
+        
+        # Test with different field
+        result = template_functions.evaluate_all_functions(f"{{{{json_sum:$.projects[*].team_size:{json_file}}}}}")
+        assert result == "16.0"  # 5 + 3 + 8
+    
+    def test_json_collection_functions(self, template_functions, temp_workspace):
+        """Test json_collect function for gathering values."""
+        test_data = {
+            "teams": [
+                {"name": "Alpha", "members": ["Alice", "Bob"]},
+                {"name": "Beta", "members": ["Charlie", "Diana", "Eve"]}
+            ],
+            "projects": [
+                {"title": "Project X", "status": "active"},
+                {"title": "Project Y", "status": "completed"},
+                {"title": "Project Z", "status": "active"}
+            ]
+        }
+        
+        json_file = temp_workspace / "collection_test.json"
+        with open(json_file, 'w') as f:
+            json.dump(test_data, f)
+        
+        # Test collecting team names
+        result = template_functions.evaluate_all_functions(f"{{{{json_collect:$.teams[*].name:{json_file}}}}}")
+        assert result == "Alpha,Beta"
+        
+        # Test collecting project titles
+        result = template_functions.evaluate_all_functions(f"{{{{json_collect:$.projects[*].title:{json_file}}}}}")
+        assert result == "Project X,Project Y,Project Z"
+        
+        # Test collecting nested array values
+        result = template_functions.evaluate_all_functions(f"{{{{json_collect:$.teams[*].members[*]:{json_file}}}}}")
+        assert result == "Alice,Bob,Charlie,Diana,Eve"
+    
+    def test_json_filtering_functions(self, template_functions, temp_workspace):
+        """Test json_count_where and json_filter functions."""
+        test_data = {
+            "employees": [
+                {"name": "Alice", "salary": 70000, "department": "Engineering"},
+                {"name": "Bob", "salary": 55000, "department": "Marketing"},
+                {"name": "Charlie", "salary": 85000, "department": "Engineering"},
+                {"name": "Diana", "salary": 45000, "department": "Sales"},
+                {"name": "Eve", "salary": 90000, "department": "Engineering"}
+            ]
+        }
+        
+        json_file = temp_workspace / "filtering_test.json"
+        with open(json_file, 'w') as f:
+            json.dump(test_data, f)
+        
+        # Test json_count_where with numeric filter
+        result = template_functions.evaluate_all_functions(f"{{{{json_count_where:$.employees[?salary>60000]:{json_file}}}}}")
+        assert result == "3"  # Alice, Charlie, Eve
+        
+        # Test json_count_where with string filter
+        result = template_functions.evaluate_all_functions(f"{{{{json_count_where:$.employees[?department==Engineering]:{json_file}}}}}")
+        assert result == "3"  # Alice, Charlie, Eve
+        
+        # Test json_filter to get names of high earners
+        result = template_functions.evaluate_all_functions(f"{{{{json_filter:$.employees[?salary>60000].name:{json_file}}}}}")
+        assert result == "Alice,Charlie,Eve"
+        
+        # Test json_filter with string comparison
+        result = template_functions.evaluate_all_functions(f"{{{{json_filter:$.employees[?department==Engineering].name:{json_file}}}}}")
+        assert result == "Alice,Charlie,Eve"
+        
+        # Test multiple filter conditions
+        result = template_functions.evaluate_all_functions(f"{{{{json_count_where:$.employees[?salary<60000]:{json_file}}}}}")
+        assert result == "2"  # Bob, Diana
+    
+    def test_json_wildcard_edge_cases(self, template_functions, temp_workspace):
+        """Test edge cases for wildcard functionality."""
+        test_data = {
+            "empty_array": [],
+            "mixed_data": [
+                {"value": 10},
+                {"value": "20"},  # String that can be numeric
+                {"value": "abc"},  # Non-numeric string
+                {"other": 30}  # Missing 'value' field
+            ],
+            "nested": {
+                "level1": [
+                    {"level2": [{"value": 1}, {"value": 2}]},
+                    {"level2": [{"value": 3}]}
+                ]
+            }
+        }
+        
+        json_file = temp_workspace / "wildcard_test.json"
+        with open(json_file, 'w') as f:
+            json.dump(test_data, f)
+        
+        # Test with empty array
+        result = template_functions.evaluate_all_functions(f"{{{{json_sum:$.empty_array[*].value:{json_file}}}}}")
+        assert result == "0"
+        
+        # Test with mixed data types
+        result = template_functions.evaluate_all_functions(f"{{{{json_sum:$.mixed_data[*].value:{json_file}}}}}")
+        assert result == "30.0"  # 10 + 20 (string that converts to number)
+        
+        # Test deeply nested wildcards
+        result = template_functions.evaluate_all_functions(f"{{{{json_sum:$.nested.level1[*].level2[*].value:{json_file}}}}}")
+        assert result == "6.0"  # 1 + 2 + 3
+    
+    def test_json_filter_operators(self, template_functions, temp_workspace):
+        """Test different filter operators."""
+        test_data = {
+            "products": [
+                {"name": "Widget", "price": 10.50, "category": "tools"},
+                {"name": "Gadget", "price": 25.00, "category": "electronics"},
+                {"name": "Super Widget", "price": 15.75, "category": "tools"},
+                {"name": "Mega Gadget", "price": 5.25, "category": "toys"}
+            ]
+        }
+        
+        json_file = temp_workspace / "operators_test.json"
+        with open(json_file, 'w') as f:
+            json.dump(test_data, f)
+        
+        # Test >= operator
+        result = template_functions.evaluate_all_functions(f"{{{{json_count_where:$.products[?price>=15]:{json_file}}}}}")
+        assert result == "2"  # Gadget, Super Widget
+        
+        # Test <= operator
+        result = template_functions.evaluate_all_functions(f"{{{{json_count_where:$.products[?price<=10.50]:{json_file}}}}}")
+        assert result == "2"  # Widget, Mega Gadget
+        
+        # Test != operator
+        result = template_functions.evaluate_all_functions(f"{{{{json_count_where:$.products[?category!=tools]:{json_file}}}}}")
+        assert result == "2"  # Gadget, Mega Gadget
+        
+        # Test contains operator
+        result = template_functions.evaluate_all_functions(f"{{{{json_filter:$.products[?name contains Widget].name:{json_file}}}}}")
+        assert result == "Widget,Super Widget"
 
 
 @pytest.mark.unit

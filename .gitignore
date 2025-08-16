@@ -58,6 +58,7 @@ dmypy.json
 
 # Project specific
 results/
+results*/
 test_artifacts/*
 !test_artifacts/.gitkeep
 picard_config.py
@@ -66,3 +67,5 @@ picard_config.py
 *.tmp
 *.temp
 *.log
+
+

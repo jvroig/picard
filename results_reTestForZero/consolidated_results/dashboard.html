@@ -70,7 +70,7 @@
         
         <div class="stats-summary">
             <div class="stat-card">
-                <div class="stat-number">2</div>
+                <div class="stat-number">3</div>
                 <div class="stat-label">Models Tested</div>
             </div>
             <div class="stat-card">
@@ -78,11 +78,11 @@
                 <div class="stat-label">Scoring Types</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">40.0%</div>
+                <div class="stat-number">54.5%</div>
                 <div class="stat-label">Best Performance</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">38.0%</div>
+                <div class="stat-number">43.5%</div>
                 <div class="stat-label">Average Performance</div>
             </div>
         </div>
@@ -104,10 +104,10 @@
         new Chart(overallCtx, {
             type: 'bar',
             data: {
-                labels: ["nova-pro-run2_PAST", "nova-premier-run2_PAST"],
+                labels: ["nova-pro-run2_PAST", "nova-premier-run2_PAST", "qwen3-turbo-latest-run2_PAST"],
                 datasets: [{
                     label: 'Overall Accuracy (%)',
-                    data: [36.0, 40.0],
+                    data: [36.0, 40.0, 54.5],
                     backgroundColor: 'rgba(33, 150, 243, 0.8)',
                     borderColor: 'rgba(33, 150, 243, 1)',
                     borderWidth: 1
@@ -154,7 +154,7 @@
         ["directory_structure", "files_exist", "readfile_jsonmatch", "readfile_stringmatch", "stringmatch"].forEach((scoringType, index) => {
             datasets.push({
                 label: scoringType,
-                data: {"directory_structure": [95.0, 95.0], "files_exist": [100.0, 100.0], "readfile_jsonmatch": [5.0, 50.0], "readfile_stringmatch": [2.5, 10.0], "stringmatch": [37.5, 21.25]}[scoringType],
+                data: {"directory_structure": [95.0, 95.0, 95.0], "files_exist": [100.0, 100.0, 95.0], "readfile_jsonmatch": [5.0, 50.0, 25.0], "readfile_stringmatch": [2.5, 10.0, 2.5], "stringmatch": [37.5, 21.25, 75.0]}[scoringType],
                 backgroundColor: colors[index % colors.length],
                 borderColor: colors[index % colors.length].replace('0.8', '1'),
                 borderWidth: 1
@@ -164,7 +164,7 @@
         new Chart(scoringCtx, {
             type: 'bar',
             data: {
-                labels: ["nova-pro-run2_PAST", "nova-premier-run2_PAST"],
+                labels: ["nova-pro-run2_PAST", "nova-premier-run2_PAST", "qwen3-turbo-latest-run2_PAST"],
                 datasets: datasets
             },
             options: {

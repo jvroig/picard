@@ -9,3 +9,8 @@ nova-premier-run2_PAST,stringmatch,17,80,21.25
 nova-premier-run2_PAST,directory_structure,19,20,95.0
 nova-premier-run2_PAST,readfile_jsonmatch,20,40,50.0
 nova-premier-run2_PAST,readfile_stringmatch,4,40,10.0
+qwen3-turbo-latest-run2_PAST,files_exist,19,20,95.0
+qwen3-turbo-latest-run2_PAST,stringmatch,60,80,75.0
+qwen3-turbo-latest-run2_PAST,directory_structure,19,20,95.0
+qwen3-turbo-latest-run2_PAST,readfile_jsonmatch,10,40,25.0
+qwen3-turbo-latest-run2_PAST,readfile_stringmatch,1,40,2.5

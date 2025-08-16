@@ -5,15 +5,20 @@ import pytest
 import tempfile
 import json
 import csv
+import sys
 from pathlib import Path
 from typing import Dict, List, Any
 
-from src.file_generators import (
+# Add src directory to Python path for imports
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root / "src"))
+
+from file_generators import (
     TextFileGenerator, CSVFileGenerator, 
     SQLiteFileGenerator, JSONFileGenerator,
     FileGeneratorFactory
 )
-from src.template_functions import TemplateFunctions
+from template_functions import TemplateFunctions
 
 
 @pytest.fixture

@@ -36,11 +36,13 @@ We follow a **small, frequent commits** approach:
    - Prefer multiple small commits over giant commits
 
 2. **Commit + Push**
-   - Commit immediately after completing a logical unit of work
+   - Commit after **every todo item** (or at most every 2 items if very small)
    - Push to remote frequently to share progress
    - Use descriptive commit messages
+   - Never batch multiple major features into one commit
 
-3. **Test** *(Once pytest migration is complete)*
+3. **Test**
+   - **ALWAYS activate virtual environment first**: `source venv/bin/activate`
    - Run relevant tests after each commit
    - Ensure no regressions introduced
    - Add tests for new functionality
@@ -70,12 +72,15 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 # Push to remote
 git push
 
-# Run tests (once pytest is set up)
-pytest
+# Run tests (must use venv)
+source venv/bin/activate && pytest
 ```
 
-### Testing Commands *(Future)*
+### Testing Commands
 ```bash
+# IMPORTANT: Always activate venv first
+source venv/bin/activate
+
 # Run all tests
 pytest
 
@@ -87,6 +92,9 @@ pytest --cov=src
 
 # Run only fast tests
 pytest -m "not slow"
+
+# Run tests with verbose output
+pytest -v
 ```
 
 ## File Organization for Claude Code

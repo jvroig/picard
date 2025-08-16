@@ -62,15 +62,15 @@ class TestYAMLTemplateFunctions:
         
         # Count array elements
         result = template_functions.evaluate_all_functions(f"{{{{yaml_count:$.users:{yaml_file}}}}}")
-        assert result == 3
+        assert int(result) == 3
         
         # Count object keys
         result = template_functions.evaluate_all_functions(f"{{{{yaml_count:$.database:{yaml_file}}}}}")
-        assert result == 3  # host, port, name
+        assert int(result) == 3  # host, port, name
         
         # Count nested object keys
         result = template_functions.evaluate_all_functions(f"{{{{yaml_count:$.config.settings:{yaml_file}}}}}")
-        assert result == 3  # debug, timeout, max_retries
+        assert int(result) == 3  # debug, timeout, max_retries
     
     def test_yaml_keys_function(self, template_functions, create_yaml_file):
         """Test {{yaml_keys:$.path:file}} function.""" 
@@ -159,7 +159,7 @@ class TestYAMLTemplateFunctions:
         assert set(names) == {'Alice', 'Bob'}
         
         # Filter by department  
-        result = template_functions.evaluate_all_functions(f"{{{{yaml_count_where:$.employees[?department=Engineering]:{yaml_file}}}}}")
+        result = template_functions.evaluate_all_functions(f"{{{{yaml_count_where:$.employees[?department==Engineering]:{yaml_file}}}}}")
         assert result == "2"  # John and Bob
     
     def test_yaml_function_errors(self, template_functions, create_yaml_file):

@@ -1,6 +1,6 @@
 # PICARD Data Generation Reference
 
-This document provides a comprehensive reference for all data types that can be generated in PICARD's sandbox environment. Use this guide to create realistic test data for CSV files and SQLite databases.
+This document provides a comprehensive reference for all data types that can be generated in PICARD's sandbox environment. Use this guide to create realistic test data for CSV files, SQLite databases, JSON documents, and YAML configuration files.
 
 ## Table of Contents
 
@@ -48,9 +48,15 @@ This document provides a comprehensive reference for all data types that can be 
 
 ## Overview
 
-PICARD can generate realistic data for CSV files and SQLite databases using either:
-- **Automatic detection**: Based on header/column names
-- **Explicit specification**: Using `header_types` (CSV) or `data_type` (SQLite)
+PICARD can generate realistic data for multiple file formats using either:
+- **Automatic detection**: Based on header/column names (CSV/SQLite)
+- **Explicit specification**: Using `header_types` (CSV), `data_type` (SQLite), or schema definitions (JSON/YAML)
+
+**Supported formats:**
+- **CSV**: Tabular data with automatic field type detection
+- **SQLite**: Relational databases with foreign key relationships
+- **JSON**: Schema-driven structured data with nested objects and arrays
+- **YAML**: Configuration files with consistent block-style formatting
 
 ```yaml
 # Automatic detection
@@ -373,6 +379,75 @@ content:
   rows: 300
 ```
 
+### YAML Configuration Files
+
+```yaml
+content:
+  schema:
+    database:
+      host: "city"
+      port: "id"
+      name: "company"
+    services:
+      type: "array"
+      count: [2, 4]
+      items:
+        name: "product"
+        enabled: "boolean"
+        timeout: "id"
+```
+
+### YAML Enterprise Environment
+
+```yaml
+content:
+  schema:
+    company: "company"
+    environments:
+      type: "array" 
+      count: 3
+      items:
+        name: "category"        # dev, staging, prod
+        database:
+          host: "city"
+          credentials:
+            username: "person_name"
+            password: "id"
+        features:
+          type: "array"
+          count: [2, 5]
+          items:
+            name: "product"
+            budget: "currency"
+            team_size: "age"
+```
+
+### YAML Team Management
+
+```yaml
+content:
+  schema:
+    teams:
+      type: "array"
+      count: 5
+      items:
+        name: "department"
+        manager:
+          name: "person_name"
+          email: "email"
+          phone: "phone"
+        members:
+          type: "array"
+          count: [3, 8]
+          items:
+            name: "person_name"
+            role: "category"
+            salary: "salary"
+            experience: "experience"
+        budget: "currency"
+        active: "boolean"
+```
+
 ---
 
 ## Best Practices
@@ -388,6 +463,17 @@ content:
 - Use appropriate SQLite types (`INTEGER`, `TEXT`, `REAL`)
 - Use explicit data types to control exact data generation routine
 
+### For JSON Documents
+- Use nested objects to represent complex business entities
+- Include arrays with variable counts for realistic data volumes
+- Combine basic and complex data types in schemas
+- Use type constraints for data validation scenarios
+
+### For YAML Configuration Files
+- Focus on configuration and DevOps scenarios
+- Use consistent block-style formatting for readability
+- Nest environment-specific settings appropriately
+- Include arrays for services, teams, and feature toggles
 
 ### For Business Realism
 - Combine related data types (person_name + email + phone)

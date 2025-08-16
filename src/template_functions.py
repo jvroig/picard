@@ -1,9 +1,10 @@
 """
 Template Functions for the PICARD framework
 
-Handles template function evaluation for file, CSV and sqlite content extraction.
+Handles template function evaluation for file, CSV, SQLite and JSON content extraction.
 """
 import csv
+import json
 import re
 import sqlite3
 from pathlib import Path
@@ -94,6 +95,10 @@ class TemplateFunctions:
             'csv_count_where': self._csv_count_where,
             'sqlite_query': self._sqlite_query,
             'sqlite_value': self._sqlite_value,
+            'json_path': self._json_path,
+            'json_value': self._json_value,
+            'json_count': self._json_count,
+            'json_keys': self._json_keys,
         }
         
         if function_name not in function_map:
@@ -665,6 +670,189 @@ class TemplateFunctions:
             raise TemplateFunctionError(f"SQLite error: {e}")
         except Exception as e:
             raise TemplateFunctionError(f"Error accessing SQLite database: {e}")
+    
+    # JSON-specific extraction functions
+    
+    def _read_json_data(self, path: str) -> Any:
+        """Read JSON file and return parsed data."""
+        file_path = self._resolve_path(path)
+        
+        if not file_path.exists():
+            raise TemplateFunctionError(f"JSON file not found: {file_path}")
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            raise TemplateFunctionError(f"Invalid JSON in file {file_path}: {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error reading JSON file {file_path}: {e}")
+    
+    def _json_path(self, args: List[str], target_file_path: str = None) -> str:
+        """Extract value using JSONPath-like syntax. Usage: {{json_path:$.users[0].name:path}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("json_path requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_json_data(file_path)
+        
+        try:
+            result = self._evaluate_json_path(data, path_expr)
+            return str(result) if result is not None else ""
+        except Exception as e:
+            raise TemplateFunctionError(f"Error evaluating JSONPath '{path_expr}': {e}")
+    
+    def _json_value(self, args: List[str], target_file_path: str = None) -> str:
+        """Get value by simple key path. Usage: {{json_value:key1.key2[0]:path}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("json_value requires exactly 2 arguments: key_path, file_path")
+        
+        key_path = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_json_data(file_path)
+        
+        try:
+            result = self._navigate_json_keys(data, key_path)
+            return str(result) if result is not None else ""
+        except Exception as e:
+            raise TemplateFunctionError(f"Error accessing JSON key '{key_path}': {e}")
+    
+    def _json_count(self, args: List[str], target_file_path: str = None) -> int:
+        """Count elements in JSON array or object keys. Usage: {{json_count:$.users:path}}"""
+        if len(args) not in [1, 2]:
+            raise TemplateFunctionError("json_count requires 1 or 2 arguments: [path_expression], file_path")
+        
+        if len(args) == 1:
+            # Count root level
+            path_expr = "$"
+            file_path = self._resolve_target_file(args[0], target_file_path)
+        else:
+            path_expr = args[0]
+            file_path = self._resolve_target_file(args[1], target_file_path)
+        
+        data = self._read_json_data(file_path)
+        
+        try:
+            if path_expr == "$":
+                target = data
+            else:
+                target = self._evaluate_json_path(data, path_expr)
+            
+            if isinstance(target, list):
+                return len(target)
+            elif isinstance(target, dict):
+                return len(target.keys())
+            else:
+                raise TemplateFunctionError(f"Cannot count non-array/non-object value: {type(target)}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error counting JSON elements at '{path_expr}': {e}")
+    
+    def _json_keys(self, args: List[str], target_file_path: str = None) -> str:
+        """Get object keys as comma-separated string. Usage: {{json_keys:$.user:path}}"""
+        if len(args) not in [1, 2]:
+            raise TemplateFunctionError("json_keys requires 1 or 2 arguments: [path_expression], file_path")
+        
+        if len(args) == 1:
+            # Get root level keys
+            path_expr = "$"
+            file_path = self._resolve_target_file(args[0], target_file_path)
+        else:
+            path_expr = args[0]
+            file_path = self._resolve_target_file(args[1], target_file_path)
+        
+        data = self._read_json_data(file_path)
+        
+        try:
+            if path_expr == "$":
+                target = data
+            else:
+                target = self._evaluate_json_path(data, path_expr)
+            
+            if isinstance(target, dict):
+                return ','.join(target.keys())
+            else:
+                raise TemplateFunctionError(f"Cannot get keys from non-object value: {type(target)}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error getting JSON keys at '{path_expr}': {e}")
+    
+    def _evaluate_json_path(self, data: Any, path_expr: str) -> Any:
+        """Evaluate simple JSONPath-like expressions."""
+        # Remove leading $ if present
+        if path_expr.startswith('$'):
+            path_expr = path_expr[1:]
+        
+        if not path_expr or path_expr == '.':
+            return data
+        
+        # Split path and navigate
+        if path_expr.startswith('.'):
+            path_expr = path_expr[1:]
+        
+        return self._navigate_json_keys(data, path_expr)
+    
+    def _navigate_json_keys(self, data: Any, key_path: str) -> Any:
+        """Navigate JSON data using dot notation and array indices."""
+        if not key_path:
+            return data
+        
+        current = data
+        
+        # Split path by dots, but handle array indices
+        parts = []
+        current_part = ""
+        bracket_depth = 0
+        
+        for char in key_path:
+            if char == '[':
+                bracket_depth += 1
+                current_part += char
+            elif char == ']':
+                bracket_depth -= 1
+                current_part += char
+            elif char == '.' and bracket_depth == 0:
+                if current_part:
+                    parts.append(current_part)
+                current_part = ""
+            else:
+                current_part += char
+        
+        if current_part:
+            parts.append(current_part)
+        
+        # Navigate through each part
+        for part in parts:
+            # Check for array index notation
+            if '[' in part and ']' in part:
+                # Extract key and index
+                key_part = part[:part.index('[')]
+                index_part = part[part.index('[') + 1:part.rindex(']')]
+                
+                # Navigate to the key first (if not empty)
+                if key_part:
+                    if not isinstance(current, dict) or key_part not in current:
+                        raise TemplateFunctionError(f"Key '{key_part}' not found in JSON object")
+                    current = current[key_part]
+                
+                # Then navigate to the array index
+                try:
+                    index = int(index_part)
+                    if not isinstance(current, list):
+                        raise TemplateFunctionError(f"Cannot index non-array value: {type(current)}")
+                    if index < 0 or index >= len(current):
+                        raise TemplateFunctionError(f"Array index {index} out of range (length: {len(current)})")
+                    current = current[index]
+                except ValueError:
+                    raise TemplateFunctionError(f"Invalid array index: {index_part}")
+            else:
+                # Simple key navigation
+                if not isinstance(current, dict):
+                    raise TemplateFunctionError(f"Cannot access key '{part}' on non-object value: {type(current)}")
+                if part not in current:
+                    raise TemplateFunctionError(f"Key '{part}' not found in JSON object")
+                current = current[part]
+        
+        return current
 
 
 def main():
@@ -710,6 +898,48 @@ def main():
             ("{{csv_count_where:name:department:contains:ing:test.csv}}", "3"),
             ("{{csv_sum_where:salary:age:>:30:test.csv}}", "70000.0"),
         ]
+        
+        # Create test JSON file for JSON function testing
+        json_file = temp_path / "test.json"
+        json_data = {
+            "users": [
+                {"id": 1, "name": "John", "age": 25, "active": True},
+                {"id": 2, "name": "Alice", "age": 30, "active": False},
+                {"id": 3, "name": "Bob", "age": 35, "active": True}
+            ],
+            "metadata": {
+                "total": 3,
+                "version": "1.0"
+            },
+            "config": {
+                "settings": {
+                    "debug": True,
+                    "timeout": 30
+                }
+            }
+        }
+        json_file.write_text(json.dumps(json_data, indent=2))
+        
+        # JSON function test cases
+        json_test_cases = [
+            ("{{json_path:$.users[0].name:test.json}}", "John"),
+            ("{{json_path:$.users[1].age:test.json}}", "30"),
+            ("{{json_value:metadata.total:test.json}}", "3"),
+            ("{{json_value:config.settings.debug:test.json}}", "True"),
+            ("{{json_count:$.users:test.json}}", "3"),
+            ("{{json_count:$.metadata:test.json}}", "2"),
+            ("{{json_keys:$.metadata:test.json}}", "total,version"),
+            ("{{json_keys:$.config.settings:test.json}}", "debug,timeout"),
+        ]
+        
+        print("\nTesting JSON template functions:")
+        for template, expected in json_test_cases:
+            try:
+                result = tf.evaluate_all_functions(template)
+                status = "✅" if str(result) == expected else "❌"
+                print(f"  {status} {template} → {result} (expected: {expected})")
+            except Exception as e:
+                print(f"  ❌ {template} → ERROR: {e}")
         
         print("Testing template functions:")
         for template, expected in test_cases:

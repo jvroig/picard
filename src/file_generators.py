@@ -1,9 +1,10 @@
 """
 File Generator Infrastructure for the PICARD framework
 
-Handles dynamic file generation including lorem ipsum content, CSV and sqlite3 data.
+Handles dynamic file generation including lorem ipsum content, CSV, SQLite and JSON data.
 """
 import csv
+import json
 import random
 import re
 import sqlite3
@@ -1053,6 +1054,239 @@ class SQLiteFileGenerator(BaseFileGenerator):
         return result
 
 
+class JSONFileGenerator(BaseFileGenerator):
+    """Generates JSON files with structured data based on schema definitions."""
+    
+    def generate(self, target_file: str, content_spec: Dict[str, Any], 
+                 clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Generate JSON file with specified schema and data.
+        
+        Args:
+            target_file: Path to target JSON file
+            content_spec: Content specification with schema definition
+            clutter_spec: Clutter specification (optional)
+            
+        Returns:
+            Generation results with JSON data and metadata
+        """
+        result = {
+            'target_file': target_file,
+            'files_created': [],
+            'content_generated': {},
+            'json_data': {},
+            'errors': []
+        }
+        
+        try:
+            # Generate JSON content
+            json_data = self._generate_json_content(content_spec)
+            
+            # Write JSON file
+            target_path = self._resolve_path(target_file)
+            self._ensure_directory(target_path)
+            
+            with open(target_path, 'w', encoding='utf-8') as f:
+                json.dump(json_data, f, indent=2, ensure_ascii=False)
+            
+            result['files_created'].append(str(target_path))
+            result['json_data'][str(target_path)] = json_data
+            
+            # Store content as string for compatibility
+            json_content = json.dumps(json_data, indent=2, ensure_ascii=False)
+            result['content_generated'][str(target_path)] = json_content
+            
+            # Generate clutter files if specified
+            if clutter_spec:
+                clutter_result = self._generate_clutter_files(target_file, clutter_spec)
+                result['files_created'].extend(clutter_result['files_created'])
+                result['content_generated'].update(clutter_result['content_generated'])
+                result['errors'].extend(clutter_result['errors'])
+            
+        except Exception as e:
+            result['errors'].append(f"Error generating JSON file {target_file}: {e}")
+            raise FileGeneratorError(f"Failed to generate JSON file {target_file}: {e}")
+        
+        return result
+    
+    def _generate_json_content(self, content_spec: Dict[str, Any]) -> Any:
+        """Generate JSON content based on schema specification."""
+        schema = content_spec.get('schema', {})
+        
+        if not schema:
+            # Default simple object if no schema provided
+            return {
+                'message': self.data_generator.generate_field('lorem_words'),
+                'timestamp': self.data_generator.generate_field('date'),
+                'id': self.data_generator.generate_field('id')
+            }
+        
+        return self._generate_from_schema(schema)
+    
+    def _generate_from_schema(self, schema: Dict[str, Any]) -> Any:
+        """Recursively generate data from schema definition."""
+        if isinstance(schema, dict):
+            if 'type' in schema:
+                return self._generate_typed_value(schema)
+            else:
+                # Regular object - process each key
+                result = {}
+                for key, value_schema in schema.items():
+                    result[key] = self._generate_from_schema(value_schema)
+                return result
+        else:
+            # Primitive value or field type string
+            if isinstance(schema, str):
+                return self.data_generator.generate_field(schema)
+            else:
+                return schema
+    
+    def _generate_typed_value(self, schema: Dict[str, Any]) -> Any:
+        """Generate value based on explicit type definition."""
+        value_type = schema['type']
+        
+        if value_type == 'array':
+            return self._generate_array(schema)
+        elif value_type == 'object':
+            return self._generate_object(schema)
+        elif value_type == 'string':
+            return self._generate_string_value(schema)
+        elif value_type == 'number':
+            return self._generate_number_value(schema)
+        elif value_type == 'integer':
+            return self._generate_integer_value(schema)
+        elif value_type == 'boolean':
+            return random.choice([True, False])
+        elif value_type == 'null':
+            return None
+        else:
+            # Treat as data generator field type
+            return self.data_generator.generate_field(value_type)
+    
+    def _generate_array(self, schema: Dict[str, Any]) -> List[Any]:
+        """Generate array based on schema."""
+        count_spec = schema.get('count', 5)
+        items_schema = schema.get('items', 'lorem_words')
+        
+        # Handle count as range [min, max] or single value
+        if isinstance(count_spec, list) and len(count_spec) == 2:
+            count = random.randint(count_spec[0], count_spec[1])
+        else:
+            count = int(count_spec)
+        
+        result = []
+        for _ in range(count):
+            result.append(self._generate_from_schema(items_schema))
+        
+        return result
+    
+    def _generate_object(self, schema: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate object based on schema."""
+        result = {}
+        
+        # Process defined properties
+        properties = schema.get('properties', {})
+        for key, value_schema in properties.items():
+            result[key] = self._generate_from_schema(value_schema)
+        
+        # Handle additional properties if specified
+        additional = schema.get('additional_properties', None)
+        if additional:
+            additional_count = random.randint(0, 3)
+            for i in range(additional_count):
+                key = f"extra_{i}"
+                result[key] = self._generate_from_schema(additional)
+        
+        return result
+    
+    def _generate_string_value(self, schema: Dict[str, Any]) -> str:
+        """Generate string value with optional constraints."""
+        min_length = schema.get('min_length', 1)
+        max_length = schema.get('max_length', 50)
+        pattern = schema.get('pattern', None)
+        
+        if pattern:
+            # For simple patterns, generate based on field type
+            return self.data_generator.generate_field(pattern)
+        else:
+            # Generate lorem words within length constraints
+            words = []
+            current_length = 0
+            while current_length < min_length:
+                word = self.lorem_generator.generate_words(1)
+                words.append(word)
+                current_length += len(word) + (1 if words else 0)  # +1 for space
+                
+                if current_length > max_length:
+                    break
+            
+            result = ' '.join(words)
+            return result[:max_length] if len(result) > max_length else result
+    
+    def _generate_number_value(self, schema: Dict[str, Any]) -> float:
+        """Generate number (float) value with optional constraints."""
+        minimum = schema.get('minimum', 0.0)
+        maximum = schema.get('maximum', 1000.0)
+        return round(random.uniform(minimum, maximum), 2)
+    
+    def _generate_integer_value(self, schema: Dict[str, Any]) -> int:
+        """Generate integer value with optional constraints."""
+        minimum = schema.get('minimum', 1)
+        maximum = schema.get('maximum', 1000)
+        return random.randint(minimum, maximum)
+    
+    def _generate_clutter_files(self, base_file: str, clutter_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate clutter JSON and text files."""
+        result = {
+            'files_created': [],
+            'content_generated': {},
+            'errors': []
+        }
+        
+        try:
+            count = clutter_spec.get('count', 3)
+            base_path = self._resolve_path(base_file).parent
+            
+            for i in range(count):
+                # Random file type and location
+                file_type = random.choice(['json', 'txt', 'log'])
+                subdir_depth = random.randint(0, 1)
+                
+                if subdir_depth > 0:
+                    subdir = f"subdir_{random.randint(1, 50)}"
+                    clutter_path = base_path / subdir / f"clutter_{random.randint(1, 100)}.{file_type}"
+                else:
+                    clutter_path = base_path / f"clutter_{random.randint(1, 100)}.{file_type}"
+                
+                self._ensure_directory(clutter_path)
+                
+                if file_type == 'json':
+                    # Generate small random JSON
+                    clutter_data = {
+                        'id': random.randint(1, 1000),
+                        'name': self.data_generator.generate_field('lorem_words'),
+                        'values': [random.randint(1, 100) for _ in range(random.randint(1, 5))]
+                    }
+                    
+                    with open(clutter_path, 'w', encoding='utf-8') as f:
+                        json.dump(clutter_data, f, indent=2)
+                    
+                    content = json.dumps(clutter_data, indent=2)
+                else:
+                    # Generate text content
+                    content = self.lorem_generator.generate_lines(random.randint(2, 8))
+                    with open(clutter_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                
+                result['files_created'].append(str(clutter_path))
+                result['content_generated'][str(clutter_path)] = content
+                
+        except Exception as e:
+            result['errors'].append(f"Error generating JSON clutter files: {e}")
+        
+        return result
+
+
 class FileGeneratorFactory:
     """Factory for creating file generators."""
     
@@ -1074,6 +1308,8 @@ class FileGeneratorFactory:
             return CSVFileGenerator(base_dir)
         elif generator_type == 'create_sqlite':
             return SQLiteFileGenerator(base_dir)
+        elif generator_type == 'create_json':
+            return JSONFileGenerator(base_dir)
         else:
             raise FileGeneratorError(f"Unknown generator type: {generator_type}")
 
@@ -1180,6 +1416,75 @@ def main():
             print(f"     Table: {table_name}")
             for i, row in enumerate(table_info['rows'][:3]):
                 print(f"       Row {i+1}: {row}")
+        
+        # Test JSON file generation
+        print("\n6. Testing JSON file generation:")
+        json_gen = JSONFileGenerator(temp_dir)
+        
+        # Test simple JSON
+        simple_result = json_gen.generate(
+            target_file="test_data/simple.json",
+            content_spec={
+                'schema': {
+                    'message': 'lorem_words',
+                    'count': {'type': 'integer', 'minimum': 1, 'maximum': 100},
+                    'active': {'type': 'boolean'}
+                }
+            }
+        )
+        
+        print(f"   Simple JSON created: {len(simple_result['files_created'])} files")
+        simple_file = list(simple_result['json_data'].keys())[0]
+        simple_data = simple_result['json_data'][simple_file]
+        print(f"   Simple JSON content: {simple_data}")
+        
+        # Test complex nested JSON
+        complex_result = json_gen.generate(
+            target_file="test_data/users.json",
+            content_spec={
+                'schema': {
+                    'users': {
+                        'type': 'array',
+                        'count': [2, 4],
+                        'items': {
+                            'id': 'id',
+                            'name': 'person_name',
+                            'email': 'email',
+                            'profile': {
+                                'age': 'age',
+                                'city': 'city',
+                                'salary': {'type': 'number', 'minimum': 30000, 'maximum': 120000}
+                            },
+                            'tags': {
+                                'type': 'array',
+                                'count': [1, 3],
+                                'items': 'lorem_word'
+                            }
+                        }
+                    },
+                    'metadata': {
+                        'total': {'type': 'integer'},
+                        'generated_at': 'date'
+                    }
+                }
+            },
+            clutter_spec={'count': 2}
+        )
+        
+        print(f"   Complex JSON created: {len(complex_result['files_created'])} files")
+        complex_file = list(complex_result['json_data'].keys())[0]
+        complex_data = complex_result['json_data'][complex_file]
+        print(f"   Complex JSON structure:")
+        print(f"     Users count: {len(complex_data.get('users', []))}")
+        if complex_data.get('users'):
+            first_user = complex_data['users'][0]
+            print(f"     First user: {first_user.get('name')} ({first_user.get('email')})")
+            print(f"     First user profile: age={first_user.get('profile', {}).get('age')}, city={first_user.get('profile', {}).get('city')}")
+        
+        # Test factory
+        print("\n7. Testing JSON factory:")
+        factory_json_gen = FileGeneratorFactory.create_generator('create_json', temp_dir)
+        print(f"   Factory created: {type(factory_json_gen).__name__}")
         
         print("\n✅ All file generator tests completed!")
 

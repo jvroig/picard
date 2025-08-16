@@ -6,6 +6,7 @@ simulating real PICARD usage scenarios.
 """
 import pytest
 import json
+import yaml
 import csv
 import sqlite3
 import sys
@@ -443,3 +444,190 @@ class TestPerformanceWorkflows:
         
         total_time = time.time() - start_time
         assert total_time < 6.0  # Entire workflow should complete quickly
+
+
+@pytest.mark.integration
+class TestYAMLWorkflows:
+    """Test complete YAML generation → extraction workflows."""
+    
+    def test_yaml_configuration_workflow(self, temp_workspace):
+        """Test: Generate YAML config → Extract values → Verify structure."""
+        yaml_generator = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace))
+        
+        # Generate complex YAML configuration
+        result = yaml_generator.generate(
+            target_file="app_config.yaml",
+            content_spec={
+                'schema': {
+                    'database': {
+                        'host': 'city',
+                        'port': {'type': 'integer', 'minimum': 1000, 'maximum': 9999},
+                        'name': 'company'
+                    },
+                    'services': {
+                        'type': 'array',
+                        'count': [2, 4],
+                        'items': {
+                            'name': 'product',
+                            'enabled': {'type': 'boolean'},
+                            'config': {
+                                'timeout': {'type': 'integer', 'minimum': 10, 'maximum': 120},
+                                'retries': {'type': 'integer', 'minimum': 1, 'maximum': 5}
+                            }
+                        }
+                    },
+                    'metadata': {
+                        'version': 'version',
+                        'created': 'date',
+                        'environment': 'category'
+                    }
+                }
+            }
+        )
+        
+        assert result['errors'] == []
+        
+        tf = TemplateFunctions(str(temp_workspace))
+        
+        # Test basic value extraction
+        db_host = tf.evaluate_all_functions("{{yaml_value:database.host:app_config.yaml}}")
+        db_port = tf.evaluate_all_functions("{{yaml_value:database.port:app_config.yaml}}")
+        
+        assert len(db_host) > 0
+        assert 1000 <= int(db_port) <= 9999
+        
+        # Test array operations
+        service_count = int(tf.evaluate_all_functions("{{yaml_count:$.services:app_config.yaml}}"))
+        assert 2 <= service_count <= 4
+        
+        # Test path navigation
+        first_service = tf.evaluate_all_functions("{{yaml_path:$.services[0].name:app_config.yaml}}")
+        first_service_enabled = tf.evaluate_all_functions("{{yaml_path:$.services[0].enabled:app_config.yaml}}")
+        
+        assert len(first_service) > 0
+        assert first_service_enabled in ['True', 'False']
+        
+        # Test aggregation functions
+        timeout_sum = float(tf.evaluate_all_functions("{{yaml_sum:$.services[*].config.timeout:app_config.yaml}}"))
+        timeout_avg = float(tf.evaluate_all_functions("{{yaml_avg:$.services[*].config.timeout:app_config.yaml}}"))
+        
+        assert timeout_sum > 0
+        assert 10 <= timeout_avg <= 120
+        
+        # Test key extraction
+        db_keys = tf.evaluate_all_functions("{{yaml_keys:$.database:app_config.yaml}}")
+        keys = set(db_keys.split(','))
+        expected_keys = {'host', 'port', 'name'}
+        assert keys == expected_keys
+    
+    def test_yaml_array_operations(self, temp_workspace):
+        """Test complex YAML array operations and filtering."""
+        yaml_generator = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace))
+        
+        # Generate YAML with filterable array data
+        result = yaml_generator.generate(
+            target_file="teams.yaml",
+            content_spec={
+                'schema': {
+                    'teams': {
+                        'type': 'array',
+                        'count': 5,
+                        'items': {
+                            'name': 'product',
+                            'budget': {'type': 'integer', 'minimum': 50000, 'maximum': 200000},
+                            'members': {'type': 'integer', 'minimum': 2, 'maximum': 8},
+                            'active': {'type': 'boolean'}
+                        }
+                    },
+                    'company': {
+                        'total_budget': {'type': 'integer', 'minimum': 500000, 'maximum': 1000000}
+                    }
+                }
+            }
+        )
+        
+        assert result['errors'] == []
+        
+        tf = TemplateFunctions(str(temp_workspace))
+        
+        # Test array aggregations
+        total_budget = float(tf.evaluate_all_functions("{{yaml_sum:$.teams[*].budget:teams.yaml}}"))
+        avg_budget = float(tf.evaluate_all_functions("{{yaml_avg:$.teams[*].budget:teams.yaml}}"))
+        max_budget = float(tf.evaluate_all_functions("{{yaml_max:$.teams[*].budget:teams.yaml}}"))
+        min_budget = float(tf.evaluate_all_functions("{{yaml_min:$.teams[*].budget:teams.yaml}}"))
+        
+        assert total_budget > 0
+        assert 50000 <= avg_budget <= 200000
+        assert 50000 <= max_budget <= 200000
+        assert 50000 <= min_budget <= 200000
+        assert min_budget <= avg_budget <= max_budget
+        
+        # Test collection functions
+        team_names = tf.evaluate_all_functions("{{yaml_collect:$.teams[*].name:teams.yaml}}")
+        names = team_names.split(',')
+        assert len(names) == 5
+        assert all(len(name.strip()) > 0 for name in names)
+        
+        # Test filtering operations (high budget teams)
+        high_budget_count = tf.evaluate_all_functions("{{yaml_count_where:$.teams[?budget>100000]:teams.yaml}}")
+        high_budget_names = tf.evaluate_all_functions("{{yaml_filter:$.teams[?budget>100000].name:teams.yaml}}")
+        
+        assert int(high_budget_count) >= 0
+        if int(high_budget_count) > 0:
+            high_names = high_budget_names.split(',')
+            assert len(high_names) == int(high_budget_count)
+    
+    def test_yaml_to_json_comparison(self, temp_workspace):
+        """Test that YAML and JSON with same data structure produce equivalent results."""
+        tf = TemplateFunctions(str(temp_workspace))
+        
+        # Define same schema for both formats
+        schema = {
+            'users': {
+                'type': 'array',
+                'count': 3,
+                'items': {
+                    'id': {'type': 'integer', 'minimum': 1, 'maximum': 1000},
+                    'name': 'person_name',
+                    'score': {'type': 'integer', 'minimum': 0, 'maximum': 100}
+                }
+            },
+            'settings': {
+                'max_users': {'type': 'integer', 'minimum': 10, 'maximum': 20}
+            }
+        }
+        
+        # Generate YAML version
+        yaml_gen = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace))
+        yaml_result = yaml_gen.generate(
+            target_file="data.yaml",
+            content_spec={'schema': schema}
+        )
+        
+        # Generate JSON version with same schema
+        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_result = json_gen.generate(
+            target_file="data.json", 
+            content_spec={'schema': schema}
+        )
+        
+        assert yaml_result['errors'] == []
+        assert json_result['errors'] == []
+        
+        # Compare equivalent operations
+        yaml_user_count = int(tf.evaluate_all_functions("{{yaml_count:$.users:data.yaml}}"))
+        json_user_count = int(tf.evaluate_all_functions("{{json_count:$.users:data.json}}"))
+        assert yaml_user_count == json_user_count == 3
+        
+        yaml_max_users = tf.evaluate_all_functions("{{yaml_value:settings.max_users:data.yaml}}")
+        json_max_users = tf.evaluate_all_functions("{{json_value:settings.max_users:data.json}}")
+        assert 10 <= int(yaml_max_users) <= 20
+        assert 10 <= int(json_max_users) <= 20
+        
+        # Compare aggregation functions
+        yaml_score_sum = float(tf.evaluate_all_functions("{{yaml_sum:$.users[*].score:data.yaml}}"))
+        json_score_sum = float(tf.evaluate_all_functions("{{json_sum:$.users[*].score:data.json}}"))
+        
+        # Both should be valid ranges (won't be equal since data is random)
+        assert 0 <= yaml_score_sum <= 300  # 3 users * max 100 score
+        assert 0 <= json_score_sum <= 300

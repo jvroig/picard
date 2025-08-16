@@ -5,6 +5,7 @@ Tests advanced PICARD workflows that combine multiple file types and operations.
 """
 import pytest
 import json
+import yaml
 import csv
 import sqlite3
 import sys
@@ -38,6 +39,14 @@ class TestTemplateVariableSubstitution:
         )
         files_to_test.append(("test.json", "json"))
         
+        # YAML file
+        yaml_gen = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace))
+        yaml_result = yaml_gen.generate(
+            target_file="test.yaml",
+            content_spec={'schema': {'count': {'type': 'integer', 'minimum': 5, 'maximum': 5}}}
+        )
+        files_to_test.append(("test.yaml", "yaml"))
+        
         # CSV file 
         csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace))
         csv_result = csv_gen.generate(
@@ -64,6 +73,10 @@ class TestTemplateVariableSubstitution:
             
             if file_type == "json":
                 result = tf.evaluate_all_functions("{{json_value:count:TARGET_FILE}}", file_path)
+                assert result == "5"
+                
+            elif file_type == "yaml":
+                result = tf.evaluate_all_functions("{{yaml_value:count:TARGET_FILE}}", file_path)
                 assert result == "5"
                 
             elif file_type == "csv":
@@ -327,6 +340,7 @@ class TestScalabilityWorkflows:
         """Test multiple file operations in sequence."""
         generators = {
             'json': FileGeneratorFactory.create_generator('create_json', str(temp_workspace)),
+            'yaml': FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace)),
             'csv': FileGeneratorFactory.create_generator('create_csv', str(temp_workspace)),
             'sqlite': FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace))
         }
@@ -342,6 +356,13 @@ class TestScalabilityWorkflows:
                 content_spec={'schema': {'id': i, 'items': {'type': 'array', 'count': 2, 'items': 'lorem_word'}}}
             )
             results.append(json_result)
+            
+            # YAML files
+            yaml_result = generators['yaml'].generate(
+                target_file=f"config_{i}.yaml",
+                content_spec={'schema': {'id': i, 'settings': {'debug': {'type': 'boolean'}, 'timeout': {'type': 'integer', 'minimum': 10, 'maximum': 60}}}}
+            )
+            results.append(yaml_result)
             
             # CSV files
             csv_result = generators['csv'].generate(

@@ -1,13 +1,14 @@
 """
 File Generator Infrastructure for the PICARD framework
 
-Handles dynamic file generation including lorem ipsum content, CSV, SQLite and JSON data.
+Handles dynamic file generation including lorem ipsum content, CSV, SQLite, JSON and YAML data.
 """
 import csv
 import json
 import random
 import re
 import sqlite3
+import yaml
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from abc import ABC, abstractmethod
@@ -1287,6 +1288,247 @@ class JSONFileGenerator(BaseFileGenerator):
         return result
 
 
+class YAMLFileGenerator(BaseFileGenerator):
+    """Generates YAML files with structured data based on schema definitions."""
+    
+    def generate(self, target_file: str, content_spec: Dict[str, Any], 
+                 clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Generate YAML file with specified schema and data.
+        
+        Args:
+            target_file: Path to target YAML file
+            content_spec: Content specification with schema definition
+            clutter_spec: Clutter specification (optional)
+            
+        Returns:
+            Generation results with YAML data and metadata
+        """
+        result = {
+            'target_file': target_file,
+            'files_created': [],
+            'content_generated': {},
+            'yaml_data': {},
+            'errors': []
+        }
+        
+        try:
+            # Generate YAML content (reuse JSON schema logic)
+            yaml_data = self._generate_yaml_content(content_spec)
+            
+            # Write YAML file with consistent formatting
+            target_path = self._resolve_path(target_file)
+            self._ensure_directory(target_path)
+            
+            with open(target_path, 'w', encoding='utf-8') as f:
+                yaml.dump(yaml_data, f, 
+                         default_flow_style=False,    # Always block style
+                         indent=2,                     # Consistent indentation
+                         allow_unicode=True,           # Clean encoding
+                         sort_keys=False)              # Preserve key order
+            
+            result['files_created'].append(str(target_path))
+            result['yaml_data'][str(target_path)] = yaml_data
+            
+            # Store content as string for compatibility
+            yaml_content = yaml.dump(yaml_data, 
+                                   default_flow_style=False, 
+                                   indent=2, 
+                                   allow_unicode=True,
+                                   sort_keys=False)
+            result['content_generated'][str(target_path)] = yaml_content
+            
+            # Generate clutter files if specified
+            if clutter_spec:
+                clutter_result = self._generate_clutter_files(target_file, clutter_spec)
+                result['files_created'].extend(clutter_result['files_created'])
+                result['content_generated'].update(clutter_result['content_generated'])
+                result['errors'].extend(clutter_result['errors'])
+            
+        except Exception as e:
+            result['errors'].append(f"Error generating YAML file {target_file}: {e}")
+            raise FileGeneratorError(f"Failed to generate YAML file {target_file}: {e}")
+        
+        return result
+    
+    def _generate_yaml_content(self, content_spec: Dict[str, Any]) -> Any:
+        """Generate YAML content based on schema specification."""
+        schema = content_spec.get('schema', {})
+        
+        if not schema:
+            # Default simple object if no schema provided
+            return {
+                'message': self.data_generator.generate_field('lorem_words'),
+                'timestamp': self.data_generator.generate_field('date'),
+                'id': self.data_generator.generate_field('id')
+            }
+        
+        return self._generate_from_schema(schema)
+    
+    def _generate_from_schema(self, schema: Dict[str, Any]) -> Any:
+        """Recursively generate data from schema definition (reuse JSON logic)."""
+        if isinstance(schema, dict):
+            if 'type' in schema:
+                return self._generate_typed_value(schema)
+            else:
+                # Regular object - process each key
+                result = {}
+                for key, value_schema in schema.items():
+                    result[key] = self._generate_from_schema(value_schema)
+                return result
+        else:
+            # Primitive value or field type string
+            if isinstance(schema, str):
+                return self.data_generator.generate_field(schema)
+            else:
+                return schema
+    
+    def _generate_typed_value(self, schema: Dict[str, Any]) -> Any:
+        """Generate value based on explicit type definition (reuse JSON logic)."""
+        value_type = schema['type']
+        
+        if value_type == 'array':
+            return self._generate_array(schema)
+        elif value_type == 'object':
+            return self._generate_object(schema)
+        elif value_type == 'string':
+            return self._generate_string_value(schema)
+        elif value_type == 'number':
+            return self._generate_number_value(schema)
+        elif value_type == 'integer':
+            return self._generate_integer_value(schema)
+        elif value_type == 'boolean':
+            return random.choice([True, False])
+        elif value_type == 'null':
+            return None
+        else:
+            # Treat as data generator field type
+            return self.data_generator.generate_field(value_type)
+    
+    def _generate_array(self, schema: Dict[str, Any]) -> List[Any]:
+        """Generate array based on schema (reuse JSON logic)."""
+        count_spec = schema.get('count', 5)
+        items_schema = schema.get('items', 'lorem_words')
+        
+        # Handle count as range [min, max] or single value
+        if isinstance(count_spec, list) and len(count_spec) == 2:
+            count = random.randint(count_spec[0], count_spec[1])
+        else:
+            count = int(count_spec)
+        
+        result = []
+        for _ in range(count):
+            result.append(self._generate_from_schema(items_schema))
+        
+        return result
+    
+    def _generate_object(self, schema: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate object based on schema (reuse JSON logic)."""
+        result = {}
+        
+        # Process defined properties
+        properties = schema.get('properties', {})
+        for key, value_schema in properties.items():
+            result[key] = self._generate_from_schema(value_schema)
+        
+        # Handle additional properties if specified
+        additional = schema.get('additional_properties', None)
+        if additional:
+            additional_count = random.randint(0, 3)
+            for i in range(additional_count):
+                key = f"extra_{i}"
+                result[key] = self._generate_from_schema(additional)
+        
+        return result
+    
+    def _generate_string_value(self, schema: Dict[str, Any]) -> str:
+        """Generate string value with optional constraints (reuse JSON logic)."""
+        min_length = schema.get('min_length', 1)
+        max_length = schema.get('max_length', 50)
+        pattern = schema.get('pattern', None)
+        
+        if pattern:
+            # For simple patterns, generate based on field type
+            return self.data_generator.generate_field(pattern)
+        else:
+            # Generate lorem words within length constraints
+            words = []
+            current_length = 0
+            while current_length < min_length:
+                word = self.lorem_generator.generate_words(1)
+                words.append(word)
+                current_length += len(word) + (1 if words else 0)  # +1 for space
+                
+                if current_length > max_length:
+                    break
+            
+            result = ' '.join(words)
+            return result[:max_length] if len(result) > max_length else result
+    
+    def _generate_number_value(self, schema: Dict[str, Any]) -> float:
+        """Generate number (float) value with optional constraints (reuse JSON logic)."""
+        minimum = schema.get('minimum', 0.0)
+        maximum = schema.get('maximum', 1000.0)
+        return round(random.uniform(minimum, maximum), 2)
+    
+    def _generate_integer_value(self, schema: Dict[str, Any]) -> int:
+        """Generate integer value with optional constraints (reuse JSON logic)."""
+        minimum = schema.get('minimum', 1)
+        maximum = schema.get('maximum', 1000)
+        return random.randint(minimum, maximum)
+    
+    def _generate_clutter_files(self, base_file: str, clutter_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate clutter YAML and text files."""
+        result = {
+            'files_created': [],
+            'content_generated': {},
+            'errors': []
+        }
+        
+        try:
+            count = clutter_spec.get('count', 3)
+            base_path = self._resolve_path(base_file).parent
+            
+            for i in range(count):
+                # Random file type and location
+                file_type = random.choice(['yaml', 'yml', 'txt', 'log'])
+                subdir_depth = random.randint(0, 1)
+                
+                if subdir_depth > 0:
+                    subdir = f"subdir_{random.randint(1, 50)}"
+                    clutter_path = base_path / subdir / f"clutter_{random.randint(1, 100)}.{file_type}"
+                else:
+                    clutter_path = base_path / f"clutter_{random.randint(1, 100)}.{file_type}"
+                
+                self._ensure_directory(clutter_path)
+                
+                if file_type in ['yaml', 'yml']:
+                    # Generate small random YAML
+                    clutter_data = {
+                        'id': random.randint(1, 1000),
+                        'name': self.data_generator.generate_field('lorem_words'),
+                        'values': [random.randint(1, 100) for _ in range(random.randint(1, 5))]
+                    }
+                    
+                    with open(clutter_path, 'w', encoding='utf-8') as f:
+                        yaml.dump(clutter_data, f, default_flow_style=False, indent=2)
+                    
+                    content = yaml.dump(clutter_data, default_flow_style=False, indent=2)
+                else:
+                    # Generate text content
+                    content = self.lorem_generator.generate_lines(random.randint(2, 8))
+                    with open(clutter_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                
+                result['files_created'].append(str(clutter_path))
+                result['content_generated'][str(clutter_path)] = content
+                
+        except Exception as e:
+            result['errors'].append(f"Error generating YAML clutter files: {e}")
+        
+        return result
+
+
 class FileGeneratorFactory:
     """Factory for creating file generators."""
     
@@ -1310,6 +1552,8 @@ class FileGeneratorFactory:
             return SQLiteFileGenerator(base_dir)
         elif generator_type == 'create_json':
             return JSONFileGenerator(base_dir)
+        elif generator_type == 'create_yaml':
+            return YAMLFileGenerator(base_dir)
         else:
             raise FileGeneratorError(f"Unknown generator type: {generator_type}")
 

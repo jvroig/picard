@@ -1,12 +1,13 @@
 """
 Template Functions for the PICARD framework
 
-Handles template function evaluation for file, CSV, SQLite and JSON content extraction.
+Handles template function evaluation for file, CSV, SQLite, JSON and YAML content extraction.
 """
 import csv
 import json
 import re
 import sqlite3
+import yaml
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -106,6 +107,17 @@ class TemplateFunctions:
             'json_collect': self._json_collect,
             'json_count_where': self._json_count_where,
             'json_filter': self._json_filter,
+            'yaml_path': self._yaml_path,
+            'yaml_value': self._yaml_value,
+            'yaml_count': self._yaml_count,
+            'yaml_keys': self._yaml_keys,
+            'yaml_sum': self._yaml_sum,
+            'yaml_avg': self._yaml_avg,
+            'yaml_max': self._yaml_max,
+            'yaml_min': self._yaml_min,
+            'yaml_collect': self._yaml_collect,
+            'yaml_count_where': self._yaml_count_where,
+            'yaml_filter': self._yaml_filter,
         }
         
         if function_name not in function_map:
@@ -1215,4 +1227,297 @@ class TemplateFunctions:
                 
         except Exception as e:
             raise TemplateFunctionError(f"Error filtering JSON elements for '{path_expr}': {e}")
+    
+    # YAML-specific extraction functions
+    
+    def _read_yaml_data(self, path: str) -> Any:
+        """Read YAML file and return parsed data."""
+        file_path = self._resolve_path(path)
+        
+        if not file_path.exists():
+            raise TemplateFunctionError(f"YAML file not found: {file_path}")
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise TemplateFunctionError(f"Invalid YAML in file {file_path}: {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error reading YAML file {file_path}: {e}")
+    
+    def _yaml_path(self, args: List[str], target_file_path: str = None) -> str:
+        """Extract value using JSONPath-like syntax on YAML. Usage: {{yaml_path:$.users[0].name:path}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("yaml_path requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_yaml_data(file_path)
+        
+        try:
+            result = self._evaluate_json_path(data, path_expr)  # Reuse JSON path logic
+            return str(result) if result is not None else ""
+        except Exception as e:
+            raise TemplateFunctionError(f"Error evaluating YAML path '{path_expr}': {e}")
+    
+    def _yaml_value(self, args: List[str], target_file_path: str = None) -> str:
+        """Get value by simple key path on YAML. Usage: {{yaml_value:key1.key2[0]:path}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("yaml_value requires exactly 2 arguments: key_path, file_path")
+        
+        key_path = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_yaml_data(file_path)
+        
+        try:
+            result = self._navigate_json_keys(data, key_path)  # Reuse JSON navigation
+            return str(result) if result is not None else ""
+        except Exception as e:
+            raise TemplateFunctionError(f"Error accessing YAML key '{key_path}': {e}")
+    
+    def _yaml_count(self, args: List[str], target_file_path: str = None) -> int:
+        """Count elements in YAML array or object keys. Usage: {{yaml_count:$.users:path}}"""
+        if len(args) not in [1, 2]:
+            raise TemplateFunctionError("yaml_count requires 1 or 2 arguments: [path_expression], file_path")
+        
+        if len(args) == 1:
+            # Count root level
+            path_expr = "$"
+            file_path = self._resolve_target_file(args[0], target_file_path)
+        else:
+            path_expr = args[0]
+            file_path = self._resolve_target_file(args[1], target_file_path)
+        
+        data = self._read_yaml_data(file_path)
+        
+        try:
+            if path_expr == "$":
+                target = data
+            else:
+                target = self._evaluate_json_path(data, path_expr)  # Reuse JSON path logic
+            
+            if isinstance(target, list):
+                return len(target)
+            elif isinstance(target, dict):
+                return len(target.keys())
+            else:
+                raise TemplateFunctionError(f"Cannot count non-array/non-object value: {type(target)}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error counting YAML elements at '{path_expr}': {e}")
+    
+    def _yaml_keys(self, args: List[str], target_file_path: str = None) -> str:
+        """Get object keys as comma-separated string. Usage: {{yaml_keys:$.user:path}}"""
+        if len(args) not in [1, 2]:
+            raise TemplateFunctionError("yaml_keys requires 1 or 2 arguments: [path_expression], file_path")
+        
+        if len(args) == 1:
+            # Get root level keys
+            path_expr = "$"
+            file_path = self._resolve_target_file(args[0], target_file_path)
+        else:
+            path_expr = args[0]
+            file_path = self._resolve_target_file(args[1], target_file_path)
+        
+        data = self._read_yaml_data(file_path)
+        
+        try:
+            if path_expr == "$":
+                target = data
+            else:
+                target = self._evaluate_json_path(data, path_expr)  # Reuse JSON path logic
+            
+            if isinstance(target, dict):
+                return ','.join(target.keys())
+            else:
+                raise TemplateFunctionError(f"Cannot get keys from non-object value: {type(target)}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error getting YAML keys at '{path_expr}': {e}")
+    
+    def _yaml_sum(self, args: List[str], target_file_path: str = None) -> str:
+        """Sum numeric values in YAML array. Usage: {{yaml_sum:$.projects[*].budget:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("yaml_sum requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_yaml_data(file_path)
+        
+        try:
+            values = self._expand_wildcard_path(data, path_expr)  # Reuse JSON wildcard logic
+            numeric_values = [float(str(v)) for v in values if self._is_numeric(v)]
+            return str(sum(numeric_values))
+        except Exception as e:
+            raise TemplateFunctionError(f"Error calculating YAML sum for '{path_expr}': {e}")
+    
+    def _yaml_avg(self, args: List[str], target_file_path: str = None) -> str:
+        """Average numeric values in YAML array. Usage: {{yaml_avg:$.projects[*].budget:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("yaml_avg requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_yaml_data(file_path)
+        
+        try:
+            values = self._expand_wildcard_path(data, path_expr)  # Reuse JSON wildcard logic
+            numeric_values = [float(str(v)) for v in values if self._is_numeric(v)]
+            if not numeric_values:
+                return "0"
+            return str(sum(numeric_values) / len(numeric_values))
+        except Exception as e:
+            raise TemplateFunctionError(f"Error calculating YAML average for '{path_expr}': {e}")
+    
+    def _yaml_max(self, args: List[str], target_file_path: str = None) -> str:
+        """Get maximum value in YAML array. Usage: {{yaml_max:$.projects[*].budget:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("yaml_max requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_yaml_data(file_path)
+        
+        try:
+            values = self._expand_wildcard_path(data, path_expr)  # Reuse JSON wildcard logic
+            numeric_values = [float(str(v)) for v in values if self._is_numeric(v)]
+            if not numeric_values:
+                return "0"
+            return str(max(numeric_values))
+        except Exception as e:
+            raise TemplateFunctionError(f"Error finding YAML maximum for '{path_expr}': {e}")
+    
+    def _yaml_min(self, args: List[str], target_file_path: str = None) -> str:
+        """Get minimum value in YAML array. Usage: {{yaml_min:$.projects[*].budget:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("yaml_min requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_yaml_data(file_path)
+        
+        try:
+            values = self._expand_wildcard_path(data, path_expr)  # Reuse JSON wildcard logic
+            numeric_values = [float(str(v)) for v in values if self._is_numeric(v)]
+            if not numeric_values:
+                return "0"
+            return str(min(numeric_values))
+        except Exception as e:
+            raise TemplateFunctionError(f"Error finding YAML minimum for '{path_expr}': {e}")
+    
+    def _yaml_collect(self, args: List[str], target_file_path: str = None) -> str:
+        """Collect YAML values into comma-separated string. Usage: {{yaml_collect:$.projects[*].name:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("yaml_collect requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_yaml_data(file_path)
+        
+        try:
+            values = self._expand_wildcard_path(data, path_expr)  # Reuse JSON wildcard logic
+            string_values = [str(v) for v in values if v is not None]
+            return ','.join(string_values)
+        except Exception as e:
+            raise TemplateFunctionError(f"Error collecting YAML values for '{path_expr}': {e}")
+    
+    def _yaml_count_where(self, args: List[str], target_file_path: str = None) -> str:
+        """Count YAML array elements matching filter. Usage: {{yaml_count_where:$.projects[?budget>60000]:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("yaml_count_where requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_yaml_data(file_path)
+        
+        try:
+            # Parse path and filter
+            if '[?' not in path_expr:
+                raise TemplateFunctionError("yaml_count_where requires a filter expression with [?...]")
+            
+            # Split path and filter
+            filter_start = path_expr.index('[?')
+            base_path = path_expr[:filter_start]
+            filter_end = path_expr.index(']', filter_start) + 1
+            filter_expr = path_expr[filter_start:filter_end]
+            
+            # Get the array to filter
+            if base_path.startswith('$.'):
+                base_path = base_path[2:]
+            elif base_path.startswith('$'):
+                base_path = base_path[1:]
+            
+            if base_path:
+                target_array = self._navigate_json_keys(data, base_path)  # Reuse JSON navigation
+            else:
+                target_array = data
+            
+            if not isinstance(target_array, list):
+                return "0"
+            
+            # Apply filter (reuse JSON filter logic)
+            filter_func = self._parse_filter_expression(filter_expr)
+            filtered_items = [item for item in target_array if filter_func(item)]
+            
+            return str(len(filtered_items))
+        except Exception as e:
+            raise TemplateFunctionError(f"Error counting filtered YAML elements for '{path_expr}': {e}")
+    
+    def _yaml_filter(self, args: List[str], target_file_path: str = None) -> str:
+        """Filter YAML array and collect values. Usage: {{yaml_filter:$.projects[?budget>60000].name:file}}"""
+        if len(args) != 2:
+            raise TemplateFunctionError("yaml_filter requires exactly 2 arguments: path_expression, file_path")
+        
+        path_expr = args[0]
+        file_path = self._resolve_target_file(args[1], target_file_path)
+        data = self._read_yaml_data(file_path)
+        
+        try:
+            # Parse path and filter
+            if '[?' not in path_expr:
+                raise TemplateFunctionError("yaml_filter requires a filter expression with [?...]")
+            
+            # Split path, filter, and remaining path
+            filter_start = path_expr.index('[?')
+            base_path = path_expr[:filter_start]
+            filter_end = path_expr.index(']', filter_start) + 1
+            filter_expr = path_expr[filter_start:filter_end]
+            remaining_path = path_expr[filter_end:]
+            
+            # Remove leading dot from remaining path
+            if remaining_path.startswith('.'):
+                remaining_path = remaining_path[1:]
+            
+            # Get the array to filter
+            if base_path.startswith('$.'):
+                base_path = base_path[2:]
+            elif base_path.startswith('$'):
+                base_path = base_path[1:]
+            
+            if base_path:
+                target_array = self._navigate_json_keys(data, base_path)  # Reuse JSON navigation
+            else:
+                target_array = data
+            
+            if not isinstance(target_array, list):
+                return ""
+            
+            # Apply filter (reuse JSON filter logic)
+            filter_func = self._parse_filter_expression(filter_expr)
+            filtered_items = [item for item in target_array if filter_func(item)]
+            
+            # Extract values from remaining path
+            if remaining_path:
+                values = []
+                for item in filtered_items:
+                    try:
+                        value = self._navigate_json_keys(item, remaining_path)  # Reuse JSON navigation
+                        values.append(str(value))
+                    except:
+                        continue
+                return ','.join(values)
+            else:
+                # Return the filtered objects as strings
+                return ','.join([str(item) for item in filtered_items])
+                
+        except Exception as e:
+            raise TemplateFunctionError(f"Error filtering YAML elements for '{path_expr}': {e}")
 

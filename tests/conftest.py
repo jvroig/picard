@@ -4,6 +4,7 @@ Shared pytest fixtures for PICARD tests.
 import pytest
 import tempfile
 import json
+import yaml
 import csv
 import sys
 from pathlib import Path
@@ -15,7 +16,7 @@ sys.path.insert(0, str(project_root / "src"))
 
 from file_generators import (
     TextFileGenerator, CSVFileGenerator, 
-    SQLiteFileGenerator, JSONFileGenerator,
+    SQLiteFileGenerator, JSONFileGenerator, YAMLFileGenerator,
     FileGeneratorFactory
 )
 from template_functions import TemplateFunctions
@@ -72,6 +73,35 @@ def sample_json_data():
     }
 
 
+@pytest.fixture  
+def sample_yaml_data():
+    """Standard YAML test data for consistent testing (same structure as JSON)."""
+    return {
+        "database": {
+            "host": "postgres-server",
+            "port": 5432,
+            "name": "production_db"
+        },
+        "users": [
+            {"id": 1, "name": "John", "age": 25, "active": True, "city": "New York"},
+            {"id": 2, "name": "Alice", "age": 30, "active": False, "city": "Los Angeles"},
+            {"id": 3, "name": "Bob", "age": 35, "active": True, "city": "Chicago"}
+        ],
+        "metadata": {
+            "total": 3,
+            "version": "1.0",
+            "created": "2025-01-01"
+        },
+        "config": {
+            "settings": {
+                "debug": True,
+                "timeout": 30,
+                "max_retries": 5
+            }
+        }
+    }
+
+
 @pytest.fixture
 def create_csv_file(temp_workspace, sample_csv_data):
     """Create a sample CSV file for testing."""
@@ -104,6 +134,22 @@ def create_json_file(temp_workspace, sample_json_data):
         return str(json_file)
     
     return _create_json
+
+
+@pytest.fixture
+def create_yaml_file(temp_workspace, sample_yaml_data):
+    """Create a sample YAML file for testing."""
+    def _create_yaml(filename="test.yaml", data=None):
+        if data is None:
+            data = sample_yaml_data
+        
+        yaml_file = temp_workspace / filename
+        with open(yaml_file, 'w', encoding='utf-8') as f:
+            yaml.dump(data, f, default_flow_style=False, indent=2)
+        
+        return str(yaml_file)
+    
+    return _create_yaml
 
 
 @pytest.fixture
@@ -151,6 +197,12 @@ def sqlite_generator(temp_workspace):
 def json_generator(temp_workspace):
     """Pre-configured JSONFileGenerator."""
     return JSONFileGenerator(str(temp_workspace))
+
+
+@pytest.fixture
+def yaml_generator(temp_workspace):
+    """Pre-configured YAMLFileGenerator."""
+    return YAMLFileGenerator(str(temp_workspace))
 
 
 @pytest.fixture

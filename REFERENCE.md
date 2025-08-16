@@ -59,6 +59,21 @@ For the list of all supported semantic data types for data generation, see [Data
       - [`json_collect`](#json_collect) - Collect values as comma-separated
       - [`json_count_where`](#json_count_where) - Count with filter conditions
       - [`json_filter`](#json_filter) - Filter and extract values
+  - [YAML Functions](#yaml-functions)
+    - [Basic YAML Access](#basic-yaml-access)
+      - [`yaml_path`](#yaml_path) - JSONPath-like extraction on YAML
+      - [`yaml_value`](#yaml_value) - Dot notation navigation
+      - [`yaml_count`](#yaml_count) - Count array/object elements
+      - [`yaml_keys`](#yaml_keys) - Extract object keys
+    - [YAML Aggregation Functions](#yaml-aggregation-functions)
+      - [`yaml_sum`](#yaml_sum) - Sum numeric values with wildcards
+      - [`yaml_avg`](#yaml_avg) - Average numeric values
+      - [`yaml_max`](#yaml_max) - Maximum value in array
+      - [`yaml_min`](#yaml_min) - Minimum value in array
+    - [YAML Collection and Filtering](#yaml-collection-and-filtering)
+      - [`yaml_collect`](#yaml_collect) - Collect values as comma-separated
+      - [`yaml_count_where`](#yaml_count_where) - Count with filter conditions
+      - [`yaml_filter`](#yaml_filter) - Filter and extract values
   - [Template Function Examples](#template-function-examples)
   - [Error Handling](#error-handling)
   - [Performance Notes](#performance-notes)
@@ -84,6 +99,12 @@ For the list of all supported semantic data types for data generation, see [Data
     - [Complex Nested Structures](#complex-nested-structures)
     - [Array Generation](#array-generation)
     - [Type Constraints](#type-constraints)
+  - [YAML File Generation (`create_yaml`)](#yaml-file-generation-create_yaml)
+    - [Schema-Driven Generation](#schema-driven-generation-1)
+    - [Complex Nested Structures](#complex-nested-structures-1)
+    - [Type Constraints and Arrays](#type-constraints-and-arrays)
+    - [Semantic Data Types](#semantic-data-types-1)
+    - [YAML Formatting Standards](#yaml-formatting-standards)
   - [Advanced Sandbox Features](#advanced-sandbox-features)
   - [Sandbox Best Practices](#sandbox-best-practices)
   - [Error Handling](#error-handling-1)
@@ -852,6 +873,7 @@ Sandbox setup operates through four main generator types:
 - **`create_csv`**: CSV files with realistic business data
 - **`create_sqlite`**: SQLite databases with tables and relationships
 - **`create_json`**: JSON files with schema-driven structured data
+- **`create_yaml`**: YAML files with consistent block-style formatting
 
 ### Basic Configuration
 
@@ -1254,6 +1276,144 @@ content:
       total: "id"
       generated: "date"
 ```
+
+### YAML File Generation (`create_yaml`)
+
+Creates structured YAML files with schema-driven generation, supporting complex nested objects, arrays, and type constraints. Uses consistent block-style formatting for predictable parsing.
+
+#### Schema-Driven Generation
+
+```yaml
+sandbox_setup:
+  type: "create_yaml"
+  target_file: "{{artifacts}}/{{qs_id}}/config.yaml"
+  content:
+    schema:
+      database:
+        host: "city"
+        port: "id" 
+        name: "company"
+      services:
+        type: "array"
+        count: [2, 4]
+        items:
+          name: "product"
+          enabled: "boolean"
+```
+
+**Generated YAML**:
+```yaml
+database:
+  host: chicago-db-01
+  port: 5432
+  name: TechCorp
+services:
+  - name: ProductAPI
+    enabled: true
+  - name: UserService
+    enabled: false
+  - name: Analytics
+    enabled: true
+```
+
+#### Complex Nested Structures
+
+YAML generation supports deep nesting with consistent 2-space indentation:
+
+```yaml
+sandbox_setup:
+  type: "create_yaml"
+  target_file: "{{artifacts}}/{{qs_id}}/app.yaml"
+  content:
+    schema:
+      application:
+        environments:
+          type: "array"
+          count: 3
+          items:
+            name: "category"
+            database:
+              host: "city"
+              config:
+                pool_size: 
+                  type: "integer"
+                  minimum: 5
+                  maximum: 20
+                timeout:
+                  type: "integer" 
+                  minimum: 30
+                  maximum: 120
+            features:
+              type: "array"
+              count: [1, 3]
+              items: "product"
+```
+
+#### Type Constraints and Arrays
+
+Same type system as JSON with YAML-specific formatting:
+
+```yaml
+sandbox_setup:
+  type: "create_yaml"
+  target_file: "{{artifacts}}/{{qs_id}}/teams.yaml"
+  content:
+    schema:
+      teams:
+        type: "array"
+        count: 5
+        items:
+          name: "product"
+          budget:
+            type: "integer"
+            minimum: 50000
+            maximum: 200000
+          members:
+            type: "array"
+            count: [2, 8]
+            items:
+              name: "person_name"
+              role: "category"
+              active: "boolean"
+      metadata:
+        created: "date"
+        version: "version"
+```
+
+#### Semantic Data Types
+
+YAML generation supports all 42 semantic data types from DATA_GENERATION.md:
+
+```yaml
+sandbox_setup:
+  type: "create_yaml"
+  target_file: "{{artifacts}}/{{qs_id}}/enterprise.yaml"
+  content:
+    schema:
+      company: "company"
+      departments:
+        type: "array"
+        count: [3, 5]
+        items:
+          name: "department"
+          manager:
+            name: "person_name"
+            email: "email"
+            phone: "phone"
+          budget: "currency"
+          location:
+            city: "city"
+            region: "region"
+```
+
+#### YAML Formatting Standards
+
+PICARD generates YAML with consistent formatting:
+- **Block style only** (no flow style `{key: value}`)
+- **2-space indentation**
+- **No quotes unless necessary**
+- **Array items with dashes**
+- **Predictable structure for parsing**
 
 ---
 

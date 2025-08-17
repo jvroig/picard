@@ -4,6 +4,17 @@ This document provides detailed reference information for PICARD's core componen
 
 For the list of all supported semantic data types for data generation, see [Data Generation Reference](DATA_GENERATION.md).
 
+## ⚠️ Breaking Changes in Template Functions
+
+**IMPORTANT**: As of the latest version, template functions require component-based TARGET_FILE syntax:
+
+- **New Syntax**: `TARGET_FILE[component_name]` (required)
+- **Old Syntax**: `TARGET_FILE` (no longer supported)
+- **Component Names**: All sandbox components must have a `name` field
+- **Multi-Component**: Full support for multiple file generators per test
+
+See [Template Functions](#template-functions) for complete details and examples.
+
 ## Table of Contents
 
 - [Scoring Types](#scoring-types)
@@ -194,7 +205,7 @@ sandbox_setup:
 
 scoring_type: "readfile_stringmatch"
 file_to_read: "{{artifacts}}/{{qs_id}}/result.txt"
-expected_content: "{{csv_count:ID:TARGET_FILE}}"
+expected_content: "{{csv_count:ID:TARGET_FILE[data_component]}}"
 ```
 
 ---
@@ -243,7 +254,7 @@ expected_response: "{{entity1}}"
 **Configuration**:
 ```yaml
 scoring_type: "jsonmatch"
-expected_response: '{"total": {{csv_count:ID:TARGET_FILE}}, "avg": {{csv_avg:AGE:TARGET_FILE}}}'
+expected_response: '{"total": {{csv_count:ID:TARGET_FILE[customer_data]}}, "avg": {{csv_avg:AGE:TARGET_FILE[customer_data]}}}'
 ```
 
 **Example**:
@@ -251,7 +262,7 @@ expected_response: '{"total": {{csv_count:ID:TARGET_FILE}}, "avg": {{csv_avg:AGE
 - question_id: 303
   template: "Return customer statistics as JSON with 'total_customers' and 'average_age' keys"
   scoring_type: "jsonmatch"
-  expected_response: '{"total_customers": {{csv_count:C_ID:TARGET_FILE}}, "average_age": {{csv_avg:AGE_YRS:TARGET_FILE}}}'
+  expected_response: '{"total_customers": {{csv_count:C_ID:TARGET_FILE[customer_data]}}, "average_age": {{csv_avg:AGE_YRS:TARGET_FILE[customer_data]}}}'
 ```
 
 **Scoring Logic**:
@@ -375,7 +386,7 @@ expected_content: "Hello {{entity2}}!"
   template: "Read {{artifacts}}/notes.txt and tell me line 34. Save to {{artifacts}}/result.txt"
   scoring_type: "readfile_stringmatch"
   file_to_read: "{{artifacts}}/result.txt"
-  expected_content: "{{file_line:34:TARGET_FILE}}"
+  expected_content: "{{file_line:34:TARGET_FILE[notes_file]}}"
 ```
 
 **Scoring Logic**:
@@ -406,7 +417,7 @@ expected_content: "Hello {{entity2}}!"
 ```yaml
 scoring_type: "readfile_jsonmatch"
 file_to_read: "{{artifacts}}/summary.json"
-expected_content: '{"count": {{csv_count:ID:TARGET_FILE}}, "stats": {"avg": {{csv_avg:VALUE:TARGET_FILE}}}}'
+expected_content: '{"count": {{csv_count:ID:TARGET_FILE[data_file]}}, "stats": {"avg": {{csv_avg:VALUE:TARGET_FILE[data_file]}}}}'
 ```
 
 **Example**:
@@ -415,7 +426,7 @@ expected_content: '{"count": {{csv_count:ID:TARGET_FILE}}, "stats": {"avg": {{cs
   template: "Process {{artifacts}}/data.csv and create JSON summary at {{artifacts}}/summary.json"
   scoring_type: "readfile_jsonmatch"
   file_to_read: "{{artifacts}}/summary.json"
-  expected_content: '{"total_customers": {{csv_count:C_ID:TARGET_FILE}}, "average_age": {{csv_avg:AGE_YRS:TARGET_FILE}}}'
+  expected_content: '{"total_customers": {{csv_count:C_ID:TARGET_FILE[customer_data]}}, "average_age": {{csv_avg:AGE_YRS:TARGET_FILE[customer_data]}}}'
 ```
 
 **Scoring Logic**:
@@ -461,8 +472,8 @@ All scorers provide detailed error information:
 ### Template Integration
 All `expected_content` and `expected_response` fields support:
 - Entity substitution (`{{entity1}}`)
-- Template functions such as (`{{csv_count:COLUMN:TARGET_FILE}}`)
-- Dynamic answer key generation
+- Template functions such as (`{{csv_count:COLUMN:TARGET_FILE[component_name]}}`)
+- Dynamic answer key generation with multi-component support
 
 ---
 
@@ -633,16 +644,38 @@ template: "Migrate {{entity1}} database to {{entity2:gems}} cluster using {{sema
 
 Template functions enable dynamic answer key generation by extracting data from files created during test execution. They use the format `{{function_name:arg1:arg2:...}}` and are evaluated at runtime to create deterministic expected responses.
 
-### TARGET_FILE Keyword
+### TARGET_FILE[component_name] Keyword
 
-Most template functions accept `TARGET_FILE` as a file path argument, which gets replaced with the actual target file path from `sandbox_setup`:
+Template functions use `TARGET_FILE[component_name]` syntax to reference files from specific sandbox components. This enables multi-component scenarios and eliminates ambiguity:
 
+**Multi-Component Syntax**:
 ```yaml
 sandbox_setup:
-  target_file: "{{artifacts}}/{{qs_id}}/data.csv"
-expected_content: "{{csv_count:ID:TARGET_FILE}}"
-# TARGET_FILE becomes: /sandbox/q301_s5/data.csv
+  sandbox_components:
+    - type: "create_csv"
+      name: "customer_data"
+      target_file: "{{artifacts}}/{{qs_id}}/customers.csv"
+      content:
+        headers: ["ID", "NAME", "AGE"]
+        rows: 50
+    - type: "create_json" 
+      name: "config_data"
+      target_file: "{{artifacts}}/{{qs_id}}/config.json"
+      content:
+        schema:
+          total_customers: "{{csv_count:ID:TARGET_FILE[customer_data]}}"
+          settings:
+            debug: "boolean"
+
+expected_content: "{{json_value:total_customers:TARGET_FILE[config_data]}}"
 ```
+
+**Component Requirements**:
+- All components **must** have a unique `name` field
+- Use `TARGET_FILE[component_name]` to reference specific component files
+- Component names must match regex `^[a-zA-Z][a-zA-Z0-9_-]*$` (max 50 chars)
+
+**Breaking Change**: The old `TARGET_FILE` syntax (without component name) is no longer supported and will throw an error.
 
 ---
 
@@ -655,17 +688,20 @@ Extract specific content from text files.
 **Usage**: `{{file_line:line_number:file_path}}`
 **Parameters**:
 - `line_number`: Line number (1-based indexing)
-- `file_path`: Path to text file (or `TARGET_FILE`)
+- `file_path`: Path to text file (or `TARGET_FILE[component_name]`)
 
 **Example**:
 ```yaml
 template: "What does line 34 say in {{artifacts}}/notes.txt?"
-expected_response: "{{file_line:34:TARGET_FILE}}"
+expected_response: "{{file_line:34:TARGET_FILE[notes_file]}}"
 sandbox_setup:
-  target_file: "{{artifacts}}/notes.txt"
-  content:
-    type: "lorem_lines"
-    count: 100
+  sandbox_components:
+    - type: "create_files"
+      name: "notes_file"
+      target_file: "{{artifacts}}/notes.txt"
+      content:
+        type: "lorem_lines"
+        count: 100
 ```
 
 #### `file_word`
@@ -677,7 +713,7 @@ sandbox_setup:
 
 **Example**:
 ```yaml
-expected_response: "{{file_word:35:TARGET_FILE}}"
+expected_response: "{{file_word:35:TARGET_FILE[document]}}"
 # Returns the 35th word in the file
 ```
 
@@ -707,7 +743,7 @@ Extract and process data from CSV files with headers.
 **Example**:
 ```yaml
 # Get first data row, second column
-expected_response: "{{csv_cell:1:1:TARGET_FILE}}"
+expected_response: "{{csv_cell:1:1:TARGET_FILE[csv_data]}}"
 ```
 
 ##### `csv_value`
@@ -720,7 +756,7 @@ expected_response: "{{csv_cell:1:1:TARGET_FILE}}"
 **Example**:
 ```yaml
 # Get age of first customer (row 0, "AGE" column)
-expected_content: "{{csv_value:0:AGE:TARGET_FILE}}"
+expected_content: "{{csv_value:0:AGE:TARGET_FILE[customers]}}"
 ```
 
 ##### `csv_row`
@@ -733,12 +769,12 @@ Returns the complete row at the specified index (0-based) as a comma-separated s
 **Examples**:
 ```yaml
 # Get first data row (row 0, after headers)
-template: "First employee: {{csv_row:0:TARGET_FILE}}"
-expected_response: "First employee: {{csv_row:0:TARGET_FILE}}"
+template: "First employee: {{csv_row:0:TARGET_FILE[data_file]}}"
+expected_response: "First employee: {{csv_row:0:TARGET_FILE[data_file]}}"
 
 # Get last row using dynamic count
-template: "Row contents: {{csv_row:{{csv_count:NAME:TARGET_FILE}}-1:TARGET_FILE}}"
-expected_response: "Row contents: {{csv_row:{{csv_count:NAME:TARGET_FILE}}-1:TARGET_FILE}}"
+template: "Row contents: {{csv_row:{{csv_count:NAME:TARGET_FILE[data_file]}}-1:TARGET_FILE[data_file]}}"
+expected_response: "Row contents: {{csv_row:{{csv_count:NAME:TARGET_FILE[data_file]}}-1:TARGET_FILE[data_file]}}"
 ```
 
 ##### `csv_column`
@@ -751,12 +787,12 @@ Returns all values from the specified column as a comma-separated string. Column
 **Examples**:
 ```yaml
 # Get all employee names
-template: "All employees: {{csv_column:NAME:TARGET_FILE}}"
-expected_response: "All employees: {{csv_column:NAME:TARGET_FILE}}"
+template: "All employees: {{csv_column:NAME:TARGET_FILE[data_file]}}"
+expected_response: "All employees: {{csv_column:NAME:TARGET_FILE[data_file]}}"
 
 # Get all salaries for analysis
-template: "Salary data: {{csv_column:SALARY:TARGET_FILE}}"
-expected_response: "Salary data: {{csv_column:SALARY:TARGET_FILE}}"
+template: "Salary data: {{csv_column:SALARY:TARGET_FILE[data_file]}}"
+expected_response: "Salary data: {{csv_column:SALARY:TARGET_FILE[data_file]}}"
 ```
 
 **Note**: Both functions preserve data order and formatting from the original CSV file.
@@ -769,7 +805,7 @@ expected_response: "Salary data: {{csv_column:SALARY:TARGET_FILE}}"
 
 **Example**:
 ```yaml
-expected_content: '{"total_customers": {{csv_count:C_ID:TARGET_FILE}}}'
+expected_content: '{"total_customers": {{csv_count:C_ID:TARGET_FILE[data_file]}}}'
 # Counts non-empty values in C_ID column
 ```
 
@@ -783,7 +819,7 @@ expected_content: '{"total_customers": {{csv_count:C_ID:TARGET_FILE}}}'
 
 **Example**:
 ```yaml
-expected_content: '{"avg_age": {{csv_avg:AGE_YRS:TARGET_FILE}}}'
+expected_content: '{"avg_age": {{csv_avg:AGE_YRS:TARGET_FILE[data_file]}}}'
 ```
 
 #### CSV Filtered Aggregation
@@ -803,10 +839,10 @@ Advanced functions that apply filters before aggregation.
 **Example**:
 ```yaml
 # Count Engineering department employees
-expected_content: "{{csv_count_where:EMP_ID:DEPT_CD:==:Engineering:TARGET_FILE}}"
+expected_content: "{{csv_count_where:EMP_ID:DEPT_CD:==:Engineering:TARGET_FILE[data_file]}}"
 
 # Count high earners
-expected_content: "{{csv_count_where:EMP_ID:SALARY:>:50000:TARGET_FILE}}"
+expected_content: "{{csv_count_where:EMP_ID:SALARY:>:50000:TARGET_FILE[data_file]}}"
 ```
 
 ##### `csv_sum_where`
@@ -816,7 +852,7 @@ expected_content: "{{csv_count_where:EMP_ID:SALARY:>:50000:TARGET_FILE}}"
 **Example**:
 ```yaml
 # Total salary for Engineering department
-expected_content: "{{csv_sum_where:SAL_AMT:DEPT_CD:==:Engineering:TARGET_FILE}}"
+expected_content: "{{csv_sum_where:SAL_AMT:DEPT_CD:==:Engineering:TARGET_FILE[data_file]}}"
 ```
 
 ##### `csv_avg_where`
@@ -844,7 +880,7 @@ Execute SQL queries against SQLite databases.
 
 **Example**:
 ```yaml
-expected_content: "{{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > 50000:TARGET_FILE}}"
+expected_content: "{{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > 50000:TARGET_FILE[data_file]}}"
 ```
 
 **Return Value**: First column of first result row as string
@@ -878,13 +914,13 @@ Extract and process data from JSON files with powerful querying, aggregation, an
 **Examples**:
 ```yaml
 # Get employee name
-expected_response: "{{json_path:$.employee.name:TARGET_FILE}}"
+expected_response: "{{json_path:$.employee.name:TARGET_FILE[data_file]}}"
 
 # Get first project budget
-expected_response: "{{json_path:$.employee.projects[0].budget:TARGET_FILE}}"
+expected_response: "{{json_path:$.employee.projects[0].budget:TARGET_FILE[data_file]}}"
 
 # Get nested contact info
-expected_response: "{{json_path:$.employee.manager.contact.phone:TARGET_FILE}}"
+expected_response: "{{json_path:$.employee.manager.contact.phone:TARGET_FILE[data_file]}}"
 ```
 
 ##### `json_value`
@@ -897,7 +933,7 @@ expected_response: "{{json_path:$.employee.manager.contact.phone:TARGET_FILE}}"
 
 **Example**:
 ```yaml
-expected_response: "{{json_value:employee.manager.email:TARGET_FILE}}"
+expected_response: "{{json_value:employee.manager.email:TARGET_FILE[data_file]}}"
 ```
 
 ##### `json_count`
@@ -907,7 +943,7 @@ expected_response: "{{json_value:employee.manager.email:TARGET_FILE}}"
 **Example**:
 ```yaml
 # Count total projects
-expected_response: "{{json_count:$.employee.projects:TARGET_FILE}}"
+expected_response: "{{json_count:$.employee.projects:TARGET_FILE[data_file]}}"
 ```
 
 ##### `json_keys`
@@ -917,7 +953,7 @@ expected_response: "{{json_count:$.employee.projects:TARGET_FILE}}"
 **Example**:
 ```yaml
 # Get all employee object keys
-expected_response: "{{json_keys:$.employee:TARGET_FILE}}"
+expected_response: "{{json_keys:$.employee:TARGET_FILE[data_file]}}"
 # Result: "name,email,department,manager,projects"
 ```
 
@@ -932,7 +968,7 @@ Perform mathematical operations on arrays using wildcard notation.
 **Example**:
 ```yaml
 # Total project budgets
-expected_response: "{{json_sum:$.employee.projects[*].budget:TARGET_FILE}}"
+expected_response: "{{json_sum:$.employee.projects[*].budget:TARGET_FILE[data_file]}}"
 ```
 
 ##### `json_avg`
@@ -942,7 +978,7 @@ expected_response: "{{json_sum:$.employee.projects[*].budget:TARGET_FILE}}"
 **Example**:
 ```yaml
 # Average project budget
-expected_response: "{{json_avg:$.employee.projects[*].budget:TARGET_FILE}}"
+expected_response: "{{json_avg:$.employee.projects[*].budget:TARGET_FILE[data_file]}}"
 ```
 
 ##### `json_max`
@@ -964,11 +1000,11 @@ Advanced functions for gathering and filtering data.
 **Examples**:
 ```yaml
 # Get all project names
-expected_response: "{{json_collect:$.employee.projects[*].name:TARGET_FILE}}"
+expected_response: "{{json_collect:$.employee.projects[*].name:TARGET_FILE[data_file]}}"
 # Result: "Widget Pro,Super Gadget"
 
 # Get all team members across projects  
-expected_response: "{{json_collect:$.employee.projects[*].team[*]:TARGET_FILE}}"
+expected_response: "{{json_collect:$.employee.projects[*].team[*]:TARGET_FILE[data_file]}}"
 # Result: "Alice,Bob,Charlie,Diana,Eve"
 ```
 
@@ -983,10 +1019,10 @@ expected_response: "{{json_collect:$.employee.projects[*].team[*]:TARGET_FILE}}"
 **Examples**:
 ```yaml
 # Count high-budget projects
-expected_response: "{{json_count_where:$.employee.projects[?budget>60000]:TARGET_FILE}}"
+expected_response: "{{json_count_where:$.employee.projects[?budget>60000]:TARGET_FILE[data_file]}}"
 
 # Count Engineering employees
-expected_response: "{{json_count_where:$.employees[?department==Engineering]:TARGET_FILE}}"
+expected_response: "{{json_count_where:$.employees[?department==Engineering]:TARGET_FILE[data_file]}}"
 ```
 
 ##### `json_filter`
@@ -996,10 +1032,10 @@ expected_response: "{{json_count_where:$.employees[?department==Engineering]:TAR
 **Examples**:
 ```yaml
 # Get names of high-budget projects
-expected_response: "{{json_filter:$.employee.projects[?budget>60000].name:TARGET_FILE}}"
+expected_response: "{{json_filter:$.employee.projects[?budget>60000].name:TARGET_FILE[data_file]}}"
 
 # Get emails of senior developers
-expected_response: "{{json_filter:$.employees[?level==senior].email:TARGET_FILE}}"
+expected_response: "{{json_filter:$.employees[?level==senior].email:TARGET_FILE[data_file]}}"
 ```
 
 #### Advanced JSON Examples
@@ -1008,11 +1044,11 @@ expected_response: "{{json_filter:$.employees[?level==senior].email:TARGET_FILE}
 ```yaml
 question_id: 501
 template: "What's the total budget for Engineering department projects?"
-expected_response: "{{json_sum:$.departments[?name==Engineering].projects[*].budget:TARGET_FILE}}"
+expected_response: "{{json_sum:$.departments[?name==Engineering].projects[*].budget:TARGET_FILE[data_file]}}"
 
 question_id: 502
 template: "List all senior team members across high-priority projects"
-expected_response: "{{json_collect:$.projects[?priority==high].team[?role==senior].name:TARGET_FILE}}"
+expected_response: "{{json_collect:$.projects[?priority==high].team[?role==senior].name:TARGET_FILE[data_file]}}"
 ```
 
 **Multi-Level Aggregation**:
@@ -1020,7 +1056,7 @@ expected_response: "{{json_collect:$.projects[?priority==high].team[?role==senio
 question_id: 503
 template: "What's the average team size for projects over $50k?"
 # Note: Uses nested aggregation - sum team sizes, then average
-expected_response: "{{json_avg:$.projects[?budget>50000].team_size:TARGET_FILE}}"
+expected_response: "{{json_avg:$.projects[?budget>50000].team_size:TARGET_FILE[data_file]}}"
 ```
 
 **Wildcard Support**:
@@ -1167,14 +1203,14 @@ YAML functions enable extraction and analysis of data from YAML files using JSON
 
 **Examples**:
 ```yaml
-template: "Database host is {{yaml_path:$.database.host:TARGET_FILE}}"
-expected_response: "Database host is {{yaml_path:$.database.host:TARGET_FILE}}"
+template: "Database host is {{yaml_path:$.database.host:TARGET_FILE[data_file]}}"
+expected_response: "Database host is {{yaml_path:$.database.host:TARGET_FILE[data_file]}}"
 
-template: "First user is {{yaml_path:$.users[0].name:TARGET_FILE}}"
-expected_response: "First user is {{yaml_path:$.users[0].name:TARGET_FILE}}"
+template: "First user is {{yaml_path:$.users[0].name:TARGET_FILE[data_file]}}"
+expected_response: "First user is {{yaml_path:$.users[0].name:TARGET_FILE[data_file]}}"
 
-template: "Manager email is {{yaml_path:$.employee.manager.contact.email:TARGET_FILE}}"
-expected_response: "Manager email is {{yaml_path:$.employee.manager.contact.email:TARGET_FILE}}"
+template: "Manager email is {{yaml_path:$.employee.manager.contact.email:TARGET_FILE[data_file]}}"
+expected_response: "Manager email is {{yaml_path:$.employee.manager.contact.email:TARGET_FILE[data_file]}}"
 ```
 
 #### `yaml_value`
@@ -1185,8 +1221,8 @@ expected_response: "Manager email is {{yaml_path:$.employee.manager.contact.emai
 Simple navigation for nested YAML structures:
 
 ```yaml
-template: "Manager email: {{yaml_value:employee.manager.email:TARGET_FILE}}"
-expected_response: "Manager email: {{yaml_value:employee.manager.email:TARGET_FILE}}"
+template: "Manager email: {{yaml_value:employee.manager.email:TARGET_FILE[data_file]}}"
+expected_response: "Manager email: {{yaml_value:employee.manager.email:TARGET_FILE[data_file]}}"
 ```
 
 #### `yaml_count`
@@ -1195,8 +1231,8 @@ expected_response: "Manager email: {{yaml_value:employee.manager.email:TARGET_FI
 **Usage**: `{{yaml_count:$.path.to.array:file_path}}`
 
 ```yaml
-template: "Total projects: {{yaml_count:$.employee.projects:TARGET_FILE}}"
-expected_response: "Total projects: {{yaml_count:$.employee.projects:TARGET_FILE}}"
+template: "Total projects: {{yaml_count:$.employee.projects:TARGET_FILE[data_file]}}"
+expected_response: "Total projects: {{yaml_count:$.employee.projects:TARGET_FILE[data_file]}}"
 ```
 
 #### `yaml_keys`
@@ -1205,8 +1241,8 @@ expected_response: "Total projects: {{yaml_count:$.employee.projects:TARGET_FILE
 **Usage**: `{{yaml_keys:$.path.to.object:file_path}}`
 
 ```yaml
-template: "Available fields: {{yaml_keys:$.employee:TARGET_FILE}}"
-expected_response: "Available fields: {{yaml_keys:$.employee:TARGET_FILE}}"
+template: "Available fields: {{yaml_keys:$.employee:TARGET_FILE[data_file]}}"
+expected_response: "Available fields: {{yaml_keys:$.employee:TARGET_FILE[data_file]}}"
 ```
 
 ### YAML Aggregation Functions
@@ -1217,8 +1253,8 @@ expected_response: "Available fields: {{yaml_keys:$.employee:TARGET_FILE}}"
 **Usage**: `{{yaml_sum:$.array[*].field:file_path}}`
 
 ```yaml
-template: "Total budget: ${{yaml_sum:$.employee.projects[*].budget:TARGET_FILE}}"
-expected_response: "Total budget: ${{yaml_sum:$.employee.projects[*].budget:TARGET_FILE}}"
+template: "Total budget: ${{yaml_sum:$.employee.projects[*].budget:TARGET_FILE[data_file]}}"
+expected_response: "Total budget: ${{yaml_sum:$.employee.projects[*].budget:TARGET_FILE[data_file]}}"
 ```
 
 #### `yaml_avg`
@@ -1227,8 +1263,8 @@ expected_response: "Total budget: ${{yaml_sum:$.employee.projects[*].budget:TARG
 **Usage**: `{{yaml_avg:$.array[*].field:file_path}}`
 
 ```yaml
-template: "Average budget: ${{yaml_avg:$.employee.projects[*].budget:TARGET_FILE}}"
-expected_response: "Average budget: ${{yaml_avg:$.employee.projects[*].budget:TARGET_FILE}}"
+template: "Average budget: ${{yaml_avg:$.employee.projects[*].budget:TARGET_FILE[data_file]}}"
+expected_response: "Average budget: ${{yaml_avg:$.employee.projects[*].budget:TARGET_FILE[data_file]}}"
 ```
 
 #### `yaml_max`
@@ -1244,8 +1280,8 @@ expected_response: "Average budget: ${{yaml_avg:$.employee.projects[*].budget:TA
 **Examples**:
 ```yaml
 # Using employees.yaml with salary data
-template: "Salary range: ${{yaml_min:$.employees[*].salary:TARGET_FILE}} - ${{yaml_max:$.employees[*].salary:TARGET_FILE}}"
-expected_response: "Salary range: ${{yaml_min:$.employees[*].salary:TARGET_FILE}} - ${{yaml_max:$.employees[*].salary:TARGET_FILE}}"
+template: "Salary range: ${{yaml_min:$.employees[*].salary:TARGET_FILE[data_file]}} - ${{yaml_max:$.employees[*].salary:TARGET_FILE[data_file]}}"
+expected_response: "Salary range: ${{yaml_min:$.employees[*].salary:TARGET_FILE[data_file]}} - ${{yaml_max:$.employees[*].salary:TARGET_FILE[data_file]}}"
 ```
 
 ### YAML Collection and Filtering
@@ -1256,11 +1292,11 @@ expected_response: "Salary range: ${{yaml_min:$.employees[*].salary:TARGET_FILE}
 **Usage**: `{{yaml_collect:$.array[*].field:file_path}}`
 
 ```yaml
-template: "Project names: {{yaml_collect:$.employee.projects[*].name:TARGET_FILE}}"
-expected_response: "Project names: {{yaml_collect:$.employee.projects[*].name:TARGET_FILE}}"
+template: "Project names: {{yaml_collect:$.employee.projects[*].name:TARGET_FILE[data_file]}}"
+expected_response: "Project names: {{yaml_collect:$.employee.projects[*].name:TARGET_FILE[data_file]}}"
 
-template: "All team members: {{yaml_collect:$.employee.projects[*].team[*]:TARGET_FILE}}"
-expected_response: "All team members: {{yaml_collect:$.employee.projects[*].team[*]:TARGET_FILE}}"
+template: "All team members: {{yaml_collect:$.employee.projects[*].team[*]:TARGET_FILE[data_file]}}"
+expected_response: "All team members: {{yaml_collect:$.employee.projects[*].team[*]:TARGET_FILE[data_file]}}"
 ```
 
 #### `yaml_count_where`
@@ -1271,11 +1307,11 @@ expected_response: "All team members: {{yaml_collect:$.employee.projects[*].team
 **Filter Operators**: `>`, `<`, `>=`, `<=`, `==`, `!=`
 
 ```yaml
-template: "High-budget projects: {{yaml_count_where:$.employee.projects[?budget>60000]:TARGET_FILE}}"
-expected_response: "High-budget projects: {{yaml_count_where:$.employee.projects[?budget>60000]:TARGET_FILE}}"
+template: "High-budget projects: {{yaml_count_where:$.employee.projects[?budget>60000]:TARGET_FILE[data_file]}}"
+expected_response: "High-budget projects: {{yaml_count_where:$.employee.projects[?budget>60000]:TARGET_FILE[data_file]}}"
 
-template: "Engineering staff: {{yaml_count_where:$.employees[?department==Engineering]:TARGET_FILE}}"
-expected_response: "Engineering staff: {{yaml_count_where:$.employees[?department==Engineering]:TARGET_FILE}}"
+template: "Engineering staff: {{yaml_count_where:$.employees[?department==Engineering]:TARGET_FILE[data_file]}}"
+expected_response: "Engineering staff: {{yaml_count_where:$.employees[?department==Engineering]:TARGET_FILE[data_file]}}"
 ```
 
 #### `yaml_filter`
@@ -1284,11 +1320,11 @@ expected_response: "Engineering staff: {{yaml_count_where:$.employees[?departmen
 **Usage**: `{{yaml_filter:$.array[?condition].field:file_path}}`
 
 ```yaml
-template: "High-value projects: {{yaml_filter:$.employee.projects[?budget>60000].name:TARGET_FILE}}"
-expected_response: "High-value projects: {{yaml_filter:$.employee.projects[?budget>60000].name:TARGET_FILE}}"
+template: "High-value projects: {{yaml_filter:$.employee.projects[?budget>60000].name:TARGET_FILE[data_file]}}"
+expected_response: "High-value projects: {{yaml_filter:$.employee.projects[?budget>60000].name:TARGET_FILE[data_file]}}"
 
-template: "Senior emails: {{yaml_filter:$.employees[?level==senior].email:TARGET_FILE}}"
-expected_response: "Senior emails: {{yaml_filter:$.employees[?level==senior].email:TARGET_FILE}}"
+template: "Senior emails: {{yaml_filter:$.employees[?level==senior].email:TARGET_FILE[data_file]}}"
+expected_response: "Senior emails: {{yaml_filter:$.employees[?level==senior].email:TARGET_FILE[data_file]}}"
 ```
 
 ### Advanced YAML Processing
@@ -1297,19 +1333,19 @@ expected_response: "Senior emails: {{yaml_filter:$.employees[?level==senior].ema
 
 ```yaml
 # Complex department budget analysis
-template: "Engineering budget total: ${{yaml_sum:$.departments[?name==Engineering].projects[*].budget:TARGET_FILE}}"
-expected_response: "Engineering budget total: ${{yaml_sum:$.departments[?name==Engineering].projects[*].budget:TARGET_FILE}}"
+template: "Engineering budget total: ${{yaml_sum:$.departments[?name==Engineering].projects[*].budget:TARGET_FILE[data_file]}}"
+expected_response: "Engineering budget total: ${{yaml_sum:$.departments[?name==Engineering].projects[*].budget:TARGET_FILE[data_file]}}"
 
-template: "Senior team leads: {{yaml_collect:$.projects[?priority==high].team[?role==senior].name:TARGET_FILE}}"
-expected_response: "Senior team leads: {{yaml_collect:$.projects[?priority==high].team[?role==senior].name:TARGET_FILE}}"
+template: "Senior team leads: {{yaml_collect:$.projects[?priority==high].team[?role==senior].name:TARGET_FILE[data_file]}}"
+expected_response: "Senior team leads: {{yaml_collect:$.projects[?priority==high].team[?role==senior].name:TARGET_FILE[data_file]}}"
 ```
 
 #### Multi-Level Aggregation
 
 ```yaml
 # Calculate average budget for high-value projects
-template: "Average high-value budget: ${{yaml_avg:$.projects[?budget>50000].team_size:TARGET_FILE}}"
-expected_response: "Average high-value budget: ${{yaml_avg:$.projects[?budget>50000].team_size:TARGET_FILE}}"
+template: "Average high-value budget: ${{yaml_avg:$.projects[?budget>50000].team_size:TARGET_FILE[data_file]}}"
+expected_response: "Average high-value budget: ${{yaml_avg:$.projects[?budget>50000].team_size:TARGET_FILE[data_file]}}"
 ```
 
 ### YAML Path Expressions
@@ -1348,30 +1384,41 @@ question_id: 301
 template: "Create JSON summary with total customers and average age"
 expected_content: |
   {
-    "total_customers": {{csv_count:C_ID:TARGET_FILE}},
-    "average_age": {{csv_avg:AGE_YRS:TARGET_FILE}},
-    "engineering_count": {{csv_count_where:C_ID:DEPT_CD:==:Engineering:TARGET_FILE}},
-    "high_earner_avg_age": {{csv_avg_where:AGE_YRS:SALARY:>:60000:TARGET_FILE}}
+    "total_customers": {{csv_count:C_ID:TARGET_FILE[customer_data]}},
+    "average_age": {{csv_avg:AGE_YRS:TARGET_FILE[customer_data]}},
+    "engineering_count": {{csv_count_where:C_ID:DEPT_CD:==:Engineering:TARGET_FILE[customer_data]}},
+    "high_earner_avg_age": {{csv_avg_where:AGE_YRS:SALARY:>:60000:TARGET_FILE[customer_data]}}
   }
+sandbox_setup:
+  sandbox_components:
+    - type: "create_csv"
+      name: "customer_data"
+      target_file: "{{artifacts}}/{{qs_id}}/customers.csv"
+      content:
+        headers: ["C_ID", "AGE_YRS", "DEPT_CD", "SALARY"]
+        rows: 100
 ```
 
 #### Database Query with Business Logic
 ```yaml
 question_id: 402
 template: "How many high-value orders from Engineering customers?"
-expected_content: "{{sqlite_query:SELECT COUNT(*) FROM orders o JOIN customers c ON o.customer_id = c.id WHERE c.department = 'Engineering' AND o.amount > 50000:TARGET_FILE}}"
+expected_content: "{{sqlite_query:SELECT COUNT(*) FROM orders o JOIN customers c ON o.customer_id = c.id WHERE c.department = 'Engineering' AND o.amount > 50000:TARGET_FILE[data_file]}}"
 ```
 
 #### File Content Needle-in-Haystack
 ```yaml
 question_id: 201
 template: "Find the 35th word in the generated document"
-expected_response: "{{file_word:35:TARGET_FILE}}"
+expected_response: "{{file_word:35:TARGET_FILE[document]}}"
 sandbox_setup:
-  target_file: "{{artifacts}}/{{qs_id}}/document.txt"
-  content:
-    type: "lorem_lines"
-    count: 100
+  sandbox_components:
+    - type: "create_files"
+      name: "document"
+      target_file: "{{artifacts}}/{{qs_id}}/document.txt"
+      content:
+        type: "lorem_lines"
+        count: 100
 ```
 
 ### Error Handling
@@ -1395,6 +1442,8 @@ Template functions provide detailed error messages:
 
 The sandbox setup system creates realistic test environments by generating files, databases, and directory structures dynamically. Each test gets isolated data that prevents memorization while testing genuine agentic capabilities.
 
+**⚠️ Breaking Change**: All sandbox components now **require** a `name` field for TARGET_FILE[component_name] resolution. Use `sandbox_components` for multi-component setups or add `name` to single-component configurations.
+
 ### Overview
 
 Sandbox setup operates through four main generator types:
@@ -1406,11 +1455,31 @@ Sandbox setup operates through four main generator types:
 
 ### Basic Configuration
 
+**Multi-Component Setup (Recommended)**:
 ```yaml
 sandbox_setup:
-  type: "create_csv"                           # Generator type
-  target_file: "{{artifacts}}/{{qs_id}}/data.csv"   # Output file path
-  content:                                     # Content specification
+  sandbox_components:
+    - type: "create_csv"                        # Generator type
+      name: "main_data"                        # Required: component name
+      target_file: "{{artifacts}}/{{qs_id}}/data.csv"  # Output file path
+      content:                                 # Content specification
+        headers: ["ID", "NAME", "AGE", "CITY"]
+        rows: 50
+    - type: "create_json"
+      name: "config_file"
+      target_file: "{{artifacts}}/{{qs_id}}/config.json"
+      content:
+        schema:
+          total_records: "{{csv_count:ID:TARGET_FILE[main_data]}}"
+```
+
+**Single Component Setup (Legacy Support)**:
+```yaml
+sandbox_setup:
+  type: "create_csv" 
+  name: "data_component"                       # Required: component name
+  target_file: "{{artifacts}}/{{qs_id}}/data.csv"
+  content:
     headers: ["ID", "NAME", "AGE", "CITY"]
     rows: 50
 ```

@@ -19,6 +19,7 @@ sys.path.insert(0, str(project_root / "src"))
 
 from file_generators import FileGeneratorFactory
 from template_functions import TemplateFunctions
+from test_definition_parser import ComponentSpec
 
 
 @pytest.mark.integration
@@ -26,11 +27,9 @@ class TestTemplateVariableSubstitution:
     """Test TARGET_FILE and variable substitution across formats."""
     
     def test_target_file_substitution_workflow(self, temp_workspace_as_cwd):
-        """Test TARGET_FILE keyword works across all file types."""
-        tf = TemplateFunctions(str(temp_workspace_as_cwd))
-        
-        # Generate test files of different types
-        files_to_test = []
+        """Test TARGET_FILE[component_name] keyword works across all file types."""
+        # Generate test files of different types and create components
+        components = []
         
         # JSON file
         json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
@@ -39,7 +38,7 @@ class TestTemplateVariableSubstitution:
             content_spec={'schema': {'count': {'type': 'integer', 'minimum': 5, 'maximum': 5}}}
         )
         assert json_result['errors'] == []
-        files_to_test.append(("test.json", "json"))
+        components.append(ComponentSpec(type="create_json", name="json_comp", target_file="test.json"))
         
         # YAML file
         yaml_gen = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace_as_cwd))
@@ -48,7 +47,7 @@ class TestTemplateVariableSubstitution:
             content_spec={'schema': {'count': {'type': 'integer', 'minimum': 5, 'maximum': 5}}}
         )
         assert yaml_result['errors'] == []
-        files_to_test.append(("test.yaml", "yaml"))
+        components.append(ComponentSpec(type="create_yaml", name="yaml_comp", target_file="test.yaml"))
         
         # XML file
         xml_gen = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace_as_cwd))
@@ -57,7 +56,7 @@ class TestTemplateVariableSubstitution:
             content_spec={'schema': {'count': {'type': 'integer', 'minimum': 5, 'maximum': 5}}, 'root_element': 'data'}
         )
         assert xml_result['errors'] == []
-        files_to_test.append(("test.xml", "xml"))
+        components.append(ComponentSpec(type="create_xml", name="xml_comp", target_file="test.xml"))
         
         # CSV file 
         csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace_as_cwd))
@@ -66,7 +65,7 @@ class TestTemplateVariableSubstitution:
             content_spec={'headers': ['id', 'name'], 'rows': 5}
         )
         assert csv_result['errors'] == []
-        files_to_test.append(("test.csv", "csv"))
+        components.append(ComponentSpec(type="create_csv", name="csv_comp", target_file="test.csv"))
         
         # SQLite file
         sqlite_gen = FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace_as_cwd))
@@ -79,31 +78,26 @@ class TestTemplateVariableSubstitution:
             }
         )
         assert sqlite_result['errors'] == []
-        files_to_test.append(("test.db", "sqlite"))
+        components.append(ComponentSpec(type="create_sqlite", name="sqlite_comp", target_file="test.db"))
         
-        # Test TARGET_FILE substitution for each format
-        for filename, file_type in files_to_test:
-            file_path = str(temp_workspace_as_cwd / filename)
-            
-            if file_type == "json":
-                result = tf.evaluate_all_functions("{{json_value:count:TARGET_FILE}}", file_path)
-                assert result == "5"
-                
-            elif file_type == "yaml":
-                result = tf.evaluate_all_functions("{{yaml_value:count:TARGET_FILE}}", file_path)
-                assert result == "5"
-                
-            elif file_type == "xml":
-                result = tf.evaluate_all_functions("{{xpath_value:count:TARGET_FILE}}", file_path)
-                assert result == "5"
-                
-            elif file_type == "csv":
-                result = tf.evaluate_all_functions("{{csv_count:name:TARGET_FILE}}", file_path)
-                assert result == "5"
-                
-            elif file_type == "sqlite":
-                result = tf.evaluate_all_functions("{{sqlite_query:SELECT COUNT(*) FROM test_table:TARGET_FILE}}", file_path)
-                assert result == "5"
+        # Create TemplateFunctions with all components
+        tf = TemplateFunctions(str(temp_workspace_as_cwd), components=components)
+        
+        # Test TARGET_FILE[component_name] substitution for each format
+        result = tf.evaluate_all_functions("{{json_value:count:TARGET_FILE[json_comp]}}")
+        assert result == "5"
+        
+        result = tf.evaluate_all_functions("{{yaml_value:count:TARGET_FILE[yaml_comp]}}")
+        assert result == "5"
+        
+        result = tf.evaluate_all_functions("{{xpath_value:count:TARGET_FILE[xml_comp]}}")
+        assert result == "5"
+        
+        result = tf.evaluate_all_functions("{{csv_count:name:TARGET_FILE[csv_comp]}}")
+        assert result == "5"
+        
+        result = tf.evaluate_all_functions("{{sqlite_query:SELECT COUNT(*) FROM test_table:TARGET_FILE[sqlite_comp]}}")
+        assert result == "5"
     
     def test_complex_template_combinations(self, temp_workspace_as_cwd):
         """Test complex template function combinations."""

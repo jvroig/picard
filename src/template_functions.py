@@ -90,13 +90,12 @@ class TemplateFunctions:
         self.base_dir = Path(base_dir)
         self.components = components or []
     
-    def evaluate_all_functions(self, text: str, target_file_path: str = None) -> str:
+    def evaluate_all_functions(self, text: str) -> str:
         """
         Evaluate all template functions in the given text.
         
         Args:
             text: Text containing template functions like {{file_line:3:path}}
-            target_file_path: Path to substitute for TARGET_FILE keyword (backwards compatibility)
             
         Returns:
             Text with all template functions replaced with their results
@@ -113,7 +112,7 @@ class TemplateFunctions:
             args = [arg.strip() for arg in args_str.split(':')]
             
             try:
-                return str(self.evaluate_function(function_name, args, target_file_path))
+                return str(self.evaluate_function(function_name, args))
             except Exception as e:
                 raise TemplateFunctionError(f"Error evaluating {{{{{function_name}:{args_str}}}}}: {e}")
         
@@ -125,14 +124,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error processing template functions in '{text}': {e}")
     
-    def evaluate_function(self, function_name: str, args: List[str], target_file_path: str = None) -> Any:
+    def evaluate_function(self, function_name: str, args: List[str]) -> Any:
         """
         Evaluate a single template function.
         
         Args:
             function_name: Name of the function (e.g., 'file_line', 'csv_cell')
             args: List of function arguments
-            target_file_path: Path to substitute for TARGET_FILE keyword (optional)
             
         Returns:
             Result of the function evaluation
@@ -191,7 +189,7 @@ class TemplateFunctions:
         if function_name not in function_map:
             raise TemplateFunctionError(f"Unknown template function: {function_name}")
         
-        return function_map[function_name](args, target_file_path)
+        return function_map[function_name](args)
     
     def _resolve_path(self, path: str) -> Path:
         """Resolve a file path relative to base directory."""
@@ -200,26 +198,17 @@ class TemplateFunctions:
             file_path = self.base_dir / file_path
         return file_path
     
-    def _resolve_target_file(self, path: str, target_file_path: str = None) -> str:
+    def _resolve_target_file(self, path: str) -> str:
         """
         Resolve TARGET_FILE[component_name] to actual target file path.
         
         Args:
             path: Path that may contain TARGET_FILE[component_name] 
-            target_file_path: Legacy target file path (backwards compatibility)
             
         Returns:
             Resolved path with TARGET_FILE resolved if applicable
         """
-        # Use new resolution system if available
-        if self.components or "TARGET_FILE[" in path:
-            return resolve_target_file(path, self.components)
-        
-        # Legacy backwards compatibility
-        if path == "TARGET_FILE" and target_file_path:
-            return target_file_path
-        
-        return path
+        return resolve_target_file(path, self.components)
     
     def _read_file_lines(self, path: str) -> List[str]:
         """Read file and return list of lines (without newlines)."""
@@ -249,7 +238,7 @@ class TemplateFunctions:
     
     # File content extraction functions
     
-    def _file_line(self, args: List[str], target_file_path: str = None) -> str:
+    def _file_line(self, args: List[str]) -> str:
         """Get specific line number from file. Usage: {{file_line:N:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("file_line requires exactly 2 arguments: line_number, file_path")
@@ -259,7 +248,7 @@ class TemplateFunctions:
         except ValueError:
             raise TemplateFunctionError(f"Invalid line number: {args[0]}")
         
-        path = self._resolve_target_file(args[1], target_file_path)
+        path = self._resolve_target_file(args[1])
         lines = self._read_file_lines(path)
         
         # Convert to 0-based indexing
@@ -268,7 +257,7 @@ class TemplateFunctions:
         
         return lines[line_number - 1]
     
-    def _file_word(self, args: List[str], target_file_path: str = None) -> str:
+    def _file_word(self, args: List[str]) -> str:
         """Get Nth word from entire file. Usage: {{file_word:N:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("file_word requires exactly 2 arguments: word_number, file_path")
@@ -278,7 +267,7 @@ class TemplateFunctions:
         except ValueError:
             raise TemplateFunctionError(f"Invalid word number: {args[0]}")
         
-        path = self._resolve_target_file(args[1], target_file_path)
+        path = self._resolve_target_file(args[1])
         text = self._read_file_text(path)
         words = text.split()
         
@@ -288,21 +277,21 @@ class TemplateFunctions:
         
         return words[word_number - 1]
     
-    def _file_line_count(self, args: List[str], target_file_path: str = None) -> int:
+    def _file_line_count(self, args: List[str]) -> int:
         """Count total lines in file. Usage: {{file_line_count:path}}"""
         if len(args) != 1:
             raise TemplateFunctionError("file_line_count requires exactly 1 argument: file_path")
         
-        path = self._resolve_target_file(args[0], target_file_path)
+        path = self._resolve_target_file(args[0])
         lines = self._read_file_lines(path)
         return len(lines)
     
-    def _file_word_count(self, args: List[str], target_file_path: str = None) -> int:
+    def _file_word_count(self, args: List[str]) -> int:
         """Count total words in file. Usage: {{file_word_count:path}}"""
         if len(args) != 1:
             raise TemplateFunctionError("file_word_count requires exactly 1 argument: file_path")
         
-        path = self._resolve_target_file(args[0], target_file_path)
+        path = self._resolve_target_file(args[0])
         text = self._read_file_text(path)
         words = text.split()
         return len(words)
@@ -323,7 +312,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error reading CSV file {file_path}: {e}")
     
-    def _csv_cell(self, args: List[str], target_file_path: str = None) -> str:
+    def _csv_cell(self, args: List[str]) -> str:
         """Get cell at row N, column M (0-indexed). Usage: {{csv_cell:row:column:path}}"""
         if len(args) != 3:
             raise TemplateFunctionError("csv_cell requires exactly 3 arguments: row, column, file_path")
@@ -334,7 +323,7 @@ class TemplateFunctions:
         except ValueError:
             raise TemplateFunctionError(f"Invalid row/column numbers: {args[0]}, {args[1]}")
         
-        path = self._resolve_target_file(args[2], target_file_path)
+        path = self._resolve_target_file(args[2])
         data = self._read_csv_data(path)
         
         if row < 0 or row >= len(data):
@@ -345,7 +334,7 @@ class TemplateFunctions:
         
         return data[row][column]
     
-    def _csv_row(self, args: List[str], target_file_path: str = None) -> str:
+    def _csv_row(self, args: List[str]) -> str:
         """Get entire row N as comma-separated string. Usage: {{csv_row:N:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("csv_row requires exactly 2 arguments: row_number, file_path")
@@ -355,7 +344,7 @@ class TemplateFunctions:
         except ValueError:
             raise TemplateFunctionError(f"Invalid row number: {args[0]}")
         
-        path = self._resolve_target_file(args[1], target_file_path)
+        path = self._resolve_target_file(args[1])
         data = self._read_csv_data(path)
         
         if row < 0 or row >= len(data):
@@ -363,13 +352,13 @@ class TemplateFunctions:
         
         return ','.join(data[row])
     
-    def _csv_column(self, args: List[str], target_file_path: str = None) -> str:
+    def _csv_column(self, args: List[str]) -> str:
         """Get entire column by header name as comma-separated string. Usage: {{csv_column:header:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("csv_column requires exactly 2 arguments: header_name, file_path")
         
         header = args[0]
-        path = self._resolve_target_file(args[1], target_file_path)
+        path = self._resolve_target_file(args[1])
         data = self._read_csv_data(path)
         
         if len(data) == 0:
@@ -391,7 +380,7 @@ class TemplateFunctions:
         
         return ','.join(column_values)
     
-    def _csv_value(self, args: List[str], target_file_path: str = None) -> str:
+    def _csv_value(self, args: List[str]) -> str:
         """Get cell by row number and column header. Usage: {{csv_value:row:header:path}}"""
         if len(args) != 3:
             raise TemplateFunctionError("csv_value requires exactly 3 arguments: row_number, header_name, file_path")
@@ -402,7 +391,7 @@ class TemplateFunctions:
             raise TemplateFunctionError(f"Invalid row number: {args[0]}")
         
         header = args[1]
-        path = self._resolve_target_file(args[2], target_file_path)
+        path = self._resolve_target_file(args[2])
         data = self._read_csv_data(path)
         
         if len(data) == 0:
@@ -426,13 +415,13 @@ class TemplateFunctions:
     
     # CSV Aggregation Functions
     
-    def _csv_sum(self, args: List[str], target_file_path: str = None) -> float:
+    def _csv_sum(self, args: List[str]) -> float:
         """Sum all numeric values in a column. Usage: {{csv_sum:column:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("csv_sum requires exactly 2 arguments: column_name, file_path")
         
         column = args[0]
-        path = self._resolve_target_file(args[1], target_file_path)
+        path = self._resolve_target_file(args[1])
         data = self._read_csv_data(path)
         
         if len(data) == 0:
@@ -457,13 +446,13 @@ class TemplateFunctions:
         
         return total
     
-    def _csv_avg(self, args: List[str], target_file_path: str = None) -> float:
+    def _csv_avg(self, args: List[str]) -> float:
         """Average all numeric values in a column. Usage: {{csv_avg:column:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("csv_avg requires exactly 2 arguments: column_name, file_path")
         
         column = args[0]
-        path = self._resolve_target_file(args[1], target_file_path)
+        path = self._resolve_target_file(args[1])
         data = self._read_csv_data(path)
         
         if len(data) == 0:
@@ -491,13 +480,13 @@ class TemplateFunctions:
         
         return total / count
     
-    def _csv_count(self, args: List[str], target_file_path: str = None) -> int:
+    def _csv_count(self, args: List[str]) -> int:
         """Count non-empty values in a column. Usage: {{csv_count:column:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("csv_count requires exactly 2 arguments: column_name, file_path")
         
         column = args[0]
-        path = self._resolve_target_file(args[1], target_file_path)
+        path = self._resolve_target_file(args[1])
         data = self._read_csv_data(path)
         
         if len(data) == 0:
@@ -566,13 +555,13 @@ class TemplateFunctions:
         
         raise TemplateFunctionError(f"Unsupported operator: {operator}")
     
-    def _csv_sum_where(self, args: List[str], target_file_path: str = None) -> float:
+    def _csv_sum_where(self, args: List[str]) -> float:
         """Sum values in column where filter condition is met. Usage: {{csv_sum_where:column:filter_column:operator:value:path}}"""
         if len(args) != 5:
             raise TemplateFunctionError("csv_sum_where requires exactly 5 arguments: column, filter_column, operator, value, file_path")
         
         column, filter_column, operator, filter_value, path = args
-        path = self._resolve_target_file(path, target_file_path)
+        path = self._resolve_target_file(path)
         data = self._read_csv_data(path)
         
         if len(data) == 0:
@@ -599,13 +588,13 @@ class TemplateFunctions:
         
         return total
     
-    def _csv_avg_where(self, args: List[str], target_file_path: str = None) -> float:
+    def _csv_avg_where(self, args: List[str]) -> float:
         """Average values in column where filter condition is met. Usage: {{csv_avg_where:column:filter_column:operator:value:path}}"""
         if len(args) != 5:
             raise TemplateFunctionError("csv_avg_where requires exactly 5 arguments: column, filter_column, operator, value, file_path")
         
         column, filter_column, operator, filter_value, path = args
-        path = self._resolve_target_file(path, target_file_path)
+        path = self._resolve_target_file(path)
         data = self._read_csv_data(path)
         
         if len(data) == 0:
@@ -637,13 +626,13 @@ class TemplateFunctions:
         
         return total / count
     
-    def _csv_count_where(self, args: List[str], target_file_path: str = None) -> int:
+    def _csv_count_where(self, args: List[str]) -> int:
         """Count rows where filter condition is met. Usage: {{csv_count_where:column:filter_column:operator:value:path}}"""
         if len(args) != 5:
             raise TemplateFunctionError("csv_count_where requires exactly 5 arguments: column, filter_column, operator, value, file_path")
         
         column, filter_column, operator, filter_value, path = args
-        path = self._resolve_target_file(path, target_file_path)
+        path = self._resolve_target_file(path)
         data = self._read_csv_data(path)
         
         if len(data) == 0:
@@ -668,13 +657,13 @@ class TemplateFunctions:
     
     # SQLite-specific extraction functions
     
-    def _sqlite_query(self, args: List[str], target_file_path: str = None) -> str:
+    def _sqlite_query(self, args: List[str]) -> str:
         """Execute arbitrary SQL query and return first result. Usage: {{sqlite_query:SELECT name FROM users:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("sqlite_query requires exactly 2 arguments: sql_query, file_path")
         
         sql_query = args[0]
-        path = self._resolve_target_file(args[1], target_file_path)
+        path = self._resolve_target_file(args[1])
         
         file_path = self._resolve_path(path)
         if not file_path.exists():
@@ -700,7 +689,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error executing SQLite query '{sql_query}': {e}")
     
-    def _sqlite_value(self, args: List[str], target_file_path: str = None) -> str:
+    def _sqlite_value(self, args: List[str]) -> str:
         """Get value by row and column from first table. Usage: {{sqlite_value:row:column:path}} or {{sqlite_value:row:column:table:path}}"""
         if len(args) not in [3, 4]:
             raise TemplateFunctionError("sqlite_value requires 3 or 4 arguments: row, column, [table], file_path")
@@ -713,10 +702,10 @@ class TemplateFunctions:
         
         if len(args) == 4:
             table_name = args[2]
-            path = self._resolve_target_file(args[3], target_file_path)
+            path = self._resolve_target_file(args[3])
         else:
             table_name = None
-            path = self._resolve_target_file(args[2], target_file_path)
+            path = self._resolve_target_file(args[2])
         
         file_path = self._resolve_path(path)
         if not file_path.exists():
@@ -781,13 +770,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error reading JSON file {file_path}: {e}")
     
-    def _json_path(self, args: List[str], target_file_path: str = None) -> str:
+    def _json_path(self, args: List[str]) -> str:
         """Extract value using JSONPath-like syntax. Usage: {{json_path:$.users[0].name:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("json_path requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_json_data(file_path)
         
         try:
@@ -796,13 +785,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error evaluating JSONPath '{path_expr}': {e}")
     
-    def _json_value(self, args: List[str], target_file_path: str = None) -> str:
+    def _json_value(self, args: List[str]) -> str:
         """Get value by simple key path. Usage: {{json_value:key1.key2[0]:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("json_value requires exactly 2 arguments: key_path, file_path")
         
         key_path = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_json_data(file_path)
         
         try:
@@ -811,7 +800,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error accessing JSON key '{key_path}': {e}")
     
-    def _json_count(self, args: List[str], target_file_path: str = None) -> int:
+    def _json_count(self, args: List[str]) -> int:
         """Count elements in JSON array or object keys. Usage: {{json_count:$.users:path}}"""
         if len(args) not in [1, 2]:
             raise TemplateFunctionError("json_count requires 1 or 2 arguments: [path_expression], file_path")
@@ -819,10 +808,10 @@ class TemplateFunctions:
         if len(args) == 1:
             # Count root level
             path_expr = "$"
-            file_path = self._resolve_target_file(args[0], target_file_path)
+            file_path = self._resolve_target_file(args[0])
         else:
             path_expr = args[0]
-            file_path = self._resolve_target_file(args[1], target_file_path)
+            file_path = self._resolve_target_file(args[1])
         
         data = self._read_json_data(file_path)
         
@@ -841,7 +830,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error counting JSON elements at '{path_expr}': {e}")
     
-    def _json_keys(self, args: List[str], target_file_path: str = None) -> str:
+    def _json_keys(self, args: List[str]) -> str:
         """Get object keys as comma-separated string. Usage: {{json_keys:$.user:path}}"""
         if len(args) not in [1, 2]:
             raise TemplateFunctionError("json_keys requires 1 or 2 arguments: [path_expression], file_path")
@@ -849,10 +838,10 @@ class TemplateFunctions:
         if len(args) == 1:
             # Get root level keys
             path_expr = "$"
-            file_path = self._resolve_target_file(args[0], target_file_path)
+            file_path = self._resolve_target_file(args[0])
         else:
             path_expr = args[0]
-            file_path = self._resolve_target_file(args[1], target_file_path)
+            file_path = self._resolve_target_file(args[1])
         
         data = self._read_json_data(file_path)
         
@@ -1114,13 +1103,13 @@ class TemplateFunctions:
         # If no operator found, assume equality check
         raise TemplateFunctionError(f"Invalid filter expression: {expr}")
     
-    def _json_sum(self, args: List[str], target_file_path: str = None) -> str:
+    def _json_sum(self, args: List[str]) -> str:
         """Sum numeric values in array. Usage: {{json_sum:$.projects[*].budget:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("json_sum requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_json_data(file_path)
         
         try:
@@ -1130,13 +1119,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error calculating JSON sum for '{path_expr}': {e}")
     
-    def _json_avg(self, args: List[str], target_file_path: str = None) -> str:
+    def _json_avg(self, args: List[str]) -> str:
         """Average numeric values in array. Usage: {{json_avg:$.projects[*].budget:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("json_avg requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_json_data(file_path)
         
         try:
@@ -1148,13 +1137,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error calculating JSON average for '{path_expr}': {e}")
     
-    def _json_max(self, args: List[str], target_file_path: str = None) -> str:
+    def _json_max(self, args: List[str]) -> str:
         """Get maximum value in array. Usage: {{json_max:$.projects[*].budget:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("json_max requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_json_data(file_path)
         
         try:
@@ -1166,13 +1155,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error finding JSON maximum for '{path_expr}': {e}")
     
-    def _json_min(self, args: List[str], target_file_path: str = None) -> str:
+    def _json_min(self, args: List[str]) -> str:
         """Get minimum value in array. Usage: {{json_min:$.projects[*].budget:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("json_min requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_json_data(file_path)
         
         try:
@@ -1184,13 +1173,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error finding JSON minimum for '{path_expr}': {e}")
     
-    def _json_collect(self, args: List[str], target_file_path: str = None) -> str:
+    def _json_collect(self, args: List[str]) -> str:
         """Collect values into comma-separated string. Usage: {{json_collect:$.projects[*].name:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("json_collect requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_json_data(file_path)
         
         try:
@@ -1200,13 +1189,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error collecting JSON values for '{path_expr}': {e}")
     
-    def _json_count_where(self, args: List[str], target_file_path: str = None) -> str:
+    def _json_count_where(self, args: List[str]) -> str:
         """Count array elements matching filter. Usage: {{json_count_where:$.projects[?budget>60000]:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("json_count_where requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_json_data(file_path)
         
         try:
@@ -1242,13 +1231,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error counting filtered JSON elements for '{path_expr}': {e}")
     
-    def _json_filter(self, args: List[str], target_file_path: str = None) -> str:
+    def _json_filter(self, args: List[str]) -> str:
         """Filter array and collect values. Usage: {{json_filter:$.projects[?budget>60000].name:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("json_filter requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_json_data(file_path)
         
         try:
@@ -1319,13 +1308,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error reading YAML file {file_path}: {e}")
     
-    def _yaml_path(self, args: List[str], target_file_path: str = None) -> str:
+    def _yaml_path(self, args: List[str]) -> str:
         """Extract value using JSONPath-like syntax on YAML. Usage: {{yaml_path:$.users[0].name:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("yaml_path requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_yaml_data(file_path)
         
         try:
@@ -1334,13 +1323,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error evaluating YAML path '{path_expr}': {e}")
     
-    def _yaml_value(self, args: List[str], target_file_path: str = None) -> str:
+    def _yaml_value(self, args: List[str]) -> str:
         """Get value by simple key path on YAML. Usage: {{yaml_value:key1.key2[0]:path}}"""
         if len(args) != 2:
             raise TemplateFunctionError("yaml_value requires exactly 2 arguments: key_path, file_path")
         
         key_path = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_yaml_data(file_path)
         
         try:
@@ -1349,7 +1338,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error accessing YAML key '{key_path}': {e}")
     
-    def _yaml_count(self, args: List[str], target_file_path: str = None) -> int:
+    def _yaml_count(self, args: List[str]) -> int:
         """Count elements in YAML array or object keys. Usage: {{yaml_count:$.users:path}}"""
         if len(args) not in [1, 2]:
             raise TemplateFunctionError("yaml_count requires 1 or 2 arguments: [path_expression], file_path")
@@ -1357,10 +1346,10 @@ class TemplateFunctions:
         if len(args) == 1:
             # Count root level
             path_expr = "$"
-            file_path = self._resolve_target_file(args[0], target_file_path)
+            file_path = self._resolve_target_file(args[0])
         else:
             path_expr = args[0]
-            file_path = self._resolve_target_file(args[1], target_file_path)
+            file_path = self._resolve_target_file(args[1])
         
         data = self._read_yaml_data(file_path)
         
@@ -1379,7 +1368,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error counting YAML elements at '{path_expr}': {e}")
     
-    def _yaml_keys(self, args: List[str], target_file_path: str = None) -> str:
+    def _yaml_keys(self, args: List[str]) -> str:
         """Get object keys as comma-separated string. Usage: {{yaml_keys:$.user:path}}"""
         if len(args) not in [1, 2]:
             raise TemplateFunctionError("yaml_keys requires 1 or 2 arguments: [path_expression], file_path")
@@ -1387,10 +1376,10 @@ class TemplateFunctions:
         if len(args) == 1:
             # Get root level keys
             path_expr = "$"
-            file_path = self._resolve_target_file(args[0], target_file_path)
+            file_path = self._resolve_target_file(args[0])
         else:
             path_expr = args[0]
-            file_path = self._resolve_target_file(args[1], target_file_path)
+            file_path = self._resolve_target_file(args[1])
         
         data = self._read_yaml_data(file_path)
         
@@ -1407,13 +1396,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error getting YAML keys at '{path_expr}': {e}")
     
-    def _yaml_sum(self, args: List[str], target_file_path: str = None) -> str:
+    def _yaml_sum(self, args: List[str]) -> str:
         """Sum numeric values in YAML array. Usage: {{yaml_sum:$.projects[*].budget:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("yaml_sum requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_yaml_data(file_path)
         
         try:
@@ -1423,13 +1412,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error calculating YAML sum for '{path_expr}': {e}")
     
-    def _yaml_avg(self, args: List[str], target_file_path: str = None) -> str:
+    def _yaml_avg(self, args: List[str]) -> str:
         """Average numeric values in YAML array. Usage: {{yaml_avg:$.projects[*].budget:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("yaml_avg requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_yaml_data(file_path)
         
         try:
@@ -1441,13 +1430,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error calculating YAML average for '{path_expr}': {e}")
     
-    def _yaml_max(self, args: List[str], target_file_path: str = None) -> str:
+    def _yaml_max(self, args: List[str]) -> str:
         """Get maximum value in YAML array. Usage: {{yaml_max:$.projects[*].budget:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("yaml_max requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_yaml_data(file_path)
         
         try:
@@ -1459,13 +1448,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error finding YAML maximum for '{path_expr}': {e}")
     
-    def _yaml_min(self, args: List[str], target_file_path: str = None) -> str:
+    def _yaml_min(self, args: List[str]) -> str:
         """Get minimum value in YAML array. Usage: {{yaml_min:$.projects[*].budget:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("yaml_min requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_yaml_data(file_path)
         
         try:
@@ -1477,13 +1466,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error finding YAML minimum for '{path_expr}': {e}")
     
-    def _yaml_collect(self, args: List[str], target_file_path: str = None) -> str:
+    def _yaml_collect(self, args: List[str]) -> str:
         """Collect YAML values into comma-separated string. Usage: {{yaml_collect:$.projects[*].name:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("yaml_collect requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_yaml_data(file_path)
         
         try:
@@ -1493,13 +1482,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error collecting YAML values for '{path_expr}': {e}")
     
-    def _yaml_count_where(self, args: List[str], target_file_path: str = None) -> str:
+    def _yaml_count_where(self, args: List[str]) -> str:
         """Count YAML array elements matching filter. Usage: {{yaml_count_where:$.projects[?budget>60000]:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("yaml_count_where requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_yaml_data(file_path)
         
         try:
@@ -1535,13 +1524,13 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error counting filtered YAML elements for '{path_expr}': {e}")
     
-    def _yaml_filter(self, args: List[str], target_file_path: str = None) -> str:
+    def _yaml_filter(self, args: List[str]) -> str:
         """Filter YAML array and collect values. Usage: {{yaml_filter:$.projects[?budget>60000].name:file}}"""
         if len(args) != 2:
             raise TemplateFunctionError("yaml_filter requires exactly 2 arguments: path_expression, file_path")
         
         path_expr = args[0]
-        file_path = self._resolve_target_file(args[1], target_file_path)
+        file_path = self._resolve_target_file(args[1])
         data = self._read_yaml_data(file_path)
         
         try:
@@ -1597,7 +1586,7 @@ class TemplateFunctions:
 
     # XML Template Functions
     
-    def _xpath_value(self, args: List[str], target_file_path: str = None) -> str:
+    def _xpath_value(self, args: List[str]) -> str:
         """
         Extract text content from XML using XPath.
         Usage: {{xpath_value:/path/to/element:file.xml}}
@@ -1606,7 +1595,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_value requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
-        filename = self._resolve_target_file(filename, target_file_path)
+        filename = self._resolve_target_file(filename)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1628,7 +1617,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error extracting XML value for '{xpath}': {e}")
     
-    def _xpath_attr(self, args: List[str], target_file_path: str = None) -> str:
+    def _xpath_attr(self, args: List[str]) -> str:
         """
         Extract attribute value from XML using XPath.
         Usage: {{xpath_attr:/path/to/element@attribute:file.xml}}
@@ -1637,7 +1626,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_attr requires exactly 2 arguments: xpath@attribute and filename")
         
         xpath_attr, filename = args
-        filename = self._resolve_target_file(filename, target_file_path)
+        filename = self._resolve_target_file(filename)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1669,7 +1658,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error extracting XML attribute for '{xpath_attr}': {e}")
     
-    def _xpath_count(self, args: List[str], target_file_path: str = None) -> str:
+    def _xpath_count(self, args: List[str]) -> str:
         """
         Count elements matching XPath expression.
         Usage: {{xpath_count://element:file.xml}}
@@ -1678,7 +1667,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_count requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
-        filename = self._resolve_target_file(filename, target_file_path)
+        filename = self._resolve_target_file(filename)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1697,7 +1686,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error counting XML elements for '{xpath}': {e}")
     
-    def _xpath_exists(self, args: List[str], target_file_path: str = None) -> str:
+    def _xpath_exists(self, args: List[str]) -> str:
         """
         Check if XPath matches any elements.
         Usage: {{xpath_exists://element:file.xml}}
@@ -1706,7 +1695,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_exists requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
-        filename = self._resolve_target_file(filename, target_file_path)
+        filename = self._resolve_target_file(filename)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1725,7 +1714,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error checking XML existence for '{xpath}': {e}")
     
-    def _xpath_collect(self, args: List[str], target_file_path: str = None) -> str:
+    def _xpath_collect(self, args: List[str]) -> str:
         """
         Collect all text values from elements matching XPath.
         Usage: {{xpath_collect://element:file.xml}}
@@ -1734,7 +1723,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_collect requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
-        filename = self._resolve_target_file(filename, target_file_path)
+        filename = self._resolve_target_file(filename)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1758,7 +1747,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error collecting XML values for '{xpath}': {e}")
     
-    def _xpath_sum(self, args: List[str], target_file_path: str = None) -> str:
+    def _xpath_sum(self, args: List[str]) -> str:
         """
         Sum numeric values from elements matching XPath.
         Usage: {{xpath_sum://element:file.xml}}
@@ -1767,7 +1756,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_sum requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
-        filename = self._resolve_target_file(filename, target_file_path)
+        filename = self._resolve_target_file(filename)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1795,7 +1784,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error summing XML values for '{xpath}': {e}")
     
-    def _xpath_avg(self, args: List[str], target_file_path: str = None) -> str:
+    def _xpath_avg(self, args: List[str]) -> str:
         """
         Average numeric values from elements matching XPath.
         Usage: {{xpath_avg://element:file.xml}}
@@ -1804,7 +1793,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_avg requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
-        filename = self._resolve_target_file(filename, target_file_path)
+        filename = self._resolve_target_file(filename)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1835,7 +1824,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error averaging XML values for '{xpath}': {e}")
     
-    def _xpath_max(self, args: List[str], target_file_path: str = None) -> str:
+    def _xpath_max(self, args: List[str]) -> str:
         """
         Maximum numeric value from elements matching XPath.
         Usage: {{xpath_max://element:file.xml}}
@@ -1844,7 +1833,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_max requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
-        filename = self._resolve_target_file(filename, target_file_path)
+        filename = self._resolve_target_file(filename)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1875,7 +1864,7 @@ class TemplateFunctions:
         except Exception as e:
             raise TemplateFunctionError(f"Error finding XML maximum for '{xpath}': {e}")
     
-    def _xpath_min(self, args: List[str], target_file_path: str = None) -> str:
+    def _xpath_min(self, args: List[str]) -> str:
         """
         Minimum numeric value from elements matching XPath.
         Usage: {{xpath_min://element:file.xml}}
@@ -1884,7 +1873,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_min requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
-        filename = self._resolve_target_file(filename, target_file_path)
+        filename = self._resolve_target_file(filename)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():

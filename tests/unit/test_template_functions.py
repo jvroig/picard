@@ -15,6 +15,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
 from template_functions import TemplateFunctions, TemplateFunctionError
+from test_definition_parser import ComponentSpec
 
 
 @pytest.mark.unit
@@ -510,19 +511,53 @@ class TestTemplateFunctionEdgeCases:
 @pytest.mark.unit
 @pytest.mark.template_functions 
 class TestTargetFileSubstitution:
-    """Test TARGET_FILE keyword substitution."""
+    """Test TARGET_FILE[component_name] keyword substitution."""
     
-    def test_target_file_substitution(self, template_functions, create_text_file):
-        """Test that TARGET_FILE is properly substituted."""
+    def test_target_file_component_substitution(self, temp_workspace, create_text_file):
+        """Test that TARGET_FILE[component_name] is properly substituted."""
         lines = ["First line", "Second line"]
         text_file = create_text_file("test.txt", lines)
         
-        # Test with TARGET_FILE keyword
-        result = template_functions.evaluate_all_functions("{{file_line:1:TARGET_FILE}}", text_file)
+        # Create a component for TARGET_FILE resolution
+        component = ComponentSpec(
+            type="create_text",
+            name="test_comp", 
+            target_file=text_file
+        )
+        
+        # Create TemplateFunctions with the component
+        tf = TemplateFunctions(str(temp_workspace), components=[component])
+        
+        # Test with TARGET_FILE[component_name] keyword
+        result = tf.evaluate_all_functions("{{file_line:1:TARGET_FILE[test_comp]}}")
         assert result == "First line"
         
-        result = template_functions.evaluate_all_functions("{{file_line_count:TARGET_FILE}}", text_file)
+        result = tf.evaluate_all_functions("{{file_line_count:TARGET_FILE[test_comp]}}")
         assert result == "2"
+    
+    def test_target_file_errors(self, temp_workspace):
+        """Test TARGET_FILE error cases."""
+        # Create a dummy component for the "component not found" test
+        dummy_component = ComponentSpec(
+            type="create_text",
+            name="dummy", 
+            target_file="dummy.txt"
+        )
+        
+        tf_with_components = TemplateFunctions(str(temp_workspace), components=[dummy_component])
+        tf_empty = TemplateFunctions(str(temp_workspace), components=[])
+        
+        # Test bare TARGET_FILE (should fail)
+        with pytest.raises(TemplateFunctionError, match="TARGET_FILE requires component name"):
+            tf_empty.evaluate_all_functions("{{file_line:1:TARGET_FILE}}")
+        
+        # Test invalid component name when components exist
+        with pytest.raises(TemplateFunctionError, match="Component 'nonexistent' not found"):
+            tf_with_components.evaluate_all_functions("{{file_line:1:TARGET_FILE[nonexistent]}}")
+        
+        # Test TARGET_FILE[component] with empty components list
+        with pytest.raises(TemplateFunctionError, match="No components provided"):
+            tf_empty.evaluate_all_functions("{{file_line:1:TARGET_FILE[test]}}")
 
 
 @pytest.mark.unit

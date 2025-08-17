@@ -78,8 +78,9 @@ class TestDefinition:
     expected_structure: Optional[List[str]] = None
     expected_response: Optional[str] = None
     
-    # New sandbox setup property
-    sandbox_setup: Optional[SandboxSetup] = None
+    # Sandbox setup properties (supporting both legacy and new syntax)
+    sandbox_setup: Optional[SandboxSetup] = None  # Legacy single-component support
+    sandbox_components: Optional[List[ComponentSpec]] = None  # New multi-component support
     
     def __post_init__(self):
         """Validate the test definition after creation."""
@@ -143,6 +144,8 @@ class TestDefinition:
                 'content': self.sandbox_setup.content,
                 'clutter': self.sandbox_setup.clutter
             }
+        if self.sandbox_components:
+            result['sandbox_components'] = [comp.to_dict() for comp in self.sandbox_components]
         
         return result
 
@@ -191,7 +194,7 @@ class TestDefinitionParser:
     """Parses YAML test definition files into TestDefinition objects."""
     
     def __init__(self):
-        pass
+        self.sandbox_parser = SandboxSetupParser()
     
     @staticmethod
     def substitute_qs_id(text: str, question_id: int, sample_number: int) -> str:
@@ -316,19 +319,32 @@ class TestDefinitionParser:
                 raise ValueError(f"Duplicate question_id: {question_id}")
             seen_question_ids.add(question_id)
             
-            # Create TestDefinition
+            # Parse sandbox setup (both legacy and new multi-component syntax)
             sandbox_setup = None
+            sandbox_components = None
+            
             if 'sandbox_setup' in test_data:
                 sandbox_data = test_data['sandbox_setup']
                 if not isinstance(sandbox_data, dict):
                     raise ValueError(f"Test {i}: 'sandbox_setup' must be an object")
                 
-                sandbox_setup = SandboxSetup(
-                    type=sandbox_data.get('type'),
-                    target_file=sandbox_data.get('target_file'),
-                    content=sandbox_data.get('content'),
-                    clutter=sandbox_data.get('clutter')
-                )
+                # Use the new parser to handle both syntaxes
+                components = self.sandbox_parser.parse_sandbox_setup(sandbox_data)
+                
+                # For backwards compatibility, if only one component and it's a legacy type,
+                # also populate the legacy sandbox_setup field
+                if len(components) == 1 and 'type' in sandbox_data:
+                    # Legacy syntax - populate both fields for compatibility
+                    sandbox_setup = SandboxSetup(
+                        type=sandbox_data.get('type'),
+                        target_file=sandbox_data.get('target_file'),
+                        content=sandbox_data.get('content'),
+                        clutter=sandbox_data.get('clutter')
+                    )
+                    sandbox_components = components
+                else:
+                    # New multi-component syntax - only populate components
+                    sandbox_components = components
             
             test_def = TestDefinition(
                 question_id=question_id,
@@ -340,7 +356,8 @@ class TestDefinitionParser:
                 files_to_check=test_data.get('files_to_check'),
                 expected_structure=test_data.get('expected_structure'),
                 expected_response=test_data.get('expected_response'),
-                sandbox_setup=sandbox_setup
+                sandbox_setup=sandbox_setup,
+                sandbox_components=sandbox_components
             )
             
             test_definitions.append(test_def)

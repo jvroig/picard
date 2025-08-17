@@ -108,6 +108,7 @@ pytest -v
 ### Key Directories
 - `src/` - Production code
 - `tests/` - Test code (pytest-based)
+- `demos/` - Feature demonstration scripts (user-facing examples)
 - `PLANS/` - Planning documents and roadmaps
 - `config/` - Configuration files and templates
 - `results/` - Test run results and analysis
@@ -135,6 +136,13 @@ pytest -v
 - Use fixtures for reusable test data
 - **Test early, test often**: Catch issues immediately, not later
 - **All tests must pass**: Never commit with failing tests
+
+### Demo Philosophy
+- **Demos complement tests**: Create demos for major features to show real-world value
+- **User-facing examples**: Demos should demonstrate practical usage patterns
+- **Living documentation**: Keep demos updated as features evolve
+- **Separate from tests**: Demos focus on showcase, tests focus on validation
+- **Organized in `demos/`**: All demonstration scripts go in the demos directory
 
 ### Documentation
 - Update relevant documentation when making changes

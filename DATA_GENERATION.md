@@ -129,10 +129,13 @@ Semantic variables use the **same data generators** as sandbox file creation, en
 ```yaml
 # Sandbox generates data using these types...
 sandbox_setup:
-  type: "create_csv"
-  content:
-    headers: ["employee_name", "department", "salary"]
-    header_types: ["person_name", "department", "salary"]
+  components:
+    - type: "create_csv"
+      name: "employee_data"
+      target_file: "{{artifacts}}/employees.csv"
+      content:
+        headers: ["employee_name", "department", "salary"]
+        header_types: ["person_name", "department", "salary"]
 
 # ...and template variables use the same generators
 template: "Analyze {{semantic1:person_name}} in {{semantic2:department}} earning ${{semantic3:salary}}"
@@ -169,21 +172,22 @@ Create tests where the same data appears across multiple file formats:
 ```yaml
 # Same employee data across CSV, JSON, and XML
 sandbox_setup:
-  - type: "create_csv"
-    target_file: "{{artifacts}}/{{qs_id}}/employees.csv"
-    content:
-      headers: ["name", "department", "salary", "email"]
-      header_types: ["person_name", "department", "salary", "email"]
-      rows: 10
-  - type: "create_json"
-    target_file: "{{artifacts}}/{{qs_id}}/config.json"
-    content:
-      schema:
-        type: "object"
-        properties:
-          hr_contact: {type: "string", data_type: "person_name"}
-          it_department: {type: "string", data_type: "department"}
-          budget_limit: {type: "number", data_type: "salary"}
+  components:
+    - type: "create_csv"
+      name: "employee_data"
+      target_file: "{{artifacts}}/{{qs_id}}/employees.csv"
+      content:
+        headers: ["name", "department", "salary", "email"]
+        header_types: ["person_name", "department", "salary", "email"]
+        rows: 10
+    - type: "create_json"
+      name: "hr_config"
+      target_file: "{{artifacts}}/{{qs_id}}/config.json"
+      content:
+        schema:
+          hr_contact: "person_name"
+          it_department: "department"
+          budget_limit: "salary"
 
 template: "Find {{semantic1:person_name}} in {{semantic2:department}} with salary ${{number1:50000:100000:currency}}"
 expected_content: |
@@ -279,37 +283,39 @@ Use enhanced variables with type constraints for complex nested structures:
 ```yaml
 # Complex XML configuration with type constraints
 sandbox_setup:
-  type: "create_xml"
-  target_file: "{{artifacts}}/{{qs_id}}/enterprise_config.xml"
-  content:
-    root_element: "enterprise"
-    schema:
-      type: "object"
-      properties:
-        company:
+  components:
+    - type: "create_xml"
+      name: "enterprise_config"
+      target_file: "{{artifacts}}/{{qs_id}}/enterprise_config.xml"
+      content:
+        root_element: "enterprise"
+        schema:
           type: "object"
           properties:
-            name: {type: "string", data_type: "company"}
-            headquarters: {type: "string", data_type: "city"}
-            departments:
-              type: "array"
-              count: 5
-              item_schema:
-                type: "object"
-                properties:
-                  name: {type: "string", data_type: "department"}
-                  head: {type: "string", data_type: "person_name"}
-                  budget: {type: "integer", data_type: "currency"}
-                  employees:
-                    type: "array"
-                    count: 3
-                    item_schema:
-                      type: "object"
-                      properties:
-                        name: {type: "string", data_type: "person_name"}
-                        role: {type: "string", data_type: "course"}  # Using course for job titles
-                        experience: {type: "integer", data_type: "experience"}
-                        email: {type: "string", data_type: "email"}
+            company:
+              type: "object"
+              properties:
+                name: {type: "string", data_type: "company"}
+                headquarters: {type: "string", data_type: "city"}
+              departments:
+                type: "array"
+                count: 5
+                item_schema:
+                  type: "object"
+                  properties:
+                    name: {type: "string", data_type: "department"}
+                    head: {type: "string", data_type: "person_name"}
+                    budget: {type: "integer", data_type: "currency"}
+                    employees:
+                      type: "array"
+                      count: 3
+                      item_schema:
+                        type: "object"
+                        properties:
+                          name: {type: "string", data_type: "person_name"}
+                          role: {type: "string", data_type: "course"}  # Using course for job titles
+                          experience: {type: "integer", data_type: "experience"}
+                          email: {type: "string", data_type: "email"}
 
 template: |
   Analyze {{semantic1:company}} configuration:
@@ -326,10 +332,10 @@ expected_content: |
   Headcount: {{number2:10:50}}
   
   Department Analysis:
-  - Total departments: {{xpath_count://department:TARGET_FILE}}
-  - Total employees: {{xpath_count://employee:TARGET_FILE}}
-  - Average budget: ${{xpath_avg://department/budget:TARGET_FILE}}
-  - Senior staff: {{xpath_count://employee[experience>10]:TARGET_FILE}}
+  - Total departments: {{xpath_count://department:TARGET_FILE[enterprise_config]}}
+  - Total employees: {{xpath_count://employee:TARGET_FILE[enterprise_config]}}
+  - Average budget: ${{xpath_avg://department/budget:TARGET_FILE[enterprise_config]}}
+  - Senior staff: {{xpath_count://employee[experience>10]:TARGET_FILE[enterprise_config]}}
 ```
 
 For complete syntax and additional variable types, see the [Enhanced Variable Substitution](REFERENCE.md#enhanced-variable-substitution) section in the PICARD Reference guide.

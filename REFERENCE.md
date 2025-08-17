@@ -4,17 +4,6 @@ This document provides detailed reference information for PICARD's core componen
 
 For the list of all supported semantic data types for data generation, see [Data Generation Reference](DATA_GENERATION.md).
 
-## ⚠️ Breaking Changes in Template Functions
-
-**IMPORTANT**: As of the latest version, template functions require component-based TARGET_FILE syntax:
-
-- **New Syntax**: `TARGET_FILE[component_name]` (required)
-- **Old Syntax**: `TARGET_FILE` (no longer supported)
-- **Component Names**: All sandbox components must have a `name` field
-- **Multi-Component**: Full support for multiple file generators per test
-
-See [Template Functions](#template-functions) for complete details and examples.
-
 ## Table of Contents
 
 - [Scoring Types](#scoring-types)
@@ -36,11 +25,11 @@ See [Template Functions](#template-functions) for complete details and examples.
   - [Semantic Variables](#semantic-variables)
   - [Numeric Range Variables](#numeric-range-variables)
   - [Enhanced Entity Pool Variables](#enhanced-entity-pool-variables)
-  - [Legacy Entity Variables](#legacy-entity-variables)
+  - [Entity Variables](#entity-variables)
   - [Variable Consistency](#variable-consistency)
   - [Usage Examples](#usage-examples-1)
 - [Template Functions](#template-functions)
-  - [TARGET_FILE Keyword](#target_file-keyword)
+  - [TARGET_FILE[component_name] Keyword](#target_filecomponent_name-keyword)
   - [File Content Functions](#file-content-functions)
     - [`file_line`](#file_line) - Get specific line number
     - [`file_word`](#file_word) - Get Nth word from file
@@ -488,7 +477,7 @@ The enhanced system supports four types of variables:
 - **Semantic Variables**: `{{semantic1:person_name}}`, `{{semantic2:company}}` - Use PICARD's 42 data types
 - **Numeric Range Variables**: `{{number1:10:100}}`, `{{number2:1000:5000:currency}}` - Configurable numeric ranges
 - **Enhanced Entity Pools**: `{{entity1:colors}}`, `{{entity2:metals}}` - Thematic word groups
-- **Legacy Entity Variables**: `{{entity1}}`, `{{entity2}}` - Backwards compatibility
+- **Entity Variables**: `{{entity1}}`, `{{entity2}}` - Default entity pool words
 
 All variables maintain **consistent referencing** - the same variable produces the same value throughout a test.
 
@@ -570,9 +559,9 @@ template: "Create {{entity1:colors}} theme with {{entity2:metals}} accents"
 # Result: "Create azure theme with bronze accents"
 ```
 
-### Legacy Entity Variables
+### Entity Variables
 
-Complete backwards compatibility with existing PICARD syntax.
+Use words from PICARD's default entity pool.
 
 **Syntax**: `{{entity[INDEX]}}`
 
@@ -581,7 +570,6 @@ Complete backwards compatibility with existing PICARD syntax.
 template: "Process {{entity1}} file and backup {{entity2}} data"
 # Result: "Process harbor file and backup crystal data"
 
-# Works exactly as before - uses the default entity pool
 template: "Archive {{entity1}} logs to {{entity2}}_backup"
 # Result: "Archive summit logs to canyon_backup"
 ```
@@ -631,9 +619,9 @@ template: "Deploy {{entity1:metals}} server for {{semantic1:company}} with {{num
 # Result: "Deploy platinum server for TechCorp with 32 GB RAM and timeout 120 seconds"
 ```
 
-**Backwards Compatibility Test**:
+**Mixed Variable Types**:
 ```yaml
-# Legacy and enhanced can be used together
+# Different variable types can be used together
 template: "Migrate {{entity1}} database to {{entity2:gems}} cluster using {{semantic1:person_name}} credentials"
 # Result: "Migrate harbor database to emerald cluster using Sarah Johnson credentials"
 ```
@@ -646,12 +634,11 @@ Template functions enable dynamic answer key generation by extracting data from 
 
 ### TARGET_FILE[component_name] Keyword
 
-Template functions use `TARGET_FILE[component_name]` syntax to reference files from specific sandbox components. This enables multi-component scenarios and eliminates ambiguity:
+Template functions use `TARGET_FILE[component_name]` syntax to reference files from specific sandbox components. This enables multi-component scenarios and precise file targeting:
 
-**Multi-Component Syntax**:
 ```yaml
 sandbox_setup:
-  sandbox_components:
+  components:
     - type: "create_csv"
       name: "customer_data"
       target_file: "{{artifacts}}/{{qs_id}}/customers.csv"
@@ -675,8 +662,6 @@ expected_content: "{{json_value:total_customers:TARGET_FILE[config_data]}}"
 - Use `TARGET_FILE[component_name]` to reference specific component files
 - Component names must match regex `^[a-zA-Z][a-zA-Z0-9_-]*$` (max 50 chars)
 
-**Breaking Change**: The old `TARGET_FILE` syntax (without component name) is no longer supported and will throw an error.
-
 ---
 
 ### File Content Functions
@@ -695,7 +680,7 @@ Extract specific content from text files.
 template: "What does line 34 say in {{artifacts}}/notes.txt?"
 expected_response: "{{file_line:34:TARGET_FILE[notes_file]}}"
 sandbox_setup:
-  sandbox_components:
+  components:
     - type: "create_files"
       name: "notes_file"
       target_file: "{{artifacts}}/notes.txt"
@@ -1390,7 +1375,7 @@ expected_content: |
     "high_earner_avg_age": {{csv_avg_where:AGE_YRS:SALARY:>:60000:TARGET_FILE[customer_data]}}
   }
 sandbox_setup:
-  sandbox_components:
+  components:
     - type: "create_csv"
       name: "customer_data"
       target_file: "{{artifacts}}/{{qs_id}}/customers.csv"
@@ -1412,7 +1397,7 @@ question_id: 201
 template: "Find the 35th word in the generated document"
 expected_response: "{{file_word:35:TARGET_FILE[document]}}"
 sandbox_setup:
-  sandbox_components:
+  components:
     - type: "create_files"
       name: "document"
       target_file: "{{artifacts}}/{{qs_id}}/document.txt"
@@ -1442,8 +1427,6 @@ Template functions provide detailed error messages:
 
 The sandbox setup system creates realistic test environments by generating files, databases, and directory structures dynamically. Each test gets isolated data that prevents memorization while testing genuine agentic capabilities.
 
-**⚠️ Breaking Change**: All sandbox components now **require** a `name` field for TARGET_FILE[component_name] resolution. Use `sandbox_components` for multi-component setups or add `name` to single-component configurations.
-
 ### Overview
 
 Sandbox setup operates through four main generator types:
@@ -1455,10 +1438,10 @@ Sandbox setup operates through four main generator types:
 
 ### Basic Configuration
 
-**Multi-Component Setup (Recommended)**:
+**Multi-Component Setup**:
 ```yaml
 sandbox_setup:
-  sandbox_components:
+  components:
     - type: "create_csv"                        # Generator type
       name: "main_data"                        # Required: component name
       target_file: "{{artifacts}}/{{qs_id}}/data.csv"  # Output file path
@@ -1473,7 +1456,7 @@ sandbox_setup:
           total_records: "{{csv_count:ID:TARGET_FILE[main_data]}}"
 ```
 
-**Single Component Setup (Legacy Support)**:
+**Single Component Setup**:
 ```yaml
 sandbox_setup:
   type: "create_csv" 

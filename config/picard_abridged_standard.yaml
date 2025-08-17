@@ -44,25 +44,29 @@ tests:
     samples: 20
     template: "Read the file {{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt and tell me what line 34 says. Reply ONLY with the contents of that line. Do not mention anything else other than the line."
     scoring_type: "stringmatch"
-    expected_response: "{{file_line:34:TARGET_FILE}}"
+    expected_response: "{{file_line:34:TARGET_FILE[notes_file]}}"
     sandbox_setup:
-      type: "create_files"
-      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt"
-      content:
-        type: "lorem_lines"
-        count: 100
+      components:
+        - type: "create_files"
+          name: "notes_file"
+          target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt"
+          content:
+            type: "lorem_lines"
+            count: 100
 
   - question_id: 202
     samples: 20
     template: "Read the file {{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt and tell me what 35th word is. Reply ONLY with the word."
     scoring_type: "stringmatch"
-    expected_response: "{{file_word:35:TARGET_FILE}}"
+    expected_response: "{{file_word:35:TARGET_FILE[notes_file]}}"
     sandbox_setup:
-      type: "create_files"
-      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt"
-      content:
-        type: "lorem_lines"
-        count: 100
+      components:
+        - type: "create_files"
+          name: "notes_file"
+          target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/notes.txt"
+          content:
+            type: "lorem_lines"
+            count: 100
 
   #############################
   #SECTION 300: CSV Processsing
@@ -71,28 +75,32 @@ tests:
     template: "Create a JSON summary of {{artifacts}}/{{qs_id}}/{{entity1}}/crm_export.csv showing total customers and average age. Create {{artifacts}}/{{qs_id}}/cust.json with the JSON containing `total_customers` and `average_age`."
     scoring_type: "readfile_jsonmatch"
     file_to_read: "{{artifacts}}/{{qs_id}}/cust.json"
-    expected_content: '{"total_customers": {{csv_count:C_ID:TARGET_FILE}}, "average_age": {{csv_avg:AGE_YRS:TARGET_FILE}}}'
+    expected_content: '{"total_customers": {{csv_count:C_ID:TARGET_FILE[crm_data]}}, "average_age": {{csv_avg:AGE_YRS:TARGET_FILE[crm_data]}}}'
     sandbox_setup:
-      type: "create_csv"
-      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/crm_export.csv"
-      content:
-        headers: ["C_ID", "C_NAME", "AGE_YRS", "LOC_CD", "REG_DT"]
-        header_types: ["id", "person_name", "age", "city", "date"]
-        rows: 75
+      components:
+        - type: "create_csv"
+          name: "crm_data"
+          target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/crm_export.csv"
+          content:
+            headers: ["C_ID", "C_NAME", "AGE_YRS", "LOC_CD", "REG_DT"]
+            header_types: ["id", "person_name", "age", "city", "date"]
+            rows: 75
 
   - question_id: 302
     samples: 20
     template: "How many employees are in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}/hr_dump.csv? Write down your final answer in {{artifacts}}/{{qs_id}}/employees_count_eng.txt"
     scoring_type: "readfile_stringmatch"
     file_to_read: "{{artifacts}}/{{qs_id}}/employees_count_eng.txt"
-    expected_content: "{{csv_count_where:EMP_ID:DEPT_CD:==:Engineering:TARGET_FILE}}"
+    expected_content: "{{csv_count_where:EMP_ID:DEPT_CD:==:Engineering:TARGET_FILE[hr_data]}}"
     sandbox_setup:
-      type: "create_csv"
-      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/hr_dump.csv"
-      content:
-        headers: ["EMP_ID", "EMP_NM", "DEPT_CD", "SAL_AMT"]
-        header_types: ["id", "person_name", "department", "salary"]
-        rows: 100
+      components:
+        - type: "create_csv"
+          name: "hr_data"
+          target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/hr_dump.csv"
+          content:
+            headers: ["EMP_ID", "EMP_NM", "DEPT_CD", "SAL_AMT"]
+            header_types: ["id", "person_name", "department", "salary"]
+            rows: 100
 
 
   #################################
@@ -102,42 +110,46 @@ tests:
     template: "In the database {{artifacts}}/{{qs_id}}/{{entity1}}.db, find the total salary for all Engineering department employees. Write down your final answer in {{artifacts}}/{{qs_id}}/total_salary_eng.txt"
     scoring_type: "readfile_stringmatch"
     file_to_read: "{{artifacts}}/{{qs_id}}/total_salary_eng.txt"
-    expected_content: "{{sqlite_query:SELECT SUM(SAL_AMT) FROM enterprise_employees WHERE DEPT_CD = 'Engineering':TARGET_FILE}}"
+    expected_content: "{{sqlite_query:SELECT SUM(SAL_AMT) FROM enterprise_employees WHERE DEPT_CD = 'Engineering':TARGET_FILE[employee_db]}}"
     sandbox_setup:
-      type: "create_sqlite"
-      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}.db"
-      content:
-        table_name: "enterprise_employees"
-        columns:
-          - {name: "EMP_ID", type: "auto_id"}
-          - {name: "EMP_NM", type: "TEXT", data_type: "person_name"}
-          - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
-          - {name: "SAL_AMT", type: "INTEGER", data_type: "salary"}
-          - {name: "STAT_FLG", type: "TEXT", data_type: "status"}
-        rows: 50
+      components:
+        - type: "create_sqlite"
+          name: "employee_db"
+          target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}.db"
+          content:
+            table_name: "enterprise_employees"
+            columns:
+              - {name: "EMP_ID", type: "auto_id"}
+              - {name: "EMP_NM", type: "TEXT", data_type: "person_name"}
+              - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
+              - {name: "SAL_AMT", type: "INTEGER", data_type: "salary"}
+              - {name: "STAT_FLG", type: "TEXT", data_type: "status"}
+            rows: 50
 
   - question_id: 402
     samples: 20
     template: "How many orders above 50000 are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db? Create a JSON file {{artifacts}}/{{qs_id}}/big_orders_count.json that contains the answer using 'num_big_orders' as key."
     scoring_type: "readfile_jsonmatch"
     file_to_read: "{{artifacts}}/{{qs_id}}/big_orders_count.json"
-    expected_content: "{\"num_big_orders\": {{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > 50000:TARGET_FILE}}}"
+    expected_content: "{\"num_big_orders\": {{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > 50000:TARGET_FILE[order_db]}}}"
     sandbox_setup:
-      type: "create_sqlite"
-      target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}.db"
-      content:
-        tables:
-          - name: "enterprise_customers"
-            columns:
-              - {name: "CUST_ID", type: "auto_id"}
-              - {name: "CUST_NM", type: "TEXT", data_type: "person_name"}
-              - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
-              - {name: "LOC_CD", type: "TEXT", data_type: "region"}
-            rows: 20
-          - name: "enterprise_orders"
-            columns:
-              - {name: "ORD_ID", type: "auto_id"}
-              - {name: "CUST_REF", type: "INTEGER", foreign_key: "enterprise_customers.CUST_ID"}
-              - {name: "ORD_AMT", type: "INTEGER", data_type: "currency"}
-              - {name: "STAT_CD", type: "TEXT", data_type: "status"}
-            rows: 75
+      components:
+        - type: "create_sqlite"
+          name: "order_db"
+          target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}.db"
+          content:
+            tables:
+              - name: "enterprise_customers"
+                columns:
+                  - {name: "CUST_ID", type: "auto_id"}
+                  - {name: "CUST_NM", type: "TEXT", data_type: "person_name"}
+                  - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
+                  - {name: "LOC_CD", type: "TEXT", data_type: "region"}
+                rows: 20
+              - name: "enterprise_orders"
+                columns:
+                  - {name: "ORD_ID", type: "auto_id"}
+                  - {name: "CUST_REF", type: "INTEGER", foreign_key: "enterprise_customers.CUST_ID"}
+                  - {name: "ORD_AMT", type: "INTEGER", data_type: "currency"}
+                  - {name: "STAT_CD", type: "TEXT", data_type: "status"}
+                rows: 75

@@ -8,7 +8,9 @@ while maintaining backwards compatibility with the existing entity system.
 import re
 import random
 from typing import Dict, Any, List
+from pathlib import Path
 from file_generators import DataGenerator
+from entity_pool import EntityPool
 
 
 class EnhancedVariableSubstitution:
@@ -33,6 +35,7 @@ class EnhancedVariableSubstitution:
             random.seed(seed)
             
         self.data_generator = DataGenerator()
+        self.entity_pool = EntityPool()  # Load existing entity pool
         
         # Caches for consistent variable referencing within a test
         self.semantic_cache = {}  # {(index, data_type): value}
@@ -41,25 +44,22 @@ class EnhancedVariableSubstitution:
         
         # Enhanced entity pools
         self.entity_pools = {
-            'default': [  # Current entity pool (will be loaded from file)
-                'crimson', 'harbor', 'whisper', 'ancient', 'mountain', 'legend',
-                'silver', 'emerald', 'golden', 'crystal', 'storm', 'shadow'
-            ],
+            'default': self.entity_pool.entities,  # Use actual loaded entity pool
             'colors': [
-                'crimson', 'azure', 'amber', 'violet', 'emerald', 'ruby',
-                'sapphire', 'golden', 'silver', 'copper', 'pearl', 'jade'
+                'crimson', 'azure', 'amber', 'emerald', 'golden', 'silver',
+                'red', 'blue', 'green', 'yellow', 'orange', 'purple'
             ],
             'nature': [
                 'mountain', 'forest', 'river', 'canyon', 'valley', 'meadow',
-                'harbor', 'storm', 'shadow', 'glacier', 'desert', 'ocean'
+                'ocean', 'desert', 'prairie', 'creek', 'lake', 'beach'
             ],
             'metals': [
-                'silver', 'gold', 'copper', 'platinum', 'iron', 'bronze',
+                'silver', 'golden', 'copper', 'platinum', 'iron', 'bronze',
                 'steel', 'titanium', 'chrome', 'aluminum', 'zinc', 'nickel'
             ],
             'gems': [
-                'emerald', 'sapphire', 'ruby', 'diamond', 'pearl', 'jade',
-                'crystal', 'opal', 'topaz', 'amethyst', 'garnet', 'onyx'
+                'emerald', 'crystal', 'diamond', 'pearl', 'sapphire', 'ruby',
+                'amber', 'opal', 'topaz', 'amethyst', 'garnet', 'onyx'
             ]
         }
     

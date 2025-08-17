@@ -2,6 +2,7 @@
 Entity Pool Management for the PICARD framework.
 
 Handles loading and random selection of entities for template substitution.
+Supports both legacy entity substitution and enhanced variable substitution.
 """
 import random
 import re
@@ -26,6 +27,9 @@ class EntityPool:
         
         self.pool_file_path = Path(pool_file_path)
         self.entities = self._load_entities()
+        
+        # Initialize enhanced variable substitution (lazy loading)
+        self._enhanced_substitution = None
     
     def _load_entities(self) -> List[str]:
         """Load entities from the pool file."""
@@ -82,6 +86,69 @@ class EntityPool:
     def get_random_entities(self, count: int) -> List[str]:
         """Get multiple random entities from the pool (with replacement)."""
         return [self.get_random_entity() for _ in range(count)]
+    
+    def _get_enhanced_substitution(self):
+        """Get enhanced variable substitution instance (lazy loading)."""
+        if self._enhanced_substitution is None:
+            try:
+                from enhanced_variable_substitution import EnhancedVariableSubstitution
+                self._enhanced_substitution = EnhancedVariableSubstitution()
+            except ImportError:
+                # Fall back to None if enhanced substitution not available
+                self._enhanced_substitution = None
+        return self._enhanced_substitution
+    
+    def substitute_template_enhanced(self, template: str, expected_structure: List[str] = None) -> Dict[str, Any]:
+        """
+        Substitute template using enhanced variable substitution system.
+        
+        Supports semantic variables, numeric ranges, and enhanced entity pools
+        while maintaining backwards compatibility.
+        
+        Args:
+            template: String containing variable placeholders
+            expected_structure: List of paths for directory structure (optional)
+            
+        Returns:
+            Dictionary containing:
+            - 'substituted': The template with placeholders replaced
+            - 'entities': Dict mapping entity names to their values (legacy compatibility)
+            - 'variables': Dict mapping all variable names to their values
+        """
+        enhanced_sub = self._get_enhanced_substitution()
+        
+        if enhanced_sub is None:
+            # Fall back to legacy substitution
+            return self.substitute_template(template, expected_structure)
+        
+        # Use enhanced substitution
+        result = enhanced_sub.substitute_all_variables(template)
+        
+        # Handle expected_structure substitution if needed
+        if '{{expected_structure}}' in template and expected_structure:
+            # Substitute variables in the expected_structure paths
+            substituted_paths = []
+            for path in expected_structure:
+                path_result = enhanced_sub.substitute_all_variables(path)
+                substituted_paths.append(path_result['substituted'])
+            
+            # Format as tree structure
+            tree_structure = self._format_directory_tree(substituted_paths)
+            
+            # Replace {{expected_structure}} with the formatted tree
+            result['substituted'] = result['substituted'].replace('{{expected_structure}}', f'\n```\n{tree_structure}\n```')
+        
+        # Extract legacy entity variables for backwards compatibility
+        legacy_entities = {}
+        for var_name, var_value in result['variables'].items():
+            if var_name.startswith('entity') and ':' not in var_name:
+                legacy_entities[var_name] = var_value
+        
+        return {
+            'substituted': result['substituted'],
+            'entities': legacy_entities,  # Legacy compatibility
+            'variables': result['variables']  # All variables
+        }
     
     def substitute_template(self, template: str, expected_structure: List[str] = None) -> Dict[str, Any]:
         """
@@ -287,6 +354,23 @@ def main():
     entity_values = {'entity1': 'config', 'entity2': 'logs', 'entity3': 'debug'}
     substituted = pool.substitute_with_entities(template, entity_values)
     print(f"\nUsing provided entities: {substituted}")
+    
+    # Test enhanced variable substitution
+    print("\n--- Enhanced Variable Substitution Test ---")
+    enhanced_template = "Employee {{semantic1:person_name}} in {{semantic2:department}} earns ${{number1:30000:80000:currency}} and works on {{entity1:colors}} project"
+    enhanced_result = pool.substitute_template_enhanced(enhanced_template)
+    print(f"Enhanced template: {enhanced_template}")
+    print(f"Enhanced result: {enhanced_result['substituted']}")
+    print(f"All variables: {enhanced_result['variables']}")
+    print(f"Legacy entities: {enhanced_result['entities']}")
+    
+    # Test backwards compatibility
+    print("\n--- Backwards Compatibility Test ---")
+    legacy_template = "Process {{entity1}} file and {{entity2}} backup"
+    legacy_result = pool.substitute_template_enhanced(legacy_template)
+    print(f"Legacy template: {legacy_template}")
+    print(f"Legacy result: {legacy_result['substituted']}")
+    print(f"Legacy entities: {legacy_result['entities']}")
 
 
 if __name__ == "__main__":

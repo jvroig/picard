@@ -9,6 +9,8 @@ import random
 import re
 import sqlite3
 import yaml
+import xml.etree.ElementTree as ET
+import xml.dom.minidom as minidom
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from abc import ABC, abstractmethod
@@ -1529,6 +1531,278 @@ class YAMLFileGenerator(BaseFileGenerator):
         return result
 
 
+class XMLFileGenerator(BaseFileGenerator):
+    """Generates XML files with structured data based on schema definitions."""
+    
+    def generate(self, target_file: str, content_spec: Dict[str, Any], 
+                 clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Generate XML file with specified schema and data.
+        
+        Args:
+            target_file: Path to target XML file
+            content_spec: Content specification with schema definition
+            clutter_spec: Clutter specification (optional)
+            
+        Returns:
+            Generation results with XML data and metadata
+        """
+        result = {
+            'target_file': target_file,
+            'files_created': [],
+            'content_generated': {},
+            'xml_data': {},
+            'errors': []
+        }
+        
+        try:
+            # Generate XML content
+            xml_root = self._generate_xml_content(content_spec)
+            
+            # Write XML file with pretty formatting
+            target_path = self._resolve_path(target_file)
+            self._ensure_directory(target_path)
+            
+            # Create formatted XML string
+            xml_str = ET.tostring(xml_root, encoding='unicode')
+            formatted_xml = self._format_xml(xml_str)
+            
+            with open(target_path, 'w', encoding='utf-8') as f:
+                f.write(formatted_xml)
+            
+            result['files_created'].append(str(target_path))
+            result['xml_data'][str(target_path)] = xml_root
+            result['content_generated'][str(target_path)] = formatted_xml
+            
+            # Generate clutter files if specified
+            if clutter_spec:
+                clutter_result = self._generate_clutter_files(target_file, clutter_spec)
+                result['files_created'].extend(clutter_result['files_created'])
+                result['content_generated'].update(clutter_result['content_generated'])
+                result['errors'].extend(clutter_result['errors'])
+            
+        except Exception as e:
+            result['errors'].append(f"Error generating XML file {target_file}: {e}")
+            raise FileGeneratorError(f"Failed to generate XML file {target_file}: {e}")
+        
+        return result
+    
+    def _generate_xml_content(self, content_spec: Dict[str, Any]) -> ET.Element:
+        """Generate XML content based on schema specification."""
+        schema = content_spec.get('schema', {})
+        root_element = content_spec.get('root_element', 'root')
+        namespace = content_spec.get('namespace', None)
+        
+        if namespace:
+            root = ET.Element(root_element, xmlns=namespace)
+        else:
+            root = ET.Element(root_element)
+        
+        if not schema:
+            # Default simple structure if no schema provided
+            message = ET.SubElement(root, 'message')
+            message.text = self.data_generator.generate_field('lorem_words')
+            
+            timestamp = ET.SubElement(root, 'timestamp')
+            timestamp.text = self.data_generator.generate_field('date')
+            
+            id_elem = ET.SubElement(root, 'id')
+            id_elem.text = self.data_generator.generate_field('id')
+        else:
+            self._build_xml_from_schema(root, schema)
+        
+        return root
+    
+    def _build_xml_from_schema(self, parent: ET.Element, schema: Dict[str, Any]):
+        """Recursively build XML structure from schema definition."""
+        for key, value_schema in schema.items():
+            if isinstance(value_schema, dict) and 'type' in value_schema:
+                self._generate_typed_xml_element(parent, key, value_schema)
+            elif isinstance(value_schema, dict):
+                # Regular object - create element and recurse
+                element = ET.SubElement(parent, key)
+                self._build_xml_from_schema(element, value_schema)
+            else:
+                # Primitive value or field type string
+                element = ET.SubElement(parent, key)
+                if isinstance(value_schema, str):
+                    element.text = str(self.data_generator.generate_field(value_schema))
+                else:
+                    element.text = str(value_schema)
+    
+    def _generate_typed_xml_element(self, parent: ET.Element, name: str, schema: Dict[str, Any]):
+        """Generate XML element based on explicit type definition."""
+        value_type = schema['type']
+        
+        if value_type == 'array':
+            self._generate_xml_array(parent, name, schema)
+        elif value_type == 'object':
+            element = ET.SubElement(parent, name)
+            properties = schema.get('properties', {})
+            self._build_xml_from_schema(element, properties)
+        else:
+            # Generate simple element
+            element = ET.SubElement(parent, name)
+            value = self._generate_simple_value(schema)
+            element.text = str(value)
+    
+    def _generate_xml_array(self, parent: ET.Element, name: str, schema: Dict[str, Any]):
+        """Generate XML array structure."""
+        count_spec = schema.get('count', 5)
+        items_schema = schema.get('items', 'lorem_words')
+        element_name = schema.get('element_name', 'item')
+        
+        # Handle count as range [min, max] or single value
+        if isinstance(count_spec, list) and len(count_spec) == 2:
+            count = random.randint(count_spec[0], count_spec[1])
+        else:
+            count = int(count_spec)
+        
+        # Create container element for the array
+        array_container = ET.SubElement(parent, name)
+        
+        for _ in range(count):
+            item_element = ET.SubElement(array_container, element_name)
+            
+            if isinstance(items_schema, dict):
+                if 'type' in items_schema:
+                    # Handle typed array items
+                    if items_schema['type'] == 'object':
+                        properties = items_schema.get('properties', {})
+                        self._build_xml_from_schema(item_element, properties)
+                    else:
+                        value = self._generate_simple_value(items_schema)
+                        item_element.text = str(value)
+                else:
+                    # Regular object schema
+                    self._build_xml_from_schema(item_element, items_schema)
+            else:
+                # Simple field type
+                if isinstance(items_schema, str):
+                    item_element.text = str(self.data_generator.generate_field(items_schema))
+                else:
+                    item_element.text = str(items_schema)
+    
+    def _generate_simple_value(self, schema: Dict[str, Any]) -> Any:
+        """Generate simple value based on schema (reuse logic from YAML/JSON)."""
+        value_type = schema['type']
+        
+        if value_type == 'string':
+            min_length = schema.get('min_length', 1)
+            max_length = schema.get('max_length', 50)
+            pattern = schema.get('pattern', None)
+            
+            if pattern:
+                return self.data_generator.generate_field(pattern)
+            else:
+                words = []
+                current_length = 0
+                while current_length < min_length:
+                    word = self.lorem_generator.generate_words(1)
+                    words.append(word)
+                    current_length += len(word) + (1 if words else 0)
+                    
+                    if current_length > max_length:
+                        break
+                
+                result = ' '.join(words)
+                return result[:max_length] if len(result) > max_length else result
+        
+        elif value_type == 'number':
+            minimum = schema.get('minimum', 0.0)
+            maximum = schema.get('maximum', 1000.0)
+            return round(random.uniform(minimum, maximum), 2)
+        
+        elif value_type == 'integer':
+            minimum = schema.get('minimum', 1)
+            maximum = schema.get('maximum', 1000)
+            return random.randint(minimum, maximum)
+        
+        elif value_type == 'boolean':
+            return random.choice([True, False])
+        
+        elif value_type == 'null':
+            return None
+        
+        else:
+            # Treat as data generator field type
+            return self.data_generator.generate_field(value_type)
+    
+    def _format_xml(self, xml_str: str) -> str:
+        """Format XML string with pretty printing."""
+        try:
+            # Parse and pretty print
+            dom = minidom.parseString(xml_str)
+            pretty_xml = dom.toprettyxml(indent="  ", encoding=None)
+            
+            # Remove empty lines and fix formatting
+            lines = [line for line in pretty_xml.split('\n') if line.strip()]
+            return '\n'.join(lines)
+        
+        except Exception:
+            # If pretty printing fails, return original with basic formatting
+            return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_str}'
+    
+    def _generate_clutter_files(self, base_file: str, clutter_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate clutter XML and text files."""
+        result = {
+            'files_created': [],
+            'content_generated': {},
+            'errors': []
+        }
+        
+        try:
+            count = clutter_spec.get('count', 3)
+            base_path = self._resolve_path(base_file).parent
+            
+            for i in range(count):
+                # Random file type and location
+                file_type = random.choice(['xml', 'txt', 'log'])
+                subdir_depth = random.randint(0, 1)
+                
+                if subdir_depth > 0:
+                    subdir = f"subdir_{random.randint(1, 50)}"
+                    clutter_path = base_path / subdir / f"clutter_{random.randint(1, 100)}.{file_type}"
+                else:
+                    clutter_path = base_path / f"clutter_{random.randint(1, 100)}.{file_type}"
+                
+                self._ensure_directory(clutter_path)
+                
+                if file_type == 'xml':
+                    # Generate small random XML
+                    root = ET.Element('data')
+                    
+                    id_elem = ET.SubElement(root, 'id')
+                    id_elem.text = str(random.randint(1, 1000))
+                    
+                    name_elem = ET.SubElement(root, 'name')
+                    name_elem.text = self.data_generator.generate_field('lorem_words')
+                    
+                    values_elem = ET.SubElement(root, 'values')
+                    for _ in range(random.randint(1, 5)):
+                        value_elem = ET.SubElement(values_elem, 'value')
+                        value_elem.text = str(random.randint(1, 100))
+                    
+                    xml_str = ET.tostring(root, encoding='unicode')
+                    content = self._format_xml(xml_str)
+                    
+                    with open(clutter_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                else:
+                    # Generate text content
+                    content = self.lorem_generator.generate_lines(random.randint(2, 8))
+                    with open(clutter_path, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                
+                result['files_created'].append(str(clutter_path))
+                result['content_generated'][str(clutter_path)] = content
+                
+        except Exception as e:
+            result['errors'].append(f"Error generating XML clutter files: {e}")
+        
+        return result
+
+
 class FileGeneratorFactory:
     """Factory for creating file generators."""
     
@@ -1554,6 +1828,8 @@ class FileGeneratorFactory:
             return JSONFileGenerator(base_dir)
         elif generator_type == 'create_yaml':
             return YAMLFileGenerator(base_dir)
+        elif generator_type == 'create_xml':
+            return XMLFileGenerator(base_dir)
         else:
             raise FileGeneratorError(f"Unknown generator type: {generator_type}")
 

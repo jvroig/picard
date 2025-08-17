@@ -74,6 +74,18 @@ For the list of all supported semantic data types for data generation, see [Data
       - [`yaml_collect`](#yaml_collect) - Collect values as comma-separated
       - [`yaml_count_where`](#yaml_count_where) - Count with filter conditions
       - [`yaml_filter`](#yaml_filter) - Filter and extract values
+  - [XML Functions](#xml-functions)
+    - [Basic XML Access](#basic-xml-access)
+      - [`xpath_value`](#xpath_value) - Extract text content using XPath
+      - [`xpath_attr`](#xpath_attr) - Extract attribute values using XPath
+      - [`xpath_count`](#xpath_count) - Count elements matching XPath
+      - [`xpath_exists`](#xpath_exists) - Check if XPath matches any elements
+    - [XML Collection and Aggregation](#xml-collection-and-aggregation)
+      - [`xpath_collect`](#xpath_collect) - Collect all matching text values
+      - [`xpath_sum`](#xpath_sum) - Sum numeric values from XPath results
+      - [`xpath_avg`](#xpath_avg) - Average numeric values from XPath results
+      - [`xpath_max`](#xpath_max) - Maximum value from XPath results
+      - [`xpath_min`](#xpath_min) - Minimum value from XPath results
   - [Template Function Examples](#template-function-examples)
   - [Error Handling](#error-handling)
   - [Performance Notes](#performance-notes)
@@ -105,6 +117,12 @@ For the list of all supported semantic data types for data generation, see [Data
     - [Type Constraints and Arrays](#type-constraints-and-arrays)
     - [Semantic Data Types](#semantic-data-types-1)
     - [YAML Formatting Standards](#yaml-formatting-standards)
+  - [XML File Generation (`create_xml`)](#xml-file-generation-create_xml)
+    - [Schema-Driven Generation](#schema-driven-generation-2)
+    - [Element Structure and Attributes](#element-structure-and-attributes)
+    - [Complex Nested XML](#complex-nested-xml)
+    - [XML Arrays and Collections](#xml-arrays-and-collections)
+    - [Semantic Data Types in XML](#semantic-data-types-in-xml)
   - [Advanced Sandbox Features](#advanced-sandbox-features)
   - [Sandbox Best Practices](#sandbox-best-practices)
   - [Error Handling](#error-handling-1)
@@ -811,6 +829,130 @@ expected_response: "{{json_avg:$.projects[?budget>50000].team_size:TARGET_FILE}}
 
 ---
 
+## XML Functions
+
+XML template functions use XPath expressions to navigate and extract data from XML files. All functions support TARGET_FILE keyword substitution.
+
+### Basic XML Access
+
+#### `xpath_value`
+**Usage**: `{{xpath_value:xpath:file.xml}}`  
+**Purpose**: Extract text content from XML using XPath
+
+```xml
+<!-- example.xml -->
+<config>
+  <database>
+    <host>localhost</host>
+    <port>5432</port>
+  </database>
+  <users>
+    <user id="1">John</user>
+    <user id="2">Alice</user>
+  </users>
+</config>
+```
+
+Examples:
+- `{{xpath_value:database/host:example.xml}}` → `"localhost"`
+- `{{xpath_value:database/port:example.xml}}` → `"5432"`
+- `{{xpath_value:users/user[1]:example.xml}}` → `"John"`
+
+#### `xpath_attr`
+**Usage**: `{{xpath_attr:xpath@attribute:file.xml}}`  
+**Purpose**: Extract attribute values from XML elements
+
+Examples using the XML above:
+- `{{xpath_attr:users/user[1]@id:example.xml}}` → `"1"`
+- `{{xpath_attr:users/user[2]@id:example.xml}}` → `"2"`
+
+#### `xpath_count`
+**Usage**: `{{xpath_count:xpath:file.xml}}`  
+**Purpose**: Count elements matching XPath expression
+
+Examples:
+- `{{xpath_count:users/user:example.xml}}` → `"2"`
+- `{{xpath_count:database/*:example.xml}}` → `"2"` (host and port)
+
+#### `xpath_exists`
+**Usage**: `{{xpath_exists:xpath:file.xml}}`  
+**Purpose**: Check if XPath matches any elements (returns "true" or "false")
+
+Examples:
+- `{{xpath_exists:database/host:example.xml}}` → `"true"`
+- `{{xpath_exists:database/password:example.xml}}` → `"false"`
+- `{{xpath_exists:users/user[@id='1']:example.xml}}` → `"true"`
+
+### XML Collection and Aggregation
+
+#### `xpath_collect`
+**Usage**: `{{xpath_collect:xpath:file.xml}}`  
+**Purpose**: Collect all text values from matching elements as comma-separated string
+
+```xml
+<!-- products.xml -->
+<catalog>
+  <product>
+    <name>Widget A</name>
+    <price>29.99</price>
+    <category>Tools</category>
+  </product>
+  <product>
+    <name>Widget B</name>
+    <price>49.99</price>
+    <category>Electronics</category>
+  </product>
+</catalog>
+```
+
+Examples:
+- `{{xpath_collect:product/name:products.xml}}` → `"Widget A,Widget B"`
+- `{{xpath_collect:product/category:products.xml}}` → `"Tools,Electronics"`
+
+#### Numeric Aggregation Functions
+
+**Usage**: 
+- `{{xpath_sum:xpath:file.xml}}` - Sum numeric values
+- `{{xpath_avg:xpath:file.xml}}` - Average numeric values  
+- `{{xpath_max:xpath:file.xml}}` - Maximum value
+- `{{xpath_min:xpath:file.xml}}` - Minimum value
+
+Examples using products.xml:
+- `{{xpath_sum:product/price:products.xml}}` → `"79.98"`
+- `{{xpath_avg:product/price:products.xml}}` → `"39.99"`
+- `{{xpath_max:product/price:products.xml}}` → `"49.99"`
+- `{{xpath_min:product/price:products.xml}}` → `"29.99"`
+
+#### Advanced XPath Expressions
+
+XML functions support standard XPath syntax including:
+
+**Element navigation**:
+- `database/host` - Direct child access
+- `//user` - Descendant search anywhere in document
+- `users/user[1]` - First user element
+- `users/user[last()]` - Last user element
+
+**Attribute filtering**:
+- `user[@id='1']` - User with specific ID
+- `product[@category='Electronics']` - Products in Electronics category
+- `item[@active='true']` - Active items only
+
+**Complex expressions**:
+- `departments/department[budget>100000]/name` - High-budget department names
+- `employees/employee[salary>50000 and department='Engineering']` - Well-paid engineers
+- `projects/project[status='active']/team/member` - Active project team members
+
+#### Error Handling
+
+XML functions provide clear error messages for common issues:
+- **File not found**: `XML file not found: /path/to/file.xml`
+- **Invalid XPath**: `XPath 'invalid/path' not found in XML`
+- **Missing attributes**: `Attribute 'missing_attr' not found on element`
+- **Malformed XML**: `Invalid XML file: syntax error at line X`
+
+---
+
 ### Template Function Examples
 
 #### Complex CSV Processing
@@ -1414,6 +1556,187 @@ PICARD generates YAML with consistent formatting:
 - **No quotes unless necessary**
 - **Array items with dashes**
 - **Predictable structure for parsing**
+
+---
+
+### XML File Generation (`create_xml`)
+
+PICARD can generate realistic XML files using schema-driven generation with proper XML structure, element hierarchies, and data validation.
+
+#### Schema-Driven Generation
+
+XML generation uses schema definitions similar to JSON/YAML but produces properly formatted XML with configurable root elements:
+
+```yaml
+files:
+  - type: create_xml
+    target_file: "{{artifacts}}/config.xml"
+    content_spec:
+      schema:
+        database:
+          host: "city"
+          port: {"type": "integer", "minimum": 1000, "maximum": 9999}
+          name: "company"
+        settings:
+          debug: {"type": "boolean"}
+          timeout: {"type": "integer", "minimum": 30, "maximum": 300}
+      root_element: "configuration"
+```
+
+Generated XML:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <database>
+    <host>Chicago</host>
+    <port>5432</port>
+    <name>Tech Solutions</name>
+  </database>
+  <settings>
+    <debug>True</debug>
+    <timeout>120</timeout>
+  </settings>
+</configuration>
+```
+
+#### Element Structure and Attributes
+
+XML generation creates hierarchical element structures with proper nesting and formatting:
+
+**Basic structure**:
+- Schema keys become XML element names
+- String values become element text content
+- Nested objects become child elements
+- Pretty-printed with proper indentation
+
+**Root element configuration**:
+```yaml
+content_spec:
+  root_element: "enterprise"  # Optional, defaults to "root"
+  schema:
+    # ... schema definition
+```
+
+#### Complex Nested XML
+
+XML supports deeply nested structures with multiple levels:
+
+```yaml
+content_spec:
+  schema:
+    company:
+      name: "company"
+      departments:
+        type: "array"
+        count: 3
+        items:
+          name: "department" 
+          budget: {"type": "integer", "minimum": 100000, "maximum": 500000}
+          employees:
+            type: "array"
+            count: [2, 5]
+            items:
+              name: "person_name"
+              role: "category"
+              salary: "salary"
+  root_element: "organization"
+```
+
+Generated structure:
+```xml
+<organization>
+  <company>
+    <name>Global Industries</name>
+    <departments>
+      <item>
+        <name>Engineering</name>
+        <budget>350000</budget>
+        <employees>
+          <item>
+            <name>John Smith</name>
+            <role>Electronics</role>
+            <salary>75000</salary>
+          </item>
+          <!-- More employee items... -->
+        </employees>
+      </item>
+      <!-- More department items... -->
+    </departments>
+  </company>
+</organization>
+```
+
+#### XML Arrays and Collections
+
+Arrays in XML are represented as container elements with `<item>` children:
+
+**Array configuration**:
+```yaml
+schema:
+  products:
+    type: "array"
+    count: [2, 4]        # Random count between 2-4
+    items:
+      name: "product"
+      price: "price"
+      category: "category"
+```
+
+**Generated XML**:
+```xml
+<products>
+  <item>
+    <name>Widget Pro</name>
+    <price>29.99</price>
+    <category>Tools</category>
+  </item>
+  <item>
+    <name>Smart Device</name>
+    <price>149.99</price>
+    <category>Electronics</category>
+  </item>
+</products>
+```
+
+#### Semantic Data Types in XML
+
+XML generation supports all PICARD semantic data types with proper XML formatting:
+
+```yaml
+schema:
+  user_profile:
+    personal_info:
+      name: "person_name"           # → <name>John Smith</name>
+      email: "email"                # → <email>john.smith@company.com</email>
+      age: "age"                    # → <age>35</age>
+      city: "city"                  # → <city>New York</city>
+    employment:
+      company: "company"            # → <company>Tech Solutions</company>
+      department: "department"      # → <department>Engineering</department>
+      salary: "salary"              # → <salary>85000</salary>
+      start_date: "date"            # → <start_date>2023-06-15</start_date>
+    preferences:
+      active: {"type": "boolean"}   # → <active>True</active>
+      score: "score"                # → <score>92</score>
+```
+
+**Type constraints work identically to JSON/YAML**:
+```yaml
+schema:
+  metrics:
+    revenue: {"type": "number", "minimum": 1000.0, "maximum": 50000.0}
+    user_count: {"type": "integer", "minimum": 100, "maximum": 10000}
+    version: {"type": "string", "pattern": "lorem_word"}
+```
+
+**XML output**:
+```xml
+<metrics>
+  <revenue>25750.85</revenue>
+  <user_count>3247</user_count>
+  <version>tempor</version>
+</metrics>
+```
 
 ---
 

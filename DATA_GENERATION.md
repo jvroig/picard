@@ -57,6 +57,7 @@ PICARD can generate realistic data for multiple file formats using either:
 - **SQLite**: Relational databases with foreign key relationships
 - **JSON**: Schema-driven structured data with nested objects and arrays
 - **YAML**: Configuration files with consistent block-style formatting
+- **XML**: Hierarchical documents with schema validation and XPath navigation
 
 ```yaml
 # Automatic detection
@@ -72,6 +73,14 @@ tables:
     columns:
       - {name: "CUST_NM", type: "TEXT", data_type: "person_name"}
       - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
+
+# Explicit specification (XML)
+schema:
+  employee:
+    name: "person_name"
+    department: "department"
+    salary: "salary"
+root_element: "company"
 
 ```
 
@@ -448,6 +457,104 @@ content:
         active: "boolean"
 ```
 
+### XML Document Structure
+
+```yaml
+content:
+  schema:
+    employee:
+      name: "person_name"
+      email: "email"
+      department: "department"
+      salary: "salary"
+  root_element: "company"
+```
+
+### XML Enterprise Configuration
+
+```yaml
+content:
+  schema:
+    environment:
+      name: "category"
+      database:
+        host: "city"
+        port: "id"
+        name: "company"
+      services:
+        type: "array"
+        count: [2, 4]
+        items:
+          name: "product"
+          enabled: "boolean"
+          timeout: "id"
+          config:
+            debug: "boolean"
+            maxRetries: "score"
+    version: "id"
+    lastUpdated: "date"
+  root_element: "configuration"
+```
+
+### XML Product Catalog
+
+```yaml
+content:
+  schema:
+    products:
+      type: "array"
+      count: [3, 6]
+      items:
+        id: "id"
+        name: "product"
+        category: "category"
+        price: "price"
+        manufacturer: "company"
+        inStock: "boolean"
+        specifications:
+          weight: "score"
+          dimensions: "lorem_words"
+          warranty: "experience"
+    metadata:
+      catalogVersion: "id"
+      generatedDate: "date"
+      totalProducts: "score"
+  root_element: "catalog"
+```
+
+### XML Document Processing Workflow
+
+```yaml
+content:
+  schema:
+    documents:
+      type: "array"
+      count: [4, 7]
+      items:
+        id: "id"
+        title: "lorem_words"
+        author: "person_name"
+        status: "status"
+        type: "category"
+        metadata:
+          created: "date"
+          size: "score"
+          tags:
+            type: "array"
+            count: [1, 3]
+            items: "lorem_word"
+        processing:
+          stage: "category"
+          assignedTo: "person_name"
+          priority: "score"
+          automated: "boolean"
+    workflow:
+      name: "product"
+      version: "id"
+      owner: "department"
+  root_element: "documentSystem"
+```
+
 ---
 
 ## Best Practices
@@ -474,6 +581,14 @@ content:
 - Use consistent block-style formatting for readability
 - Nest environment-specific settings appropriately
 - Include arrays for services, teams, and feature toggles
+
+### For XML Documents
+- Define clear `root_element` names that describe the document purpose
+- Use nested objects to represent complex hierarchical relationships
+- Include arrays for collections of similar entities (products, employees, documents)
+- Structure schemas to support meaningful XPath queries
+- Balance depth vs. breadth in nested structures for realistic business documents
+- Use semantic element names that reflect business domain concepts
 
 ### For Business Realism
 - Combine related data types (person_name + email + phone)

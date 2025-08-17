@@ -46,14 +46,14 @@ class DependencyResolver:
     def resolve_dependencies(self, components: List[ComponentSpec]) -> List[ComponentSpec]:
         """Order components based on dependencies using topological sort."""
         
-        # Create component lookup by implicit name (index-based for unnamed components)
+        # Create component lookup by name (all components MUST have names now)
         component_map = {}
-        for i, comp in enumerate(components):
-            # Use existing _resolved_name if set, otherwise auto-generate
-            name = getattr(comp, '_resolved_name', None) or getattr(comp, 'name', None) or f"component_{i}"
-            component_map[name] = comp
-            # Store the resolved name back on the component for reference
-            comp._resolved_name = name
+        for comp in components:
+            if not comp.name:
+                raise ValueError(f"Component of type '{comp.type}' missing required 'name' field")
+            if comp.name in component_map:
+                raise ValueError(f"Duplicate component name: '{comp.name}'")
+            component_map[comp.name] = comp
         
         # Build dependency graph
         graph = {name: set() for name in component_map.keys()}
@@ -129,8 +129,7 @@ class ComponentOrchestrator:
             
             # Track successful file creation
             if result.success and result.target_file:
-                component_name = getattr(comp, '_resolved_name', f"component_{len(results)-1}")
-                created_files[component_name] = result.target_file
+                created_files[comp.name] = result.target_file
         
         return results
     
@@ -139,7 +138,7 @@ class ComponentOrchestrator:
                          created_files: Dict[str, str] = None) -> ComponentResult:
         """Create a single component."""
         
-        component_name = getattr(component, '_resolved_name', 'unknown')
+        component_name = component.name
         
         try:
             # Handle file generation components

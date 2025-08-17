@@ -13,6 +13,7 @@ from dataclasses import dataclass
 class ComponentSpec:
     """Specification for a single sandbox component."""
     type: str  # "create_csv", "create_json", "run_docker", etc.
+    name: str  # ALWAYS REQUIRED - component name for TARGET_FILE[component_name] references
     target_file: Optional[str] = None  # File path (for file components)
     content: Optional[Dict[str, Any]] = None     # Content specification
     config: Optional[Dict[str, Any]] = None      # Component-specific configuration
@@ -20,6 +21,18 @@ class ComponentSpec:
     
     def __post_init__(self):
         """Validate component specification."""
+        # Validate component name
+        import re
+        COMPONENT_NAME_PATTERN = re.compile(r'^[a-zA-Z][a-zA-Z0-9_-]*$')
+        
+        if not self.name:
+            raise ValueError("Component 'name' is required")
+        if not COMPONENT_NAME_PATTERN.match(self.name):
+            raise ValueError(f"Invalid component name '{self.name}'. Must start with letter and contain only letters, numbers, underscores, and hyphens")
+        if len(self.name) > 50:
+            raise ValueError(f"Component name '{self.name}' too long. Maximum 50 characters")
+        
+        # Validate file requirements
         file_types = ["create_files", "create_csv", "create_sqlite", "create_json", "create_yaml", "create_xml"]
         if self.type in file_types:
             if not self.target_file:
@@ -27,7 +40,7 @@ class ComponentSpec:
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary format."""
-        result = {'type': self.type}
+        result = {'type': self.type, 'name': self.name}
         if self.target_file:
             result['target_file'] = self.target_file
         if self.content:
@@ -39,28 +52,6 @@ class ComponentSpec:
         return result
 
 
-@dataclass
-class SandboxSetup:
-    """Represents sandbox setup configuration for dynamic file/database generation."""
-    type: str  # "create_files", "create_database", etc.
-    target_file: Optional[str] = None
-    content: Optional[Dict[str, Any]] = None
-    clutter: Optional[Dict[str, Any]] = None
-    
-    def __post_init__(self):
-        """Validate sandbox setup configuration."""
-        if self.type == "create_files":
-            if not self.target_file:
-                raise ValueError("'target_file' required for sandbox_setup type 'create_files'")
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary format."""
-        return {
-            'type': self.type,
-            'target_file': self.target_file,
-            'content': self.content,
-            'clutter': self.clutter
-        }
 
 
 @dataclass
@@ -78,9 +69,8 @@ class TestDefinition:
     expected_structure: Optional[List[str]] = None
     expected_response: Optional[str] = None
     
-    # Sandbox setup properties (supporting both legacy and new syntax)
-    sandbox_setup: Optional[SandboxSetup] = None  # Legacy single-component support
-    sandbox_components: Optional[List[ComponentSpec]] = None  # New multi-component support
+    # Sandbox setup properties (new syntax only)
+    sandbox_components: Optional[List[ComponentSpec]] = None  # Multi-component support
     
     def __post_init__(self):
         """Validate the test definition after creation."""
@@ -137,64 +127,19 @@ class TestDefinition:
             result['expected_structure'] = self.expected_structure
         if self.expected_response:
             result['expected_response'] = self.expected_response
-        if self.sandbox_setup:
-            result['sandbox_setup'] = {
-                'type': self.sandbox_setup.type,
-                'target_file': self.sandbox_setup.target_file,
-                'content': self.sandbox_setup.content,
-                'clutter': self.sandbox_setup.clutter
-            }
         if self.sandbox_components:
             result['sandbox_components'] = [comp.to_dict() for comp in self.sandbox_components]
         
         return result
 
 
-class SandboxSetupParser:
-    """Parses both legacy and new multi-component sandbox syntax."""
-    
-    def parse_sandbox_setup(self, sandbox_config: Dict[str, Any]) -> List[ComponentSpec]:
-        """Parse both legacy and new multi-component syntax."""
-        
-        # Detect legacy syntax
-        if 'type' in sandbox_config:
-            return [self._parse_legacy_component(sandbox_config)]
-        
-        # Detect new multi-component syntax  
-        elif 'components' in sandbox_config:
-            return [self._parse_component(comp) for comp in sandbox_config['components']]
-        
-        else:
-            raise ValueError("Invalid sandbox_setup configuration - must have 'type' or 'components'")
-    
-    def _parse_legacy_component(self, config: Dict[str, Any]) -> ComponentSpec:
-        """Convert legacy syntax to component spec."""
-        return ComponentSpec(
-            type=config['type'],
-            target_file=config.get('target_file'),
-            content=config.get('content'),
-            config=config.get('clutter')  # Map legacy 'clutter' to 'config'
-        )
-    
-    def _parse_component(self, comp_config: Dict[str, Any]) -> ComponentSpec:
-        """Parse individual component configuration."""
-        if 'type' not in comp_config:
-            raise ValueError("Component configuration must have 'type' field")
-        
-        return ComponentSpec(
-            type=comp_config['type'],
-            target_file=comp_config.get('target_file'),
-            content=comp_config.get('content'),
-            config=comp_config.get('config'),
-            depends_on=comp_config.get('depends_on')
-        )
 
 
 class TestDefinitionParser:
     """Parses YAML test definition files into TestDefinition objects."""
     
     def __init__(self):
-        self.sandbox_parser = SandboxSetupParser()
+        pass
     
     @staticmethod
     def substitute_qs_id(text: str, question_id: int, sample_number: int) -> str:
@@ -319,8 +264,7 @@ class TestDefinitionParser:
                 raise ValueError(f"Duplicate question_id: {question_id}")
             seen_question_ids.add(question_id)
             
-            # Parse sandbox setup (both legacy and new multi-component syntax)
-            sandbox_setup = None
+            # Parse sandbox setup (new syntax only - components array required)
             sandbox_components = None
             
             if 'sandbox_setup' in test_data:
@@ -328,23 +272,37 @@ class TestDefinitionParser:
                 if not isinstance(sandbox_data, dict):
                     raise ValueError(f"Test {i}: 'sandbox_setup' must be an object")
                 
-                # Use the new parser to handle both syntaxes
-                components = self.sandbox_parser.parse_sandbox_setup(sandbox_data)
+                # Only support new multi-component syntax
+                if 'components' not in sandbox_data:
+                    raise ValueError(f"Test {i}: 'sandbox_setup' must have 'components' array. Legacy syntax no longer supported.")
                 
-                # For backwards compatibility, if only one component and it's a legacy type,
-                # also populate the legacy sandbox_setup field
-                if len(components) == 1 and 'type' in sandbox_data:
-                    # Legacy syntax - populate both fields for compatibility
-                    sandbox_setup = SandboxSetup(
-                        type=sandbox_data.get('type'),
-                        target_file=sandbox_data.get('target_file'),
-                        content=sandbox_data.get('content'),
-                        clutter=sandbox_data.get('clutter')
+                components_data = sandbox_data['components']
+                if not isinstance(components_data, list):
+                    raise ValueError(f"Test {i}: 'components' must be an array")
+                
+                # Parse each component
+                components = []
+                for j, comp_data in enumerate(components_data):
+                    if not isinstance(comp_data, dict):
+                        raise ValueError(f"Test {i}, component {j}: Component must be an object")
+                    
+                    # Validate required fields
+                    if 'type' not in comp_data:
+                        raise ValueError(f"Test {i}, component {j}: 'type' field required")
+                    if 'name' not in comp_data:
+                        raise ValueError(f"Test {i}, component {j}: 'name' field required")
+                    
+                    component = ComponentSpec(
+                        type=comp_data['type'],
+                        name=comp_data['name'],
+                        target_file=comp_data.get('target_file'),
+                        content=comp_data.get('content'),
+                        config=comp_data.get('config'),
+                        depends_on=comp_data.get('depends_on')
                     )
-                    sandbox_components = components
-                else:
-                    # New multi-component syntax - only populate components
-                    sandbox_components = components
+                    components.append(component)
+                
+                sandbox_components = components
             
             test_def = TestDefinition(
                 question_id=question_id,
@@ -356,7 +314,6 @@ class TestDefinitionParser:
                 files_to_check=test_data.get('files_to_check'),
                 expected_structure=test_data.get('expected_structure'),
                 expected_response=test_data.get('expected_response'),
-                sandbox_setup=sandbox_setup,
                 sandbox_components=sandbox_components
             )
             

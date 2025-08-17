@@ -21,9 +21,9 @@ class TestDependencyResolver:
     def test_no_dependencies(self):
         """Test components with no dependencies."""
         components = [
-            ComponentSpec(type="create_csv", target_file="file1.csv"),
-            ComponentSpec(type="create_json", target_file="file2.json"),
-            ComponentSpec(type="create_yaml", target_file="file3.yaml")
+            ComponentSpec(type="create_csv", name="csv_comp", target_file="file1.csv"),
+            ComponentSpec(type="create_json", name="json_comp", target_file="file2.json"),
+            ComponentSpec(type="create_yaml", name="yaml_comp", target_file="file3.yaml")
         ]
         
         ordered = self.resolver.resolve_dependencies(components)
@@ -37,15 +37,10 @@ class TestDependencyResolver:
     def test_simple_linear_dependencies(self):
         """Test linear dependency chain."""
         components = [
-            ComponentSpec(type="create_json", target_file="config.json", depends_on=["csv_data"]),
-            ComponentSpec(type="create_csv", target_file="data.csv"),  # No dependencies
-            ComponentSpec(type="create_yaml", target_file="output.yaml", depends_on=["json_config"])
+            ComponentSpec(type="create_json", name="json_config", target_file="config.json", depends_on=["csv_data"]),
+            ComponentSpec(type="create_csv", name="csv_data", target_file="data.csv"),  # No dependencies
+            ComponentSpec(type="create_yaml", name="yaml_output", target_file="output.yaml", depends_on=["json_config"])
         ]
-        
-        # Add component names for dependency tracking BEFORE calling resolver
-        components[0]._resolved_name = "json_config"
-        components[1]._resolved_name = "csv_data"
-        components[2]._resolved_name = "yaml_output"
         
         ordered = self.resolver.resolve_dependencies(components)
         
@@ -60,37 +55,29 @@ class TestDependencyResolver:
     def test_complex_dependencies(self):
         """Test complex dependency graph."""
         components = [
-            ComponentSpec(type="create_yaml", target_file="final.yaml", depends_on=["processed_json", "summary_csv"]),
-            ComponentSpec(type="create_json", target_file="processed.json", depends_on=["raw_csv"]),
-            ComponentSpec(type="create_csv", target_file="raw.csv"),  # No dependencies
-            ComponentSpec(type="create_csv", target_file="summary.csv", depends_on=["raw_csv"])
+            ComponentSpec(type="create_yaml", name="final_yaml", target_file="final.yaml", depends_on=["processed_json", "summary_csv"]),
+            ComponentSpec(type="create_json", name="processed_json", target_file="processed.json", depends_on=["raw_csv"]),
+            ComponentSpec(type="create_csv", name="raw_csv", target_file="raw.csv"),  # No dependencies
+            ComponentSpec(type="create_csv", name="summary_csv", target_file="summary.csv", depends_on=["raw_csv"])
         ]
-        
-        # Add component names BEFORE calling resolver
-        for i, comp in enumerate(components):
-            comp._resolved_name = ["final_yaml", "processed_json", "raw_csv", "summary_csv"][i]
         
         ordered = self.resolver.resolve_dependencies(components)
         
         assert len(ordered) == 4
         # raw_csv should come first
-        assert ordered[0]._resolved_name == "raw_csv"
+        assert ordered[0].name == "raw_csv"
         # processed_json and summary_csv can come in any order (both depend only on raw_csv)
-        middle_names = {ordered[1]._resolved_name, ordered[2]._resolved_name}
+        middle_names = {ordered[1].name, ordered[2].name}
         assert middle_names == {"processed_json", "summary_csv"}
         # final_yaml should come last
-        assert ordered[3]._resolved_name == "final_yaml"
+        assert ordered[3].name == "final_yaml"
     
     def test_circular_dependency_detection(self):
         """Test detection of circular dependencies."""
         components = [
-            ComponentSpec(type="create_csv", target_file="file1.csv", depends_on=["comp2"]),
-            ComponentSpec(type="create_json", target_file="file2.json", depends_on=["comp1"])
+            ComponentSpec(type="create_csv", name="comp1", target_file="file1.csv", depends_on=["comp2"]),
+            ComponentSpec(type="create_json", name="comp2", target_file="file2.json", depends_on=["comp1"])
         ]
-        
-        # Add component names BEFORE calling resolver
-        components[0]._resolved_name = "comp1"
-        components[1]._resolved_name = "comp2"
         
         with pytest.raises(ValueError, match="Circular dependency detected"):
             self.resolver.resolve_dependencies(components)
@@ -98,10 +85,8 @@ class TestDependencyResolver:
     def test_missing_dependency(self):
         """Test error when component depends on non-existent component."""
         components = [
-            ComponentSpec(type="create_csv", target_file="file1.csv", depends_on=["nonexistent"])
+            ComponentSpec(type="create_csv", name="comp1", target_file="file1.csv", depends_on=["nonexistent"])
         ]
-        
-        components[0]._resolved_name = "comp1"
         
         with pytest.raises(ValueError, match="depends on unknown component 'nonexistent'"):
             self.resolver.resolve_dependencies(components)
@@ -122,7 +107,7 @@ class TestComponentOrchestrator:
     def test_single_component_creation(self):
         """Test creating a single component."""
         components = [
-            ComponentSpec(type="create_csv", target_file="test.csv",
+            ComponentSpec(type="create_csv", name="test_csv", target_file="test.csv",
                          content={"headers": ["id", "name"], "rows": 10})
         ]
         
@@ -138,9 +123,9 @@ class TestComponentOrchestrator:
     def test_multiple_components_no_dependencies(self):
         """Test creating multiple independent components."""
         components = [
-            ComponentSpec(type="create_csv", target_file="data.csv"),
-            ComponentSpec(type="create_json", target_file="config.json"),
-            ComponentSpec(type="create_yaml", target_file="settings.yaml")
+            ComponentSpec(type="create_csv", name="data_csv", target_file="data.csv"),
+            ComponentSpec(type="create_json", name="config_json", target_file="config.json"),
+            ComponentSpec(type="create_yaml", name="settings_yaml", target_file="settings.yaml")
         ]
         
         results = self.orchestrator.create_components(components, 1, 1)
@@ -154,15 +139,10 @@ class TestComponentOrchestrator:
     def test_dependency_order_maintained(self):
         """Test that components are created in dependency order."""
         components = [
-            ComponentSpec(type="create_json", target_file="config.json", depends_on=["data"]),
-            ComponentSpec(type="create_csv", target_file="data.csv"),
-            ComponentSpec(type="create_yaml", target_file="output.yaml", depends_on=["config"])
+            ComponentSpec(type="create_json", name="config", target_file="config.json", depends_on=["data"]),
+            ComponentSpec(type="create_csv", name="data", target_file="data.csv"),
+            ComponentSpec(type="create_yaml", name="output", target_file="output.yaml", depends_on=["config"])
         ]
-        
-        # Add component names for dependency tracking BEFORE orchestration
-        components[0]._resolved_name = "config"
-        components[1]._resolved_name = "data"
-        components[2]._resolved_name = "output"
         
         results = self.orchestrator.create_components(components, 1, 1)
         
@@ -175,8 +155,8 @@ class TestComponentOrchestrator:
     def test_error_propagation(self):
         """Test that dependency errors are properly handled."""
         components = [
-            ComponentSpec(type="create_csv", target_file="file1.csv", depends_on=["missing"]),
-            ComponentSpec(type="create_json", target_file="file2.json")
+            ComponentSpec(type="create_csv", name="csv_comp", target_file="file1.csv", depends_on=["missing"]),
+            ComponentSpec(type="create_json", name="json_comp", target_file="file2.json")
         ]
         
         results = self.orchestrator.create_components(components, 1, 1)
@@ -190,7 +170,7 @@ class TestComponentOrchestrator:
     def test_infrastructure_component_placeholder(self):
         """Test placeholder handling for infrastructure components."""
         components = [
-            ComponentSpec(type="run_docker", config={"image": "postgres:13"})
+            ComponentSpec(type="run_docker", name="postgres_db", config={"image": "postgres:13"})
         ]
         
         results = self.orchestrator.create_components(components, 1, 1)
@@ -222,7 +202,7 @@ class TestEnhancedFileGeneratorFactory:
     
     def test_create_file_component(self):
         """Test creating file generator components."""
-        component = ComponentSpec(type="create_csv", target_file="test.csv")
+        component = ComponentSpec(type="create_csv", name="test_csv", target_file="test.csv")
         
         try:
             generator = self.factory.create_component(component)
@@ -235,14 +215,14 @@ class TestEnhancedFileGeneratorFactory:
     
     def test_infrastructure_component_not_implemented(self):
         """Test that infrastructure components raise NotImplementedError."""
-        component = ComponentSpec(type="run_docker")
+        component = ComponentSpec(type="run_docker", name="docker_comp")
         
         with pytest.raises(NotImplementedError, match="Infrastructure components not yet supported"):
             self.factory.create_component(component)
     
     def test_unknown_component_type(self):
         """Test error handling for unknown component types."""
-        component = ComponentSpec(type="unknown_type")
+        component = ComponentSpec(type="unknown_type", name="unknown_comp")
         
         with pytest.raises(ValueError, match="Unknown component type"):
             self.factory.create_component(component)
@@ -317,9 +297,9 @@ class TestConvenienceFunction:
     def test_create_multi_component_sandbox(self):
         """Test the convenience function."""
         components = [
-            ComponentSpec(type="create_csv", target_file="data.csv", 
+            ComponentSpec(type="create_csv", name="data_csv", target_file="data.csv", 
                          content={"headers": ["id", "name"], "rows": 5}),
-            ComponentSpec(type="create_json", target_file="config.json",
+            ComponentSpec(type="create_json", name="config_json", target_file="config.json",
                          content={"schema": {"type": "object", "properties": {"test": {"type": "string"}}}})
         ]
         

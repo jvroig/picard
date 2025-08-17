@@ -1,13 +1,14 @@
 """
 Template Functions for the PICARD framework
 
-Handles template function evaluation for file, CSV, SQLite, JSON and YAML content extraction.
+Handles template function evaluation for file, CSV, SQLite, JSON, YAML and XML content extraction.
 """
 import csv
 import json
 import re
 import sqlite3
 import yaml
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -118,6 +119,15 @@ class TemplateFunctions:
             'yaml_collect': self._yaml_collect,
             'yaml_count_where': self._yaml_count_where,
             'yaml_filter': self._yaml_filter,
+            'xpath_value': self._xpath_value,
+            'xpath_attr': self._xpath_attr,
+            'xpath_count': self._xpath_count,
+            'xpath_exists': self._xpath_exists,
+            'xpath_collect': self._xpath_collect,
+            'xpath_sum': self._xpath_sum,
+            'xpath_avg': self._xpath_avg,
+            'xpath_max': self._xpath_max,
+            'xpath_min': self._xpath_min,
         }
         
         if function_name not in function_map:
@@ -1520,4 +1530,315 @@ class TemplateFunctions:
                 
         except Exception as e:
             raise TemplateFunctionError(f"Error filtering YAML elements for '{path_expr}': {e}")
+
+    # XML Template Functions
+    
+    def _xpath_value(self, args: List[str], target_file_path: str = None) -> str:
+        """
+        Extract text content from XML using XPath.
+        Usage: {{xpath_value:/path/to/element:file.xml}}
+        """
+        if len(args) != 2:
+            raise TemplateFunctionError("xpath_value requires exactly 2 arguments: xpath and filename")
+        
+        xpath, filename = args
+        file_path = self._resolve_path(filename)
+        
+        if not file_path.exists():
+            raise TemplateFunctionError(f"XML file not found: {file_path}")
+        
+        try:
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            
+            # Find element using XPath
+            element = root.find(xpath)
+            if element is not None:
+                return element.text or ""
+            else:
+                raise TemplateFunctionError(f"XPath '{xpath}' not found in XML")
+                
+        except ET.ParseError as e:
+            raise TemplateFunctionError(f"Invalid XML file '{file_path}': {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error extracting XML value for '{xpath}': {e}")
+    
+    def _xpath_attr(self, args: List[str], target_file_path: str = None) -> str:
+        """
+        Extract attribute value from XML using XPath.
+        Usage: {{xpath_attr:/path/to/element@attribute:file.xml}}
+        """
+        if len(args) != 2:
+            raise TemplateFunctionError("xpath_attr requires exactly 2 arguments: xpath@attribute and filename")
+        
+        xpath_attr, filename = args
+        file_path = self._resolve_path(filename)
+        
+        if not file_path.exists():
+            raise TemplateFunctionError(f"XML file not found: {file_path}")
+        
+        # Parse xpath@attribute format
+        if '@' not in xpath_attr:
+            raise TemplateFunctionError("xpath_attr requires format: xpath@attribute")
+        
+        xpath, attr_name = xpath_attr.rsplit('@', 1)
+        
+        try:
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            
+            # Find element using XPath
+            element = root.find(xpath)
+            if element is not None:
+                attr_value = element.get(attr_name)
+                if attr_value is not None:
+                    return attr_value
+                else:
+                    raise TemplateFunctionError(f"Attribute '{attr_name}' not found on element at '{xpath}'")
+            else:
+                raise TemplateFunctionError(f"XPath '{xpath}' not found in XML")
+                
+        except ET.ParseError as e:
+            raise TemplateFunctionError(f"Invalid XML file '{file_path}': {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error extracting XML attribute for '{xpath_attr}': {e}")
+    
+    def _xpath_count(self, args: List[str], target_file_path: str = None) -> str:
+        """
+        Count elements matching XPath expression.
+        Usage: {{xpath_count://element:file.xml}}
+        """
+        if len(args) != 2:
+            raise TemplateFunctionError("xpath_count requires exactly 2 arguments: xpath and filename")
+        
+        xpath, filename = args
+        file_path = self._resolve_path(filename)
+        
+        if not file_path.exists():
+            raise TemplateFunctionError(f"XML file not found: {file_path}")
+        
+        try:
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            
+            # Find all elements using XPath
+            elements = root.findall(xpath)
+            return str(len(elements))
+                
+        except ET.ParseError as e:
+            raise TemplateFunctionError(f"Invalid XML file '{file_path}': {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error counting XML elements for '{xpath}': {e}")
+    
+    def _xpath_exists(self, args: List[str], target_file_path: str = None) -> str:
+        """
+        Check if XPath matches any elements.
+        Usage: {{xpath_exists://element:file.xml}}
+        """
+        if len(args) != 2:
+            raise TemplateFunctionError("xpath_exists requires exactly 2 arguments: xpath and filename")
+        
+        xpath, filename = args
+        file_path = self._resolve_path(filename)
+        
+        if not file_path.exists():
+            raise TemplateFunctionError(f"XML file not found: {file_path}")
+        
+        try:
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            
+            # Check if any elements match XPath
+            element = root.find(xpath)
+            return "true" if element is not None else "false"
+                
+        except ET.ParseError as e:
+            raise TemplateFunctionError(f"Invalid XML file '{file_path}': {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error checking XML existence for '{xpath}': {e}")
+    
+    def _xpath_collect(self, args: List[str], target_file_path: str = None) -> str:
+        """
+        Collect all text values from elements matching XPath.
+        Usage: {{xpath_collect://element:file.xml}}
+        """
+        if len(args) != 2:
+            raise TemplateFunctionError("xpath_collect requires exactly 2 arguments: xpath and filename")
+        
+        xpath, filename = args
+        file_path = self._resolve_path(filename)
+        
+        if not file_path.exists():
+            raise TemplateFunctionError(f"XML file not found: {file_path}")
+        
+        try:
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            
+            # Find all elements using XPath
+            elements = root.findall(xpath)
+            values = []
+            for element in elements:
+                if element.text:
+                    values.append(element.text.strip())
+            
+            return ','.join(values)
+                
+        except ET.ParseError as e:
+            raise TemplateFunctionError(f"Invalid XML file '{file_path}': {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error collecting XML values for '{xpath}': {e}")
+    
+    def _xpath_sum(self, args: List[str], target_file_path: str = None) -> str:
+        """
+        Sum numeric values from elements matching XPath.
+        Usage: {{xpath_sum://element:file.xml}}
+        """
+        if len(args) != 2:
+            raise TemplateFunctionError("xpath_sum requires exactly 2 arguments: xpath and filename")
+        
+        xpath, filename = args
+        file_path = self._resolve_path(filename)
+        
+        if not file_path.exists():
+            raise TemplateFunctionError(f"XML file not found: {file_path}")
+        
+        try:
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            
+            # Find all elements using XPath
+            elements = root.findall(xpath)
+            total = 0.0
+            for element in elements:
+                if element.text:
+                    try:
+                        total += float(element.text.strip())
+                    except ValueError:
+                        # Skip non-numeric values
+                        continue
+            
+            return str(total)
+                
+        except ET.ParseError as e:
+            raise TemplateFunctionError(f"Invalid XML file '{file_path}': {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error summing XML values for '{xpath}': {e}")
+    
+    def _xpath_avg(self, args: List[str], target_file_path: str = None) -> str:
+        """
+        Average numeric values from elements matching XPath.
+        Usage: {{xpath_avg://element:file.xml}}
+        """
+        if len(args) != 2:
+            raise TemplateFunctionError("xpath_avg requires exactly 2 arguments: xpath and filename")
+        
+        xpath, filename = args
+        file_path = self._resolve_path(filename)
+        
+        if not file_path.exists():
+            raise TemplateFunctionError(f"XML file not found: {file_path}")
+        
+        try:
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            
+            # Find all elements using XPath
+            elements = root.findall(xpath)
+            values = []
+            for element in elements:
+                if element.text:
+                    try:
+                        values.append(float(element.text.strip()))
+                    except ValueError:
+                        # Skip non-numeric values
+                        continue
+            
+            if not values:
+                return "0"
+            
+            return str(sum(values) / len(values))
+                
+        except ET.ParseError as e:
+            raise TemplateFunctionError(f"Invalid XML file '{file_path}': {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error averaging XML values for '{xpath}': {e}")
+    
+    def _xpath_max(self, args: List[str], target_file_path: str = None) -> str:
+        """
+        Maximum numeric value from elements matching XPath.
+        Usage: {{xpath_max://element:file.xml}}
+        """
+        if len(args) != 2:
+            raise TemplateFunctionError("xpath_max requires exactly 2 arguments: xpath and filename")
+        
+        xpath, filename = args
+        file_path = self._resolve_path(filename)
+        
+        if not file_path.exists():
+            raise TemplateFunctionError(f"XML file not found: {file_path}")
+        
+        try:
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            
+            # Find all elements using XPath
+            elements = root.findall(xpath)
+            values = []
+            for element in elements:
+                if element.text:
+                    try:
+                        values.append(float(element.text.strip()))
+                    except ValueError:
+                        # Skip non-numeric values
+                        continue
+            
+            if not values:
+                return "0"
+            
+            return str(max(values))
+                
+        except ET.ParseError as e:
+            raise TemplateFunctionError(f"Invalid XML file '{file_path}': {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error finding XML maximum for '{xpath}': {e}")
+    
+    def _xpath_min(self, args: List[str], target_file_path: str = None) -> str:
+        """
+        Minimum numeric value from elements matching XPath.
+        Usage: {{xpath_min://element:file.xml}}
+        """
+        if len(args) != 2:
+            raise TemplateFunctionError("xpath_min requires exactly 2 arguments: xpath and filename")
+        
+        xpath, filename = args
+        file_path = self._resolve_path(filename)
+        
+        if not file_path.exists():
+            raise TemplateFunctionError(f"XML file not found: {file_path}")
+        
+        try:
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            
+            # Find all elements using XPath
+            elements = root.findall(xpath)
+            values = []
+            for element in elements:
+                if element.text:
+                    try:
+                        values.append(float(element.text.strip()))
+                    except ValueError:
+                        # Skip non-numeric values
+                        continue
+            
+            if not values:
+                return "0"
+            
+            return str(min(values))
+                
+        except ET.ParseError as e:
+            raise TemplateFunctionError(f"Invalid XML file '{file_path}': {e}")
+        except Exception as e:
+            raise TemplateFunctionError(f"Error finding XML minimum for '{xpath}': {e}")
 

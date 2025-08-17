@@ -20,6 +20,14 @@ For the list of all supported semantic data types for data generation, see [Data
     - [`readfile_jsonmatch`](#readfile_jsonmatch) - File content JSON verification
   - [Scoring Type Selection Guide](#scoring-type-selection-guide)
   - [Advanced Features](#advanced-features)
+- [Enhanced Variable Substitution](#enhanced-variable-substitution)
+  - [Overview](#overview-1)
+  - [Semantic Variables](#semantic-variables)
+  - [Numeric Range Variables](#numeric-range-variables)
+  - [Enhanced Entity Pool Variables](#enhanced-entity-pool-variables)
+  - [Legacy Entity Variables](#legacy-entity-variables)
+  - [Variable Consistency](#variable-consistency)
+  - [Usage Examples](#usage-examples-1)
 - [Template Functions](#template-functions)
   - [TARGET_FILE Keyword](#target_file-keyword)
   - [File Content Functions](#file-content-functions)
@@ -455,6 +463,169 @@ All `expected_content` and `expected_response` fields support:
 - Entity substitution (`{{entity1}}`)
 - Template functions such as (`{{csv_count:COLUMN:TARGET_FILE}}`)
 - Dynamic answer key generation
+
+---
+
+## Enhanced Variable Substitution
+
+PICARD's enhanced variable substitution system provides powerful templating capabilities beyond simple entity replacement. It supports semantic data types, numeric ranges, and thematic entity pools while maintaining complete backwards compatibility with existing `{{entity1}}` syntax.
+
+### Overview
+
+The enhanced system supports four types of variables:
+
+- **Semantic Variables**: `{{semantic1:person_name}}`, `{{semantic2:company}}` - Use PICARD's 42 data types
+- **Numeric Range Variables**: `{{number1:10:100}}`, `{{number2:1000:5000:currency}}` - Configurable numeric ranges
+- **Enhanced Entity Pools**: `{{entity1:colors}}`, `{{entity2:metals}}` - Thematic word groups
+- **Legacy Entity Variables**: `{{entity1}}`, `{{entity2}}` - Backwards compatibility
+
+All variables maintain **consistent referencing** - the same variable produces the same value throughout a test.
+
+### Semantic Variables
+
+Use any of PICARD's 42 semantic data types for realistic, contextual data generation.
+
+**Syntax**: `{{semantic[INDEX]:[DATA_TYPE]}}`
+
+**Examples**:
+```yaml
+template: "Employee {{semantic1:person_name}} in {{semantic2:department}} earns ${{semantic3:salary}}"
+# Result: "Employee Sarah Johnson in Engineering earns $75000"
+
+template: "Contact {{semantic1:person_name}} at {{semantic4:email}} regarding {{semantic2:department}} project"  
+# Result: "Contact Sarah Johnson at sarah.johnson@company.com regarding Engineering project"
+```
+
+**Available Data Types** (same as CSV/SQLite):
+- **People**: `person_name`, `first_name`, `last_name`, `email`
+- **Business**: `company`, `department`, `salary`, `product`
+- **Location**: `city`, `region`, `phone`
+- **Time**: `date`, `age`, `experience`
+- **Other**: `status`, `category`, `boolean`, `id`, `price`, `currency`, `course`, `semester`, `score`, `version`, `lorem_word`
+
+See [Data Generation Reference](DATA_GENERATION.md) for the complete list of 42 semantic data types.
+
+### Numeric Range Variables
+
+Generate numbers within specified ranges with different formatting types.
+
+**Syntax**: `{{number[INDEX]:[MIN]:[MAX]:[TYPE]}}`
+
+**Parameters**:
+- `INDEX`: Variable index for consistent referencing (1, 2, 3, etc.)
+- `MIN`: Minimum value (inclusive)
+- `MAX`: Maximum value (inclusive)  
+- `TYPE`: Optional formatting type (default: `integer`)
+
+**Number Types**:
+- `integer`: Whole numbers (e.g., "42")
+- `decimal`: Two decimal places (e.g., "42.75")
+- `currency`: Whole numbers for money (e.g., "1500")
+- `percentage`: One decimal place (e.g., "87.3")
+
+**Examples**:
+```yaml
+template: "Score: {{number1:60:100}}% with budget ${{number2:1000:5000:currency}}"
+# Result: "Score: 87% with budget $3250"
+
+template: "Success rate: {{number1:85:99:percentage}}% over {{number2:30:180}} days"
+# Result: "Success rate: 92.4% over 127 days"
+
+template: "Price: ${{number1:25:500:decimal}} with {{number2:5:15}} day shipping"
+# Result: "Price: $127.85 with 8 day shipping"
+```
+
+### Enhanced Entity Pool Variables
+
+Use thematic word groups for more contextual and realistic scenarios.
+
+**Syntax**: `{{entity[INDEX]:[POOL]}}`
+
+**Available Pools**:
+- `colors`: crimson, azure, amber, emerald, golden, silver, red, blue, green, yellow, orange, purple
+- `metals`: silver, golden, copper, platinum, iron, bronze, steel, titanium, chrome, aluminum, zinc, nickel  
+- `gems`: emerald, crystal, diamond, pearl, sapphire, ruby, amber, opal, topaz, amethyst, garnet, onyx
+- `nature`: mountain, forest, river, canyon, valley, meadow, ocean, desert, prairie, creek, lake, beach
+
+**Examples**:
+```yaml
+template: "Deploy {{entity1:colors}} server with {{entity2:metals}} backup"
+# Result: "Deploy crimson server with platinum backup"
+
+template: "Process {{entity1:gems}}_data.csv using {{entity2:nature}}_algorithm"  
+# Result: "Process emerald_data.csv using mountain_algorithm"
+
+template: "Create {{entity1:colors}} theme with {{entity2:metals}} accents"
+# Result: "Create azure theme with bronze accents"
+```
+
+### Legacy Entity Variables
+
+Complete backwards compatibility with existing PICARD syntax.
+
+**Syntax**: `{{entity[INDEX]}}`
+
+**Examples**:
+```yaml
+template: "Process {{entity1}} file and backup {{entity2}} data"
+# Result: "Process harbor file and backup crystal data"
+
+# Works exactly as before - uses the default entity pool
+template: "Archive {{entity1}} logs to {{entity2}}_backup"
+# Result: "Archive summit logs to canyon_backup"
+```
+
+### Variable Consistency
+
+**Critical Feature**: The same variable produces the same value throughout a test, enabling consistent referencing across templates, expected values, and sandbox files.
+
+**Example Test**:
+```yaml
+question_id: 501
+template: "Create summary for {{semantic1:person_name}} in {{semantic2:department}} with budget ${{number1:50000:100000:currency}}"
+scoring_type: "readfile_jsonmatch"
+file_to_read: "{{artifacts}}/summary.json"
+expected_content: |
+  {
+    "employee": "{{semantic1:person_name}}",
+    "department": "{{semantic2:department}}",
+    "budget": {{number1:50000:100000:currency}},
+    "status": "active"
+  }
+```
+
+**Consistency Rules**:
+- `{{semantic1:person_name}}` produces the same name in template and expected_content
+- `{{number1:50000:100000:currency}}` produces the same amount in both places
+- Different indexes produce different values: `{{semantic1:person_name}}` ≠ `{{semantic2:person_name}}`
+- Same index with different types: `{{entity1:colors}}` ≠ `{{entity1:metals}}`
+
+### Usage Examples
+
+**Mixed Variable Types**:
+```yaml
+template: "Employee {{semantic1:person_name}} in {{semantic2:department}} earns ${{number1:30000:80000:currency}} working on {{entity1:colors}} project with {{entity2}} tools"
+# Result: "Employee John Smith in Engineering earns $65000 working on crimson project with harbor tools"
+```
+
+**Business Scenario**:
+```yaml
+template: "Assign {{semantic1:person_name}} to {{entity1:colors}} project with budget ${{number1:10000:50000:currency}} due in {{number2:30:180}} days"
+# Result: "Assign Alice Chen to azure project with budget $32000 due in 127 days"
+```
+
+**System Configuration**:
+```yaml
+template: "Deploy {{entity1:metals}} server for {{semantic1:company}} with {{number1:8:64}} GB RAM and timeout {{number2:30:300}} seconds"
+# Result: "Deploy platinum server for TechCorp with 32 GB RAM and timeout 120 seconds"
+```
+
+**Backwards Compatibility Test**:
+```yaml
+# Legacy and enhanced can be used together
+template: "Migrate {{entity1}} database to {{entity2:gems}} cluster using {{semantic1:person_name}} credentials"
+# Result: "Migrate harbor database to emerald cluster using Sarah Johnson credentials"
+```
 
 ---
 

@@ -5,6 +5,7 @@ This document provides a comprehensive reference for all data types that can be 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Enhanced Variable Substitution](#enhanced-variable-substitution)
 - [People & Identity](#people--identity)
   - [`person_name`](#person_name) - Full names with first and last
   - [`first_name`](#first_name) - First names only
@@ -83,6 +84,84 @@ schema:
 root_element: "company"
 
 ```
+
+---
+
+## Enhanced Variable Substitution
+
+PICARD's enhanced variable substitution system provides access to all 42 semantic data types directly in templates, expected values, and sandbox configurations. This allows dynamic, contextual data generation beyond the traditional entity pool system.
+
+### Semantic Variables in Templates
+
+Use any data type from this reference in semantic variables:
+
+**Syntax**: `{{semantic[INDEX]:[DATA_TYPE]}}`
+
+**Examples using data types from this document**:
+```yaml
+# People & Identity
+template: "Employee {{semantic1:person_name}} ({{semantic2:first_name}} {{semantic3:last_name}}) at {{semantic4:email}}"
+
+# Business & Finance  
+template: "{{semantic1:company}} in {{semantic2:department}} has revenue ${{semantic3:currency}} from {{semantic4:product}}"
+
+# Location & Geography
+template: "Ship to {{semantic1:city}} in {{semantic2:region}} via {{semantic3:phone}}"
+
+# Time & Dates
+template: "Hired on {{semantic1:date}} at age {{semantic2:age}} with {{semantic3:experience}} years experience"
+
+# Status & Categories
+template: "Order #{{semantic1:id}} status: {{semantic2:status}} for {{semantic3:category}} items"
+```
+
+**Variable Consistency**: The same semantic variable produces the same value throughout a test:
+```yaml
+template: "Process {{semantic1:person_name}} data"
+expected_content: "Report for {{semantic1:person_name}} completed"
+# Both instances of {{semantic1:person_name}} will be identical
+```
+
+### Integration with Sandbox Data
+
+Semantic variables use the **same data generators** as sandbox file creation, ensuring consistency between templates and generated files:
+
+```yaml
+# Sandbox generates data using these types...
+sandbox_setup:
+  type: "create_csv"
+  content:
+    headers: ["employee_name", "department", "salary"]
+    header_types: ["person_name", "department", "salary"]
+
+# ...and template variables use the same generators
+template: "Analyze {{semantic1:person_name}} in {{semantic2:department}} earning ${{semantic3:salary}}"
+```
+
+### All 42 Data Types Supported
+
+Every data type documented in this reference is available for semantic variables:
+
+- **People**: `person_name`, `first_name`, `last_name`, `email`
+- **Business**: `company`, `department`, `product`, `salary`, `currency`, `price`  
+- **Location**: `city`, `region`, `phone`
+- **Time**: `date`, `age`, `experience`
+- **Status**: `status`, `boolean`, `category`
+- **Identifiers**: `id`, `score`
+- **Education**: `course`, `semester`
+- **Content**: `entity_pool`, `lorem_word`, `lorem_words`
+
+See the complete specifications for each data type in the sections below.
+
+### Best Practices for Semantic Variables
+
+1. **Choose appropriate data types** that match your test scenario context
+2. **Use consistent indexes** for related data that should vary together
+3. **Mix data types** to create realistic business scenarios
+4. **Reference the same variables** in templates and expected values for consistency
+5. **Combine with numeric and entity variables** for comprehensive test coverage
+
+For complete syntax and additional variable types, see the [Enhanced Variable Substitution](REFERENCE.md#enhanced-variable-substitution) section in the PICARD Reference guide.
 
 ---
 

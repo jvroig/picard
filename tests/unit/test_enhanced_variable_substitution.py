@@ -136,8 +136,8 @@ class TestEnhancedVariableSubstitution:
         # Same entity variables should produce same values
         assert result1['variables']['entity1:colors'] == result2['variables']['entity1:colors']
     
-    def test_legacy_entity_variables(self):
-        """Test backwards compatibility with legacy entity variables."""
+    def test_entity_variables(self):
+        """Test entity variables from default pool."""
         evs = EnhancedVariableSubstitution(seed=42)
         
         template = "Process {{entity1}} file and {{entity2}} backup"
@@ -154,8 +154,8 @@ class TestEnhancedVariableSubstitution:
         assert entity1 in evs.entity_pools['default']
         assert entity2 in evs.entity_pools['default']
     
-    def test_legacy_entity_consistency(self):
-        """Test that legacy entity variables are consistent within a test."""
+    def test_entity_consistency(self):
+        """Test that entity variables are consistent within a test."""
         evs = EnhancedVariableSubstitution(seed=42)
         
         template1 = "Process {{entity1}} file"

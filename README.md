@@ -68,14 +68,16 @@ Tests are defined in YAML with powerful templating:
              showing total customers and average age."
   scoring_type: "readfile_jsonmatch"
   file_to_read: "{{artifacts}}/{{qs_id}}/summary.json"
-  expected_content: '{"total": {{csv_count:ID:TARGET_FILE}}, 
-                      "avg_age": {{csv_avg:AGE:TARGET_FILE}}}'
+  expected_content: '{"total": {{csv_count:ID:TARGET_FILE[customer_data]}}, 
+                      "avg_age": {{csv_avg:AGE:TARGET_FILE[customer_data]}}}'
   sandbox_setup:
-    type: "create_csv"
-    target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/data.csv"
-    content:
-      headers: ["ID", "NAME", "AGE", "CITY"] 
-      rows: 50
+    components:
+      - type: "create_csv"
+        name: "customer_data"
+        target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}/data.csv"
+        content:
+          headers: ["ID", "NAME", "AGE", "CITY"] 
+          rows: 50
 ```
 
 This creates 20 unique test instances with:

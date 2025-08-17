@@ -1542,6 +1542,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_value requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
+        filename = self._resolve_target_file(filename, target_file_path)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1572,6 +1573,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_attr requires exactly 2 arguments: xpath@attribute and filename")
         
         xpath_attr, filename = args
+        filename = self._resolve_target_file(filename, target_file_path)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1612,6 +1614,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_count requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
+        filename = self._resolve_target_file(filename, target_file_path)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1639,6 +1642,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_exists requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
+        filename = self._resolve_target_file(filename, target_file_path)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1666,6 +1670,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_collect requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
+        filename = self._resolve_target_file(filename, target_file_path)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1698,6 +1703,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_sum requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
+        filename = self._resolve_target_file(filename, target_file_path)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1734,6 +1740,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_avg requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
+        filename = self._resolve_target_file(filename, target_file_path)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1773,6 +1780,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_max requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
+        filename = self._resolve_target_file(filename, target_file_path)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():
@@ -1812,6 +1820,7 @@ class TemplateFunctions:
             raise TemplateFunctionError("xpath_min requires exactly 2 arguments: xpath and filename")
         
         xpath, filename = args
+        filename = self._resolve_target_file(filename, target_file_path)
         file_path = self._resolve_path(filename)
         
         if not file_path.exists():

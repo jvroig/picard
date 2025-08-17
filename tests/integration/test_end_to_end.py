@@ -631,3 +631,262 @@ class TestYAMLWorkflows:
         # Both should be valid ranges (won't be equal since data is random)
         assert 0 <= yaml_score_sum <= 300  # 3 users * max 100 score
         assert 0 <= json_score_sum <= 300
+
+
+@pytest.mark.integration
+class TestXMLWorkflows:
+    """Test complete XML generation → extraction workflows."""
+    
+    def test_xml_enterprise_configuration_workflow(self, temp_workspace):
+        """Test: Generate XML enterprise config → Extract values → Verify structure."""
+        xml_generator = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace))
+        
+        # Generate enterprise XML configuration
+        result = xml_generator.generate(
+            target_file="enterprise_config.xml",
+            content_spec={
+                'schema': {
+                    'company': {
+                        'name': 'company',
+                        'departments': {
+                            'type': 'array',
+                            'count': [3, 5],
+                            'items': {
+                                'name': 'department',
+                                'budget': {'type': 'integer', 'minimum': 100000, 'maximum': 500000},
+                                'employees': {
+                                    'type': 'array',
+                                    'count': [2, 6],
+                                    'items': {
+                                        'name': 'person_name',
+                                        'role': 'category',
+                                        'salary': 'salary'
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'settings': {
+                        'environment': 'category',
+                        'debug': {'type': 'boolean'},
+                        'max_connections': {'type': 'integer', 'minimum': 10, 'maximum': 1000}
+                    }
+                },
+                'root_element': 'enterprise'
+            }
+        )
+        
+        assert result['errors'] == []
+        
+        tf = TemplateFunctions(str(temp_workspace))
+        
+        # Test basic value extraction
+        company_name = tf.evaluate_all_functions("{{xpath_value:company/name:enterprise_config.xml}}")
+        environment = tf.evaluate_all_functions("{{xpath_value:settings/environment:enterprise_config.xml}}")
+        debug_setting = tf.evaluate_all_functions("{{xpath_value:settings/debug:enterprise_config.xml}}")
+        
+        assert len(company_name) > 0
+        assert len(environment) > 0
+        assert debug_setting in ['True', 'False']
+        
+        # Test count operations
+        dept_count = int(tf.evaluate_all_functions("{{xpath_count:company/departments/item:enterprise_config.xml}}"))
+        assert 3 <= dept_count <= 5
+        
+        # Test aggregation functions
+        total_budget = float(tf.evaluate_all_functions("{{xpath_sum:company/departments/item/budget:enterprise_config.xml}}"))
+        avg_budget = float(tf.evaluate_all_functions("{{xpath_avg:company/departments/item/budget:enterprise_config.xml}}"))
+        max_budget = float(tf.evaluate_all_functions("{{xpath_max:company/departments/item/budget:enterprise_config.xml}}"))
+        
+        assert total_budget > 0
+        assert 100000 <= avg_budget <= 500000
+        assert 100000 <= max_budget <= 500000
+        assert avg_budget <= max_budget
+        
+        # Test collection functions
+        dept_names = tf.evaluate_all_functions("{{xpath_collect:company/departments/item/name:enterprise_config.xml}}")
+        names = dept_names.split(',')
+        assert len(names) == dept_count
+        assert all(len(name.strip()) > 0 for name in names)
+        
+        # Test employee aggregations across all departments
+        total_employees = int(tf.evaluate_all_functions("{{xpath_count:company/departments/item/employees/item:enterprise_config.xml}}"))
+        assert total_employees >= dept_count * 2  # At least 2 employees per department
+        
+        total_salary_cost = float(tf.evaluate_all_functions("{{xpath_sum:company/departments/item/employees/item/salary:enterprise_config.xml}}"))
+        avg_employee_salary = float(tf.evaluate_all_functions("{{xpath_avg:company/departments/item/employees/item/salary:enterprise_config.xml}}"))
+        
+        assert total_salary_cost > 0
+        assert 30000 <= avg_employee_salary <= 150000  # salary data type range
+    
+    def test_xml_document_processing_workflow(self, temp_workspace):
+        """Test XML document processing with mixed content types."""
+        xml_generator = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace))
+        
+        # Generate XML with mixed content
+        result = xml_generator.generate(
+            target_file="documents.xml",
+            content_spec={
+                'schema': {
+                    'metadata': {
+                        'total_docs': {'type': 'integer', 'minimum': 5, 'maximum': 15},
+                        'created_date': 'date',
+                        'version': 'version'
+                    },
+                    'documents': {
+                        'type': 'array',
+                        'count': 8,
+                        'items': {
+                            'title': 'product',
+                            'author': 'person_name',
+                            'category': 'category',
+                            'size_kb': {'type': 'integer', 'minimum': 10, 'maximum': 5000},
+                            'is_public': {'type': 'boolean'},
+                            'tags': {
+                                'type': 'array',
+                                'count': [1, 4],
+                                'items': 'lorem_word'
+                            }
+                        }
+                    }
+                },
+                'root_element': 'library'
+            }
+        )
+        
+        assert result['errors'] == []
+        
+        tf = TemplateFunctions(str(temp_workspace))
+        
+        # Test metadata extraction
+        total_docs = tf.evaluate_all_functions("{{xpath_value:metadata/total_docs:documents.xml}}")
+        created_date = tf.evaluate_all_functions("{{xpath_value:metadata/created_date:documents.xml}}")
+        
+        assert 5 <= int(total_docs) <= 15
+        assert len(created_date) == 10  # YYYY-MM-DD format
+        
+        # Test document count
+        doc_count = int(tf.evaluate_all_functions("{{xpath_count:documents/item:documents.xml}}"))
+        assert doc_count == 8
+        
+        # Test document size statistics
+        total_size = float(tf.evaluate_all_functions("{{xpath_sum:documents/item/size_kb:documents.xml}}"))
+        avg_size = float(tf.evaluate_all_functions("{{xpath_avg:documents/item/size_kb:documents.xml}}"))
+        max_size = float(tf.evaluate_all_functions("{{xpath_max:documents/item/size_kb:documents.xml}}"))
+        min_size = float(tf.evaluate_all_functions("{{xpath_min:documents/item/size_kb:documents.xml}}"))
+        
+        assert total_size > 0
+        assert 10 <= avg_size <= 5000
+        assert 10 <= max_size <= 5000
+        assert 10 <= min_size <= 5000
+        assert min_size <= avg_size <= max_size
+        
+        # Test author and title collection
+        authors = tf.evaluate_all_functions("{{xpath_collect:documents/item/author:documents.xml}}")
+        titles = tf.evaluate_all_functions("{{xpath_collect:documents/item/title:documents.xml}}")
+        
+        author_list = authors.split(',')
+        title_list = titles.split(',')
+        
+        assert len(author_list) == 8
+        assert len(title_list) == 8
+        assert all(len(author.strip()) > 0 for author in author_list)
+        assert all(len(title.strip()) > 0 for title in title_list)
+        
+        # Test boolean field verification
+        public_docs = int(tf.evaluate_all_functions("{{xpath_count:documents/item[is_public='True']:documents.xml}}"))
+        private_docs = int(tf.evaluate_all_functions("{{xpath_count:documents/item[is_public='False']:documents.xml}}"))
+        
+        assert public_docs + private_docs == 8
+        assert public_docs >= 0
+        assert private_docs >= 0
+        
+        # Test nested tag structure
+        total_tags = int(tf.evaluate_all_functions("{{xpath_count:documents/item/tags/item:documents.xml}}"))
+        assert 8 <= total_tags <= 32  # 8 docs * 1-4 tags each
+    
+    def test_xml_to_other_formats_comparison(self, temp_workspace):
+        """Test XML data extraction compared to equivalent JSON/YAML operations."""
+        tf = TemplateFunctions(str(temp_workspace))
+        
+        # Define same schema for XML, JSON, and YAML
+        schema = {
+            'products': {
+                'type': 'array',
+                'count': 5,
+                'items': {
+                    'id': {'type': 'integer', 'minimum': 1, 'maximum': 100},
+                    'name': 'product',
+                    'price': {'type': 'number', 'minimum': 10.0, 'maximum': 1000.0},
+                    'in_stock': {'type': 'boolean'}
+                }
+            },
+            'summary': {
+                'total_products': {'type': 'integer', 'minimum': 5, 'maximum': 5}
+            }
+        }
+        
+        # Generate XML version
+        xml_gen = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace))
+        xml_result = xml_gen.generate(
+            target_file="products.xml",
+            content_spec={'schema': schema, 'root_element': 'catalog'}
+        )
+        
+        # Generate JSON version
+        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_result = json_gen.generate(
+            target_file="products.json",
+            content_spec={'schema': schema}
+        )
+        
+        # Generate YAML version
+        yaml_gen = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace))
+        yaml_result = yaml_gen.generate(
+            target_file="products.yaml",
+            content_spec={'schema': schema}
+        )
+        
+        assert xml_result['errors'] == []
+        assert json_result['errors'] == []
+        assert yaml_result['errors'] == []
+        
+        # Compare equivalent operations across formats
+        
+        # Count operations
+        xml_product_count = int(tf.evaluate_all_functions("{{xpath_count:products/item:products.xml}}"))
+        json_product_count = int(tf.evaluate_all_functions("{{json_count:$.products:products.json}}"))
+        yaml_product_count = int(tf.evaluate_all_functions("{{yaml_count:$.products:products.yaml}}"))
+        
+        assert xml_product_count == json_product_count == yaml_product_count == 5
+        
+        # Summary value extraction
+        xml_summary = tf.evaluate_all_functions("{{xpath_value:summary/total_products:products.xml}}")
+        json_summary = tf.evaluate_all_functions("{{json_value:summary.total_products:products.json}}")
+        yaml_summary = tf.evaluate_all_functions("{{yaml_value:summary.total_products:products.yaml}}")
+        
+        assert xml_summary == json_summary == yaml_summary == "5"
+        
+        # Aggregation comparisons (values will differ due to randomness, but ranges should be consistent)
+        xml_price_sum = float(tf.evaluate_all_functions("{{xpath_sum:products/item/price:products.xml}}"))
+        json_price_sum = float(tf.evaluate_all_functions("{{json_sum:$.products[*].price:products.json}}"))
+        yaml_price_sum = float(tf.evaluate_all_functions("{{yaml_sum:$.products[*].price:products.yaml}}"))
+        
+        # All should be in valid ranges
+        assert 50.0 <= xml_price_sum <= 5000.0  # 5 products * 10-1000 price range
+        assert 50.0 <= json_price_sum <= 5000.0
+        assert 50.0 <= yaml_price_sum <= 5000.0
+        
+        # Collection operations
+        xml_names = tf.evaluate_all_functions("{{xpath_collect:products/item/name:products.xml}}")
+        json_names = tf.evaluate_all_functions("{{json_collect:$.products[*].name:products.json}}")
+        yaml_names = tf.evaluate_all_functions("{{yaml_collect:$.products[*].name:products.yaml}}")
+        
+        xml_name_list = xml_names.split(',')
+        json_name_list = json_names.split(',')
+        yaml_name_list = yaml_names.split(',')
+        
+        assert len(xml_name_list) == len(json_name_list) == len(yaml_name_list) == 5
+        assert all(len(name.strip()) > 0 for name in xml_name_list)
+        assert all(len(name.strip()) > 0 for name in json_name_list)
+        assert all(len(name.strip()) > 0 for name in yaml_name_list)

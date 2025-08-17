@@ -8,6 +8,7 @@ import json
 import yaml
 import csv
 import sqlite3
+import xml.etree.ElementTree as ET
 import sys
 import time
 from pathlib import Path
@@ -37,6 +38,7 @@ class TestTemplateVariableSubstitution:
             target_file="test.json",
             content_spec={'schema': {'count': {'type': 'integer', 'minimum': 5, 'maximum': 5}}}
         )
+        assert json_result['errors'] == []
         files_to_test.append(("test.json", "json"))
         
         # YAML file
@@ -45,7 +47,17 @@ class TestTemplateVariableSubstitution:
             target_file="test.yaml",
             content_spec={'schema': {'count': {'type': 'integer', 'minimum': 5, 'maximum': 5}}}
         )
+        assert yaml_result['errors'] == []
         files_to_test.append(("test.yaml", "yaml"))
+        
+        # XML file
+        xml_gen = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace))
+        xml_result = xml_gen.generate(
+            target_file="test.xml",
+            content_spec={'schema': {'count': {'type': 'integer', 'minimum': 5, 'maximum': 5}}, 'root_element': 'data'}
+        )
+        assert xml_result['errors'] == []
+        files_to_test.append(("test.xml", "xml"))
         
         # CSV file 
         csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace))
@@ -53,6 +65,7 @@ class TestTemplateVariableSubstitution:
             target_file="test.csv",
             content_spec={'headers': ['id', 'name'], 'rows': 5}
         )
+        assert csv_result['errors'] == []
         files_to_test.append(("test.csv", "csv"))
         
         # SQLite file
@@ -65,6 +78,7 @@ class TestTemplateVariableSubstitution:
                 'rows': 5
             }
         )
+        assert sqlite_result['errors'] == []
         files_to_test.append(("test.db", "sqlite"))
         
         # Test TARGET_FILE substitution for each format
@@ -77,6 +91,10 @@ class TestTemplateVariableSubstitution:
                 
             elif file_type == "yaml":
                 result = tf.evaluate_all_functions("{{yaml_value:count:TARGET_FILE}}", file_path)
+                assert result == "5"
+                
+            elif file_type == "xml":
+                result = tf.evaluate_all_functions("{{xpath_value:count:TARGET_FILE}}", file_path)
                 assert result == "5"
                 
             elif file_type == "csv":
@@ -341,6 +359,7 @@ class TestScalabilityWorkflows:
         generators = {
             'json': FileGeneratorFactory.create_generator('create_json', str(temp_workspace)),
             'yaml': FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace)),
+            'xml': FileGeneratorFactory.create_generator('create_xml', str(temp_workspace)),
             'csv': FileGeneratorFactory.create_generator('create_csv', str(temp_workspace)),
             'sqlite': FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace))
         }
@@ -363,6 +382,13 @@ class TestScalabilityWorkflows:
                 content_spec={'schema': {'id': i, 'settings': {'debug': {'type': 'boolean'}, 'timeout': {'type': 'integer', 'minimum': 10, 'maximum': 60}}}}
             )
             results.append(yaml_result)
+            
+            # XML files
+            xml_result = generators['xml'].generate(
+                target_file=f"document_{i}.xml",
+                content_spec={'schema': {'id': i, 'metadata': {'type': 'category', 'count': {'type': 'integer', 'minimum': 1, 'maximum': 10}}}, 'root_element': 'document'}
+            )
+            results.append(xml_result)
             
             # CSV files
             csv_result = generators['csv'].generate(
@@ -393,6 +419,11 @@ class TestScalabilityWorkflows:
             assert json_count == 2
             total_operations += 1
             
+            # XML operations
+            xml_id = tf.evaluate_all_functions(f"{{{{xpath_value:id:document_{i}.xml}}}}")
+            assert xml_id == str(i)
+            total_operations += 1
+            
             # CSV operations
             csv_count = int(tf.evaluate_all_functions(f"{{{{csv_count:id:data_{i}.csv}}}}"))
             assert csv_count == 3
@@ -403,7 +434,7 @@ class TestScalabilityWorkflows:
             assert sqlite_count == 2
             total_operations += 1
         
-        assert total_operations == 9  # 3 files × 3 operations each
+        assert total_operations == 12  # 3 files × 4 operations each (JSON, XML, CSV, SQLite)
     
     def test_workflow_performance_characteristics(self, temp_workspace):
         """Test performance characteristics of complex workflows."""

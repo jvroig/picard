@@ -1124,6 +1124,192 @@ XML functions provide clear error messages for common issues:
 
 ---
 
+## YAML Functions
+
+YAML functions enable extraction and analysis of data from YAML files using JSONPath-like syntax. These functions work seamlessly with YAML's hierarchical structure and support all data types and operations available in JSON functions.
+
+### Basic YAML Access
+
+#### `yaml_path`
+
+**Description**: Extract values from YAML using JSONPath-like expressions  
+**Usage**: `{{yaml_path:$.path.to.value:file_path}}`
+
+**Examples**:
+```yaml
+template: "Database host is {{yaml_path:$.database.host:TARGET_FILE}}"
+expected_response: "Database host is {{yaml_path:$.database.host:TARGET_FILE}}"
+
+template: "First user is {{yaml_path:$.users[0].name:TARGET_FILE}}"
+expected_response: "First user is {{yaml_path:$.users[0].name:TARGET_FILE}}"
+
+template: "Manager email is {{yaml_path:$.employee.manager.contact.email:TARGET_FILE}}"
+expected_response: "Manager email is {{yaml_path:$.employee.manager.contact.email:TARGET_FILE}}"
+```
+
+#### `yaml_value`
+
+**Description**: Navigate YAML structure using dot notation  
+**Usage**: `{{yaml_value:key1.key2[0]:file_path}}`
+
+Simple navigation for nested YAML structures:
+
+```yaml
+template: "Manager email: {{yaml_value:employee.manager.email:TARGET_FILE}}"
+expected_response: "Manager email: {{yaml_value:employee.manager.email:TARGET_FILE}}"
+```
+
+#### `yaml_count`
+
+**Description**: Count elements in YAML arrays or objects  
+**Usage**: `{{yaml_count:$.path.to.array:file_path}}`
+
+```yaml
+template: "Total projects: {{yaml_count:$.employee.projects:TARGET_FILE}}"
+expected_response: "Total projects: {{yaml_count:$.employee.projects:TARGET_FILE}}"
+```
+
+#### `yaml_keys`
+
+**Description**: Extract keys from YAML objects  
+**Usage**: `{{yaml_keys:$.path.to.object:file_path}}`
+
+```yaml
+template: "Available fields: {{yaml_keys:$.employee:TARGET_FILE}}"
+expected_response: "Available fields: {{yaml_keys:$.employee:TARGET_FILE}}"
+```
+
+### YAML Aggregation Functions
+
+#### `yaml_sum`
+
+**Description**: Sum numeric values from YAML arrays using wildcards  
+**Usage**: `{{yaml_sum:$.array[*].field:file_path}}`
+
+```yaml
+template: "Total budget: ${{yaml_sum:$.employee.projects[*].budget:TARGET_FILE}}"
+expected_response: "Total budget: ${{yaml_sum:$.employee.projects[*].budget:TARGET_FILE}}"
+```
+
+#### `yaml_avg`
+
+**Description**: Calculate average of numeric values  
+**Usage**: `{{yaml_avg:$.array[*].field:file_path}}`
+
+```yaml
+template: "Average budget: ${{yaml_avg:$.employee.projects[*].budget:TARGET_FILE}}"
+expected_response: "Average budget: ${{yaml_avg:$.employee.projects[*].budget:TARGET_FILE}}"
+```
+
+#### `yaml_max`
+
+**Description**: Find maximum value in YAML array  
+**Usage**: `{{yaml_max:$.array[*].field:file_path}}`
+
+#### `yaml_min`
+
+**Description**: Find minimum value in YAML array  
+**Usage**: `{{yaml_min:$.array[*].field:file_path}}`
+
+**Examples**:
+```yaml
+# Using employees.yaml with salary data
+template: "Salary range: ${{yaml_min:$.employees[*].salary:TARGET_FILE}} - ${{yaml_max:$.employees[*].salary:TARGET_FILE}}"
+expected_response: "Salary range: ${{yaml_min:$.employees[*].salary:TARGET_FILE}} - ${{yaml_max:$.employees[*].salary:TARGET_FILE}}"
+```
+
+### YAML Collection and Filtering
+
+#### `yaml_collect`
+
+**Description**: Collect values as comma-separated list  
+**Usage**: `{{yaml_collect:$.array[*].field:file_path}}`
+
+```yaml
+template: "Project names: {{yaml_collect:$.employee.projects[*].name:TARGET_FILE}}"
+expected_response: "Project names: {{yaml_collect:$.employee.projects[*].name:TARGET_FILE}}"
+
+template: "All team members: {{yaml_collect:$.employee.projects[*].team[*]:TARGET_FILE}}"
+expected_response: "All team members: {{yaml_collect:$.employee.projects[*].team[*]:TARGET_FILE}}"
+```
+
+#### `yaml_count_where`
+
+**Description**: Count elements matching filter conditions  
+**Usage**: `{{yaml_count_where:$.array[?field>value]:file_path}}`
+
+**Filter Operators**: `>`, `<`, `>=`, `<=`, `==`, `!=`
+
+```yaml
+template: "High-budget projects: {{yaml_count_where:$.employee.projects[?budget>60000]:TARGET_FILE}}"
+expected_response: "High-budget projects: {{yaml_count_where:$.employee.projects[?budget>60000]:TARGET_FILE}}"
+
+template: "Engineering staff: {{yaml_count_where:$.employees[?department==Engineering]:TARGET_FILE}}"
+expected_response: "Engineering staff: {{yaml_count_where:$.employees[?department==Engineering]:TARGET_FILE}}"
+```
+
+#### `yaml_filter`
+
+**Description**: Filter and extract specific values based on conditions  
+**Usage**: `{{yaml_filter:$.array[?condition].field:file_path}}`
+
+```yaml
+template: "High-value projects: {{yaml_filter:$.employee.projects[?budget>60000].name:TARGET_FILE}}"
+expected_response: "High-value projects: {{yaml_filter:$.employee.projects[?budget>60000].name:TARGET_FILE}}"
+
+template: "Senior emails: {{yaml_filter:$.employees[?level==senior].email:TARGET_FILE}}"
+expected_response: "Senior emails: {{yaml_filter:$.employees[?level==senior].email:TARGET_FILE}}"
+```
+
+### Advanced YAML Processing
+
+#### Complex Filtering and Aggregation
+
+```yaml
+# Complex department budget analysis
+template: "Engineering budget total: ${{yaml_sum:$.departments[?name==Engineering].projects[*].budget:TARGET_FILE}}"
+expected_response: "Engineering budget total: ${{yaml_sum:$.departments[?name==Engineering].projects[*].budget:TARGET_FILE}}"
+
+template: "Senior team leads: {{yaml_collect:$.projects[?priority==high].team[?role==senior].name:TARGET_FILE}}"
+expected_response: "Senior team leads: {{yaml_collect:$.projects[?priority==high].team[?role==senior].name:TARGET_FILE}}"
+```
+
+#### Multi-Level Aggregation
+
+```yaml
+# Calculate average budget for high-value projects
+template: "Average high-value budget: ${{yaml_avg:$.projects[?budget>50000].team_size:TARGET_FILE}}"
+expected_response: "Average high-value budget: ${{yaml_avg:$.projects[?budget>50000].team_size:TARGET_FILE}}"
+```
+
+### YAML Path Expressions
+
+YAML functions support advanced path expressions including:
+
+**Array navigation**:
+- `employees[0]` - First employee
+- `employees[*]` - All employees
+- `employees[-1]` - Last employee
+
+**Nested access**:
+- `department.teams[*].lead` - All team leads in department
+- `projects[*].members[?role==developer]` - All developers across projects
+
+**Filtering**:
+- `employees[?salary>75000]` - High-paid employees
+- `projects[?status==active and priority==high]` - Active high-priority projects
+- `teams[?size>=5].members[*]` - Members of large teams
+
+#### Error Handling
+
+YAML functions provide clear error messages for common issues:
+- **File not found**: `YAML file not found: /path/to/file.yaml`
+- **Invalid path**: `YAML path '$.invalid.path' not found`
+- **Parse errors**: `Invalid YAML file: syntax error at line X`
+- **Type errors**: `Cannot perform numeric operation on non-numeric value`
+
+---
+
 ### Template Function Examples
 
 #### Complex CSV Processing

@@ -44,7 +44,8 @@ class TemplateProcessor:
             Dictionary containing:
             - 'original_template': The original template
             - 'substituted': Fully processed template
-            - 'entities': Dict of entity substitutions
+            - 'entities': Dict of legacy entity substitutions (for compatibility)
+            - 'variables': Dict of all variable substitutions (enhanced)
             - 'template_function_results': Dict of template function results (if any)
             - 'has_template_functions': Boolean indicating if template functions were used
         """
@@ -58,10 +59,11 @@ class TemplateProcessor:
         # Step 1: {{qs_id}} substitution
         current_template = TestDefinitionParser.substitute_qs_id(template, question_id, sample_number)
         
-        # Step 2: Entity substitution
-        entity_result = self.entity_pool.substitute_template(current_template, expected_structure)
+        # Step 2: Enhanced entity substitution (with fallback to legacy)
+        entity_result = self.entity_pool.substitute_template_enhanced(current_template, expected_structure)
         current_template = entity_result['substituted']
-        result['entities'] = entity_result['entities']
+        result['entities'] = entity_result['entities']  # Legacy compatibility
+        result['variables'] = entity_result.get('variables', {})
         
         # Step 3: Template function evaluation (if any)
         try:
@@ -224,6 +226,21 @@ def main():
             {
                 'template': 'User {{entity1}} ({{csv_value:0:name:{{qs_id}}/data.csv}}) has salary {{csv_value:0:salary:{{qs_id}}/data.csv}}',
                 'description': 'Entity + CSV functions'
+            },
+            # Enhanced variables
+            {
+                'template': 'Employee {{semantic1:person_name}} in {{semantic2:department}} earns ${{number1:30000:80000:currency}}',
+                'description': 'Enhanced semantic and numeric variables'
+            },
+            # Enhanced entity pools
+            {
+                'template': 'Process {{entity1:colors}} data on {{entity2:metals}} server',
+                'description': 'Enhanced entity pools'
+            },
+            # Mixed enhanced and legacy
+            {
+                'template': 'Archive {{entity1}} and {{semantic1:person_name}} files to {{entity2:gems}} backup',
+                'description': 'Mixed enhanced and legacy variables'
             }
         ]
         
@@ -236,7 +253,9 @@ def main():
                 result = processor.process_template(test_case['template'], question_id=1, sample_number=1)
                 print(f"   Result: {result['substituted']}")
                 if result['entities']:
-                    print(f"   Entities: {result['entities']}")
+                    print(f"   Legacy Entities: {result['entities']}")
+                if result.get('variables'):
+                    print(f"   All Variables: {result['variables']}")
                 if result['has_template_functions']:
                     print(f"   Functions: {result['template_function_results']}")
             except Exception as e:

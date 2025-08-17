@@ -35,11 +35,12 @@ We follow a **small, frequent commits** approach:
    - Keep changes manageable and reviewable
    - Prefer multiple small commits over giant commits
 
-2. **Commit + Push**
+2. **Commit + Push** (ALWAYS BOTH)
    - Commit after **every todo item** (or at most every 2 items if very small)
-   - Push to remote frequently to share progress
+   - **MANDATORY**: Push to remote immediately after every commit - never leave commits unpushed
    - Use descriptive commit messages
    - Never batch multiple major features into one commit
+   - **CRITICAL**: Always `git push` after `git commit` - no exceptions
 
 3. **Test**
    - **ALWAYS activate virtual environment first**: `source venv/bin/activate`
@@ -74,7 +75,7 @@ git commit -m "Brief description
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
 
-# Push to remote
+# Push to remote IMMEDIATELY (never skip this step)
 git push
 
 # Run tests again after commit (verification)

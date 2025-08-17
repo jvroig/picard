@@ -180,41 +180,182 @@ class EnhancedFileGeneratorFactory:
             raise ValueError(f"Unknown component type: {component_spec.type}")
 ```
 
-### Phase 3: Advanced Scenarios (Week 5-6)
+### Phase 3: Breaking Change Migration & TARGET_FILE Enhancement (Week 5-6)
 
-#### 3.1 Component Dependencies
+#### 3.1 Architecture Simplification
+
+**Decision: Break Backwards Compatibility for Cleaner Architecture**
+
+Since PICARD has no production users yet, we're making a breaking change to eliminate complexity and technical debt from maintaining dual syntax support.
+
+**Remove Backwards Compatibility Infrastructure:**
+```python
+# DELETE entirely:
+- SandboxSetup class (~50 lines)
+- Legacy parsing logic in SandboxSetupParser (~100 lines)
+- Dual field support in TestDefinition (~30 lines)  
+- test_sandbox_parser_compatibility.py (~240 lines)
+- Backwards compatibility tests in other files
+
+# SIMPLIFY:
+- TestDefinitionParser to single syntax path
+- ComponentOrchestrator integration
+- Template function resolution logic
+```
+
+**Enforce New Syntax Requirements:**
+```python
+@dataclass
+class ComponentSpec:
+    type: str
+    name: str  # Now REQUIRED (validated with naming standards)
+    target_file: Optional[str] = None
+    content: Optional[Dict[str, Any]] = None
+    config: Optional[Dict[str, Any]] = None
+    depends_on: Optional[List[str]] = None
+
+@dataclass  
+class TestDefinition:
+    # ... existing fields ...
+    # SINGLE field for sandbox components:
+    sandbox_components: Optional[List[ComponentSpec]] = None
+    # Remove: sandbox_setup field (legacy support)
+```
+
+**Component Naming Standards:**
+```python
+# Validation: ^[a-zA-Z][a-zA-Z0-9_-]*$ (1-50 chars)
+# Valid: "employees", "config_data", "hr-reports", "finalReport2024"
+# Invalid: "employee data", "_private", "config@prod", "123-data"
+
+COMPONENT_NAME_PATTERN = re.compile(r'^[a-zA-Z][a-zA-Z0-9_-]*$')
+
+def validate_component_name(name: str) -> bool:
+    return 1 <= len(name) <= 50 and COMPONENT_NAME_PATTERN.match(name)
+```
+
+#### 3.2 TARGET_FILE Enhancement
+
+**Only Supported Syntax:**
 ```yaml
-# Example: JSON config depends on CSV data structure
+# MANDATORY: All sandbox_setup must use components array
 sandbox_setup:
   components:
-    - name: "source_data"  # Named component
+    - name: "employee_data"  # Mandatory named components
       type: "create_csv"
       target_file: "{{artifacts}}/{{qs_id}}/employees.csv"
       content:
         headers: ["id", "name", "department", "salary"]
-        rows: 50
+        rows: 100
     
-    - name: "processing_config"
+    - name: "config_data"
       type: "create_json"
-      target_file: "{{artifacts}}/{{qs_id}}/pipeline_config.json"
-      depends_on: ["source_data"]  # Dependency
+      target_file: "{{artifacts}}/{{qs_id}}/config.json"
+      depends_on: ["employee_data"]
       content:
         schema:
           type: "object"
           properties:
-            source_file: {type: "string", value: "employees.csv"}
-            total_records: {type: "number", value: "{{csv_count:id:employees.csv}}"}
+            max_employees: {type: "integer", value: 50}
+
+# MANDATORY: All TARGET_FILE references must specify component name
+template: |
+  Employee analysis:
+  - Total employees: {{csv_count:id:TARGET_FILE[employee_data]}}
+  - Config limit: {{json_value:max_employees:TARGET_FILE[config_data]}}
+  - Reference data: {{csv_count:id:reference_data.csv}}  # Literal paths still supported
 ```
 
-#### 3.2 Cross-Component References
-```yaml
-# Template functions can reference multiple components
-template: |
-  Process data pipeline:
-  - Source: {{csv_count:id:{{artifacts}}/{{qs_id}}/employees.csv}} employees
-  - Config: {{json_value:processing.batch_size:{{artifacts}}/{{qs_id}}/pipeline_config.json}}
-  - Output: Transform to {{yaml_path:$.output.format:{{artifacts}}/{{qs_id}}/transform_spec.yaml}}
+**TARGET_FILE Resolution Implementation:**
+```python
+def resolve_target_file(expression: str, components: List[ComponentSpec]) -> str:
+    """
+    Resolve TARGET_FILE expressions for multi-component setups.
+    
+    Args:
+        expression: TARGET_FILE[component_name] or literal path
+        components: List of available components
+    
+    Returns:
+        Resolved file path
+    """
+    if expression.startswith("TARGET_FILE[") and expression.endswith("]"):
+        # Multi-component targeting: TARGET_FILE[component_name]
+        component_name = expression[12:-1]  # Extract component name
+        
+        if not validate_component_name(component_name):
+            raise ValueError(f"Invalid component name in TARGET_FILE[{component_name}]")
+        
+        for component in components:
+            if component.name == component_name:
+                return component.target_file
+        
+        raise ValueError(f"Component '{component_name}' not found in sandbox components")
+    
+    elif expression == "TARGET_FILE":
+        # Legacy bare TARGET_FILE no longer supported
+        raise ValueError("TARGET_FILE requires component name: TARGET_FILE[component_name]")
+    
+    else:
+        # Literal file path - pass through unchanged
+        return expression
 ```
+
+#### 3.3 Migration & Testing
+
+**Limited Migration Scope:**
+- ✅ **Only `picard_abridged_standard`** test cases need migration (~10-15 files)
+- ✅ **Extensive documentation updates required:**
+  - `REFERENCE.md` - All sandbox_setup examples
+  - `DATA_GENERATION.md` - Template function examples  
+  - `improve_sandbox_setup.md` - This plan document
+  - Any other documentation with syntax examples
+
+**Template Function Updates:**
+- Update all 60+ template functions to use `resolve_target_file()`
+- Maintain existing function signatures and behavior
+- Add component list parameter to resolution chain
+
+**Migration Script Example:**
+```bash
+# Before migration:
+sandbox_setup:
+  type: "create_csv"
+  target_file: "{{artifacts}}/{{qs_id}}/data.csv"
+  content:
+    headers: ["id", "name"]
+    rows: 10
+
+template: "Count: {{csv_count:id:TARGET_FILE}}"
+
+# After migration:
+sandbox_setup:
+  components:
+    - name: "data"
+      type: "create_csv"
+      target_file: "{{artifacts}}/{{qs_id}}/data.csv"
+      content:
+        headers: ["id", "name"]
+        rows: 10
+
+template: "Count: {{csv_count:id:TARGET_FILE[data]}}"
+```
+
+#### 3.4 Code Reduction Benefits
+
+**Estimated Lines Removed:**
+- SandboxSetup class: ~50 lines
+- Legacy parser logic: ~100 lines  
+- Backwards compatibility tests: ~240 lines
+- Dual TestDefinition support: ~30 lines
+- **Total reduction: ~420 lines**
+
+**Complexity Reduction:**
+- 60% simpler parser logic
+- Single syntax mental model
+- No dual data structure maintenance
+- Cleaner template function resolution
+- Easier future enhancements without legacy burden
 
 ## 🌟 Advanced Use Cases
 
@@ -318,31 +459,33 @@ sandbox_setup:
 
 ## 🔮 Future Infrastructure Components
 
-### Phase 4: Container Support (Future)
+### Future Phase: Container Support
+*Note: Infrastructure components (Docker, services) are planned for future development but are not part of the current Phase 3 scope.*
+
 ```yaml
+# Future capability example:
 sandbox_setup:
   components:
-    # Traditional file component
-    - type: "create_csv"
+    # File component (Phase 3)
+    - name: "init_data"
+      type: "create_csv"
       target_file: "{{artifacts}}/{{qs_id}}/init_data.csv"
       content: {...}
     
     # Infrastructure component (future)
-    - type: "run_docker"
-      name: "postgres_db"
+    - name: "postgres_db"
+      type: "run_docker"
       config:
         image: "postgres:13"
         environment:
           POSTGRES_DB: "testdb"
           POSTGRES_USER: "{{semantic1:person_name}}"
-        ports:
-          - "5432:5432"
         volumes:
           - "{{artifacts}}/{{qs_id}}/init_data.csv:/docker-entrypoint-initdb.d/data.csv"
     
-    # Service component
-    - type: "run_service"
-      name: "api_server"
+    # Service component (future)
+    - name: "api_server"
+      type: "run_service"
       depends_on: ["postgres_db"]
       config:
         command: "python app.py"
@@ -353,60 +496,72 @@ sandbox_setup:
 ## 📋 Implementation Strategy
 
 ### Development Approach
-1. **Incremental Implementation**: Start with file components only
-2. **Backwards Compatibility**: Never break existing tests
-3. **Comprehensive Testing**: Multi-component integration tests
-4. **Documentation Updates**: REFERENCE.md examples for new syntax
+1. **Breaking Change Strategy**: Clean architecture over backwards compatibility
+2. **Single Syntax Focus**: Mandatory named components with TARGET_FILE[component_name]
+3. **Comprehensive Testing**: Multi-component integration tests with new syntax only
+4. **Extensive Documentation Updates**: All examples updated to new syntax
 
 ### Testing Strategy
 ```python
-# Comprehensive test suite for multi-component scenarios
+# Comprehensive test suite for multi-component scenarios with new syntax
 class TestMultiComponentSandbox:
     def test_csv_json_yaml_combination(self):
-        """Test all three file formats in one test."""
+        """Test all file formats with TARGET_FILE[component_name]."""
         
     def test_component_dependencies(self):
         """Test dependency resolution and ordering."""
         
-    def test_cross_component_template_functions(self):
-        """Test template functions across multiple files."""
+    def test_target_file_resolution(self):
+        """Test TARGET_FILE[component_name] resolution."""
         
-    def test_backwards_compatibility(self):
-        """Ensure legacy syntax still works."""
+    def test_component_naming_validation(self):
+        """Test component naming standards enforcement."""
+        
+    def test_template_function_integration(self):
+        """Test all 60+ template functions with new resolution."""
 ```
 
 ### Risk Mitigation
-- **Parser Complexity**: Incremental implementation with extensive testing
-- **Dependency Resolution**: Start simple, add complexity gradually
-- **Performance Impact**: Profile multi-component generation
-- **Memory Usage**: Monitor resource consumption with multiple files
+- **Breaking Change Impact**: Limited scope (only picard_abridged_standard needs migration)
+- **Documentation Debt**: Comprehensive documentation update required across multiple files
+- **Template Function Updates**: All 60+ functions need TARGET_FILE resolution integration
+- **Testing Coverage**: Ensure new syntax is thoroughly tested before removing old code
 
 ## 📈 Success Metrics
 
-### Functional Goals
-- ✅ Support 2-5 components per test without performance degradation
-- ✅ 100% backwards compatibility with existing tests
-- ✅ Cross-component template function support
-- ✅ Dependency resolution for component ordering
+### Phase 3 Goals
+- ✅ **Single syntax**: All tests use mandatory `components` array with named components
+- ✅ **TARGET_FILE enhancement**: `TARGET_FILE[component_name]` works for all 60+ template functions
+- ✅ **Component naming**: Enforced validation standards for component names
+- ✅ **Migration complete**: `picard_abridged_standard` updated to new syntax
+- ✅ **Documentation updated**: All examples use new syntax across all documentation
+- ✅ **Code simplified**: Backwards compatibility infrastructure removed (~420 lines)
+- ✅ **Testing coverage**: New syntax comprehensively tested
 
 ### Use Case Validation
-- ✅ Data pipeline testing (CSV → JSON → XML)
-- ✅ Configuration management (multiple config files)
-- ✅ Enterprise microservices scenarios
-- ✅ Cross-format validation workflows
+- ✅ **Multi-format testing**: CSV + JSON + YAML + XML in single tests
+- ✅ **Data pipeline validation**: Template functions across multiple components
+- ✅ **Configuration management**: Named component references
+- ✅ **Complex dependencies**: Multi-level component dependency chains
 
 ### Technical Metrics
-- **Performance**: < 10% overhead for multi-component vs single-component tests
-- **Memory**: Linear scaling with component count
-- **Reliability**: No test failures due to component ordering issues
+- **Code Reduction**: ~420 lines of backwards compatibility code removed
+- **Complexity**: 60% reduction in parser logic complexity
+- **Performance**: Support 2-10 components per test without degradation
+- **Reliability**: No test failures due to component resolution issues
 
 ## 🎉 Conclusion
 
-This multi-component architecture will transform PICARD from supporting simple single-file scenarios to complex, realistic enterprise testing environments. The `components` array approach provides:
+This breaking change approach will transform PICARD from a backwards-compatibility-burdened framework to a clean, powerful multi-component testing platform. The mandatory `components` array with `TARGET_FILE[component_name]` provides:
 
-- **Flexibility**: Multiple resource types per test
-- **Scalability**: Easy addition of new component types (files, containers, services)
-- **Realism**: Enterprise-grade testing scenarios
-- **Compatibility**: No disruption to existing tests
+- **Simplicity**: Single, consistent syntax across all use cases
+- **Power**: Multi-format testing with cross-component template functions
+- **Clarity**: Named components with enforced naming standards
+- **Maintainability**: 60% reduction in parser complexity
+- **Extensibility**: Clean foundation for future infrastructure components
 
-**Next Steps**: Begin with Phase 1 parser enhancement, maintaining strict backwards compatibility while enabling the foundation for advanced multi-component testing scenarios.
+**Phase 3 Deliverables:**
+1. **Week 5**: Remove backwards compatibility infrastructure, implement TARGET_FILE[component_name] resolution
+2. **Week 6**: Migrate picard_abridged_standard, update all documentation, comprehensive testing
+
+This approach prioritizes **clean architecture and developer experience** over maintaining legacy compatibility, resulting in a more powerful and maintainable framework for complex enterprise testing scenarios.

@@ -31,6 +31,7 @@ class EnhancedVariableSubstitution:
         Args:
             seed: Random seed for deterministic generation
         """
+        self.seed = seed
         if seed is not None:
             random.seed(seed)
             
@@ -261,6 +262,10 @@ class EnhancedVariableSubstitution:
         self.semantic_cache.clear()
         self.numeric_cache.clear()
         self.entity_cache.clear()
+        
+        # Reset random seed if one was provided
+        if self.seed is not None:
+            random.seed(self.seed)
 
 
 def main():

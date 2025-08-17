@@ -724,12 +724,42 @@ expected_content: "{{csv_value:0:AGE:TARGET_FILE}}"
 ```
 
 ##### `csv_row`
-**Purpose**: Get entire row as comma-separated string.
+
+**Description**: Extract an entire row from CSV as comma-separated values  
 **Usage**: `{{csv_row:row_number:file_path}}`
 
+Returns the complete row at the specified index (0-based) as a comma-separated string. Useful for getting all data associated with a specific record.
+
+**Examples**:
+```yaml
+# Get first data row (row 0, after headers)
+template: "First employee: {{csv_row:0:TARGET_FILE}}"
+expected_response: "First employee: {{csv_row:0:TARGET_FILE}}"
+
+# Get last row using dynamic count
+template: "Row contents: {{csv_row:{{csv_count:NAME:TARGET_FILE}}-1:TARGET_FILE}}"
+expected_response: "Row contents: {{csv_row:{{csv_count:NAME:TARGET_FILE}}-1:TARGET_FILE}}"
+```
+
 ##### `csv_column`
-**Purpose**: Get entire column as comma-separated string.
+
+**Description**: Extract an entire column from CSV as comma-separated values  
 **Usage**: `{{csv_column:header:file_path}}`
+
+Returns all values from the specified column as a comma-separated string. Column order matches the original CSV row order.
+
+**Examples**:
+```yaml
+# Get all employee names
+template: "All employees: {{csv_column:NAME:TARGET_FILE}}"
+expected_response: "All employees: {{csv_column:NAME:TARGET_FILE}}"
+
+# Get all salaries for analysis
+template: "Salary data: {{csv_column:SALARY:TARGET_FILE}}"
+expected_response: "Salary data: {{csv_column:SALARY:TARGET_FILE}}"
+```
+
+**Note**: Both functions preserve data order and formatting from the original CSV file.
 
 #### CSV Aggregation Functions
 

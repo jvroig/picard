@@ -10,6 +10,36 @@ from dataclasses import dataclass
 
 
 @dataclass
+class ComponentSpec:
+    """Specification for a single sandbox component."""
+    type: str  # "create_csv", "create_json", "run_docker", etc.
+    target_file: Optional[str] = None  # File path (for file components)
+    content: Optional[Dict[str, Any]] = None     # Content specification
+    config: Optional[Dict[str, Any]] = None      # Component-specific configuration
+    depends_on: Optional[List[str]] = None  # Dependencies on other components
+    
+    def __post_init__(self):
+        """Validate component specification."""
+        file_types = ["create_files", "create_csv", "create_sqlite", "create_json", "create_yaml", "create_xml"]
+        if self.type in file_types:
+            if not self.target_file:
+                raise ValueError(f"'target_file' required for component type '{self.type}'")
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary format."""
+        result = {'type': self.type}
+        if self.target_file:
+            result['target_file'] = self.target_file
+        if self.content:
+            result['content'] = self.content
+        if self.config:
+            result['config'] = self.config
+        if self.depends_on:
+            result['depends_on'] = self.depends_on
+        return result
+
+
+@dataclass
 class SandboxSetup:
     """Represents sandbox setup configuration for dynamic file/database generation."""
     type: str  # "create_files", "create_database", etc.
@@ -115,6 +145,46 @@ class TestDefinition:
             }
         
         return result
+
+
+class SandboxSetupParser:
+    """Parses both legacy and new multi-component sandbox syntax."""
+    
+    def parse_sandbox_setup(self, sandbox_config: Dict[str, Any]) -> List[ComponentSpec]:
+        """Parse both legacy and new multi-component syntax."""
+        
+        # Detect legacy syntax
+        if 'type' in sandbox_config:
+            return [self._parse_legacy_component(sandbox_config)]
+        
+        # Detect new multi-component syntax  
+        elif 'components' in sandbox_config:
+            return [self._parse_component(comp) for comp in sandbox_config['components']]
+        
+        else:
+            raise ValueError("Invalid sandbox_setup configuration - must have 'type' or 'components'")
+    
+    def _parse_legacy_component(self, config: Dict[str, Any]) -> ComponentSpec:
+        """Convert legacy syntax to component spec."""
+        return ComponentSpec(
+            type=config['type'],
+            target_file=config.get('target_file'),
+            content=config.get('content'),
+            config=config.get('clutter')  # Map legacy 'clutter' to 'config'
+        )
+    
+    def _parse_component(self, comp_config: Dict[str, Any]) -> ComponentSpec:
+        """Parse individual component configuration."""
+        if 'type' not in comp_config:
+            raise ValueError("Component configuration must have 'type' field")
+        
+        return ComponentSpec(
+            type=comp_config['type'],
+            target_file=comp_config.get('target_file'),
+            content=comp_config.get('content'),
+            config=comp_config.get('config'),
+            depends_on=comp_config.get('depends_on')
+        )
 
 
 class TestDefinitionParser:

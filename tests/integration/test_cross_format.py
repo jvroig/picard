@@ -25,15 +25,15 @@ from template_functions import TemplateFunctions
 class TestTemplateVariableSubstitution:
     """Test TARGET_FILE and variable substitution across formats."""
     
-    def test_target_file_substitution_workflow(self, temp_workspace):
+    def test_target_file_substitution_workflow(self, temp_workspace_as_cwd):
         """Test TARGET_FILE keyword works across all file types."""
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Generate test files of different types
         files_to_test = []
         
         # JSON file
-        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
         json_result = json_gen.generate(
             target_file="test.json",
             content_spec={'schema': {'count': {'type': 'integer', 'minimum': 5, 'maximum': 5}}}
@@ -42,7 +42,7 @@ class TestTemplateVariableSubstitution:
         files_to_test.append(("test.json", "json"))
         
         # YAML file
-        yaml_gen = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace))
+        yaml_gen = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace_as_cwd))
         yaml_result = yaml_gen.generate(
             target_file="test.yaml",
             content_spec={'schema': {'count': {'type': 'integer', 'minimum': 5, 'maximum': 5}}}
@@ -51,7 +51,7 @@ class TestTemplateVariableSubstitution:
         files_to_test.append(("test.yaml", "yaml"))
         
         # XML file
-        xml_gen = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace))
+        xml_gen = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace_as_cwd))
         xml_result = xml_gen.generate(
             target_file="test.xml",
             content_spec={'schema': {'count': {'type': 'integer', 'minimum': 5, 'maximum': 5}}, 'root_element': 'data'}
@@ -60,7 +60,7 @@ class TestTemplateVariableSubstitution:
         files_to_test.append(("test.xml", "xml"))
         
         # CSV file 
-        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace))
+        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace_as_cwd))
         csv_result = csv_gen.generate(
             target_file="test.csv",
             content_spec={'headers': ['id', 'name'], 'rows': 5}
@@ -69,7 +69,7 @@ class TestTemplateVariableSubstitution:
         files_to_test.append(("test.csv", "csv"))
         
         # SQLite file
-        sqlite_gen = FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace))
+        sqlite_gen = FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace_as_cwd))
         sqlite_result = sqlite_gen.generate(
             target_file="test.db",
             content_spec={
@@ -83,7 +83,7 @@ class TestTemplateVariableSubstitution:
         
         # Test TARGET_FILE substitution for each format
         for filename, file_type in files_to_test:
-            file_path = str(temp_workspace / filename)
+            file_path = str(temp_workspace_as_cwd / filename)
             
             if file_type == "json":
                 result = tf.evaluate_all_functions("{{json_value:count:TARGET_FILE}}", file_path)
@@ -105,10 +105,10 @@ class TestTemplateVariableSubstitution:
                 result = tf.evaluate_all_functions("{{sqlite_query:SELECT COUNT(*) FROM test_table:TARGET_FILE}}", file_path)
                 assert result == "5"
     
-    def test_complex_template_combinations(self, temp_workspace):
+    def test_complex_template_combinations(self, temp_workspace_as_cwd):
         """Test complex template function combinations."""
         # Generate source data
-        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
         json_result = json_gen.generate(
             target_file="source.json",
             content_spec={
@@ -126,7 +126,7 @@ class TestTemplateVariableSubstitution:
             }
         )
         
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Complex nested template extraction
         first_user_id = tf.evaluate_all_functions("{{json_path:$.users[0].id:source.json}}")
@@ -147,12 +147,12 @@ class TestTemplateVariableSubstitution:
 class TestDataConsistencyWorkflows:
     """Test data consistency across complex multi-format workflows."""
     
-    def test_referential_integrity_simulation(self, temp_workspace):
+    def test_referential_integrity_simulation(self, temp_workspace_as_cwd):
         """Simulate referential integrity across JSON, CSV, and SQLite."""
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Step 1: Generate master data in JSON
-        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
         master_result = json_gen.generate(
             target_file="master.json",
             content_spec={
@@ -170,7 +170,7 @@ class TestDataConsistencyWorkflows:
         )
         
         # Step 2: Generate transactional data in CSV
-        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace))
+        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace_as_cwd))
         trans_result = csv_gen.generate(
             target_file="transactions.csv",
             content_spec={
@@ -181,7 +181,7 @@ class TestDataConsistencyWorkflows:
         )
         
         # Step 3: Generate summary data in SQLite
-        sqlite_gen = FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace))
+        sqlite_gen = FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace_as_cwd))
         summary_result = sqlite_gen.generate(
             target_file="summary.db",
             content_spec={
@@ -218,12 +218,12 @@ class TestDataConsistencyWorkflows:
         assert total_trans_amount > 0
         assert total_summary_amount > 0
     
-    def test_data_transformation_pipeline(self, temp_workspace):
+    def test_data_transformation_pipeline(self, temp_workspace_as_cwd):
         """Test data transformation pipeline across formats."""
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Stage 1: Raw data in CSV
-        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace))
+        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace_as_cwd))
         raw_result = csv_gen.generate(
             target_file="raw_data.csv",
             content_spec={
@@ -233,7 +233,7 @@ class TestDataConsistencyWorkflows:
         )
         
         # Stage 2: Processed configuration in JSON
-        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
         config_result = json_gen.generate(
             target_file="processing_config.json",
             content_spec={
@@ -254,7 +254,7 @@ class TestDataConsistencyWorkflows:
         )
         
         # Stage 3: Analytics in SQLite
-        sqlite_gen = FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace))
+        sqlite_gen = FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace_as_cwd))
         analytics_result = sqlite_gen.generate(
             target_file="analytics.db",
             content_spec={
@@ -299,12 +299,12 @@ class TestDataConsistencyWorkflows:
 class TestErrorHandlingWorkflows:
     """Test error handling in complex multi-step workflows."""
     
-    def test_graceful_error_recovery(self, temp_workspace):
+    def test_graceful_error_recovery(self, temp_workspace_as_cwd):
         """Test that workflows handle errors gracefully and provide useful information."""
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Generate valid source data
-        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
         valid_result = json_gen.generate(
             target_file="valid.json",
             content_spec={'schema': {'data': {'type': 'array', 'count': 3, 'items': 'lorem_word'}}}
@@ -324,18 +324,18 @@ class TestErrorHandlingWorkflows:
         valid_count = tf.evaluate_all_functions("{{json_count:$.data:valid.json}}")
         assert valid_count == "3"
     
-    def test_malformed_data_handling(self, temp_workspace):
+    def test_malformed_data_handling(self, temp_workspace_as_cwd):
         """Test handling of edge cases in data formats."""
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Create edge case files manually
         
         # Empty JSON file (but valid JSON)
-        empty_json = temp_workspace / "empty.json"
+        empty_json = temp_workspace_as_cwd / "empty.json"
         empty_json.write_text('{}')
         
         # Minimal CSV
-        minimal_csv = temp_workspace / "minimal.csv" 
+        minimal_csv = temp_workspace_as_cwd / "minimal.csv" 
         minimal_csv.write_text('header\nvalue')
         
         # Test operations on edge case data
@@ -354,17 +354,17 @@ class TestErrorHandlingWorkflows:
 class TestScalabilityWorkflows:
     """Test scalability characteristics of PICARD workflows."""
     
-    def test_multiple_concurrent_operations(self, temp_workspace):
+    def test_multiple_concurrent_operations(self, temp_workspace_as_cwd):
         """Test multiple file operations in sequence."""
         generators = {
-            'json': FileGeneratorFactory.create_generator('create_json', str(temp_workspace)),
-            'yaml': FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace)),
-            'xml': FileGeneratorFactory.create_generator('create_xml', str(temp_workspace)),
-            'csv': FileGeneratorFactory.create_generator('create_csv', str(temp_workspace)),
-            'sqlite': FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace))
+            'json': FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd)),
+            'yaml': FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace_as_cwd)),
+            'xml': FileGeneratorFactory.create_generator('create_xml', str(temp_workspace_as_cwd)),
+            'csv': FileGeneratorFactory.create_generator('create_csv', str(temp_workspace_as_cwd)),
+            'sqlite': FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace_as_cwd))
         }
         
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         results = []
         
         # Generate multiple files of different types
@@ -436,16 +436,16 @@ class TestScalabilityWorkflows:
         
         assert total_operations == 12  # 3 files × 4 operations each (JSON, XML, CSV, SQLite)
     
-    def test_workflow_performance_characteristics(self, temp_workspace):
+    def test_workflow_performance_characteristics(self, temp_workspace_as_cwd):
         """Test performance characteristics of complex workflows."""
         import time
         
         start_time = time.time()
         
         # Complex workflow with multiple dependencies
-        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
-        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace))
-        tf = TemplateFunctions(str(temp_workspace))
+        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
+        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace_as_cwd))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Stage 1: Configuration generation
         config_start = time.time()

@@ -7,6 +7,7 @@ import json
 import yaml
 import csv
 import sys
+import os
 from pathlib import Path
 from typing import Dict, List, Any
 
@@ -27,6 +28,21 @@ def temp_workspace():
     """Provide a temporary directory for file operations."""
     with tempfile.TemporaryDirectory() as tmp_dir:
         yield Path(tmp_dir)
+
+
+@pytest.fixture
+def temp_workspace_as_cwd():
+    """
+    Provide a temporary directory and set it as the current working directory.
+    This prevents integration tests from creating stray files in the project root.
+    """
+    original_cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        os.chdir(tmp_dir)
+        try:
+            yield Path(tmp_dir)
+        finally:
+            os.chdir(original_cwd)
 
 
 @pytest.fixture

@@ -24,10 +24,10 @@ from template_functions import TemplateFunctions
 class TestJSONWorkflows:
     """Test complete JSON generation → extraction workflows."""
     
-    def test_json_generation_and_extraction_workflow(self, temp_workspace):
+    def test_json_generation_and_extraction_workflow(self, temp_workspace_as_cwd):
         """Test: Generate JSON → Extract with template functions → Verify correctness."""
         # Step 1: Generate complex JSON file
-        json_generator = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_generator = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
         
         schema = {
             'users': {
@@ -61,7 +61,7 @@ class TestJSONWorkflows:
         assert len(result['files_created']) == 1
         
         # Step 2: Extract data using template functions
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Extract user count
         user_count = tf.evaluate_all_functions("{{json_count:$.users:users.json}}")
@@ -73,7 +73,7 @@ class TestJSONWorkflows:
         first_user_active = tf.evaluate_all_functions("{{json_path:$.users[0].active:users.json}}")
         
         # Verify extraction matches original generation
-        original_data = result['json_data'][str(temp_workspace / "users.json")]
+        original_data = result['json_data'][str(temp_workspace_as_cwd / "users.json")]
         assert len(original_data['users']) == 3
         assert original_data['users'][0]['name'] == first_user_name
         assert original_data['users'][0]['email'] == first_user_email
@@ -90,9 +90,9 @@ class TestJSONWorkflows:
         salary_value = float(first_salary)
         assert 30000 <= salary_value <= 120000
     
-    def test_json_array_manipulation_workflow(self, temp_workspace):
+    def test_json_array_manipulation_workflow(self, temp_workspace_as_cwd):
         """Test complex JSON array operations and extractions."""
-        json_generator = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_generator = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
         
         # Generate JSON with multiple arrays
         schema = {
@@ -121,7 +121,7 @@ class TestJSONWorkflows:
         
         assert result['errors'] == []
         
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Test nested array access
         dept_count = int(tf.evaluate_all_functions("{{json_count:$.departments:company.json}}"))
@@ -140,10 +140,10 @@ class TestJSONWorkflows:
 class TestCSVWorkflows:
     """Test complete CSV generation → extraction workflows."""
     
-    def test_csv_generation_and_aggregation_workflow(self, temp_workspace):
+    def test_csv_generation_and_aggregation_workflow(self, temp_workspace_as_cwd):
         """Test: Generate CSV → Perform aggregations → Verify calculations."""
         # Step 1: Generate CSV with known data patterns
-        csv_generator = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace))
+        csv_generator = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace_as_cwd))
         
         result = csv_generator.generate(
             target_file="sales.csv",
@@ -157,7 +157,7 @@ class TestCSVWorkflows:
         assert result['errors'] == []
         
         # Step 2: Perform complex aggregations
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Basic aggregations
         total_sales = float(tf.evaluate_all_functions("{{csv_sum:sales_amount:sales.csv}}"))
@@ -180,9 +180,9 @@ class TestCSVWorkflows:
             active_avg = float(tf.evaluate_all_functions("{{csv_avg_where:sales_amount:status:==:active:sales.csv}}"))
             assert abs(active_avg - (active_sales / active_count)) < 0.01  # Float precision
     
-    def test_csv_cross_column_analysis(self, temp_workspace):
+    def test_csv_cross_column_analysis(self, temp_workspace_as_cwd):
         """Test complex CSV analysis across multiple columns."""
-        csv_generator = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace))
+        csv_generator = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace_as_cwd))
         
         result = csv_generator.generate(
             target_file="employees.csv",
@@ -194,7 +194,7 @@ class TestCSVWorkflows:
         
         assert result['errors'] == []
         
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Multi-condition filtering
         senior_eng_salary = float(tf.evaluate_all_functions("{{csv_sum_where:salary:department:contains:ing:employees.csv}}"))
@@ -215,9 +215,9 @@ class TestCSVWorkflows:
 class TestSQLiteWorkflows:
     """Test complete SQLite generation → extraction workflows."""
     
-    def test_sqlite_relational_workflow(self, temp_workspace):
+    def test_sqlite_relational_workflow(self, temp_workspace_as_cwd):
         """Test: Generate relational database → Query relationships → Verify integrity."""
-        sqlite_generator = FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace))
+        sqlite_generator = FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace_as_cwd))
         
         # Generate relational database
         result = sqlite_generator.generate(
@@ -249,7 +249,7 @@ class TestSQLiteWorkflows:
         
         assert result['errors'] == []
         
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Test foreign key relationships
         dept_count = tf.evaluate_all_functions("{{sqlite_query:SELECT COUNT(*) FROM departments:company.db}}")
@@ -276,10 +276,10 @@ class TestSQLiteWorkflows:
 class TestCrossFormatWorkflows:
     """Test workflows that span multiple file formats."""
     
-    def test_json_to_csv_analysis_workflow(self, temp_workspace):
+    def test_json_to_csv_analysis_workflow(self, temp_workspace_as_cwd):
         """Test: Generate JSON → Use data to inform CSV generation → Cross-validate."""
         # Step 1: Generate JSON with user data
-        json_generator = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_generator = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
         
         json_result = json_generator.generate(
             target_file="user_config.json",
@@ -298,7 +298,7 @@ class TestCrossFormatWorkflows:
         assert json_result['errors'] == []
         
         # Step 2: Extract configuration from JSON
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         user_count = int(tf.evaluate_all_functions("{{json_value:user_count:user_config.json}}"))
         dept_count = int(tf.evaluate_all_functions("{{json_count:$.departments:user_config.json}}"))
         
@@ -306,7 +306,7 @@ class TestCrossFormatWorkflows:
         assert dept_count == 3
         
         # Step 3: Generate CSV based on JSON configuration
-        csv_generator = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace))
+        csv_generator = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace_as_cwd))
         
         csv_result = csv_generator.generate(
             target_file="users.csv",
@@ -331,12 +331,12 @@ class TestCrossFormatWorkflows:
         assert len(first_user_dept) > 0
         assert len(dept_list) > 0
     
-    def test_multi_format_data_pipeline(self, temp_workspace):
+    def test_multi_format_data_pipeline(self, temp_workspace_as_cwd):
         """Test: JSON config → CSV data → SQLite storage → Cross-format queries."""
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Step 1: JSON configuration
-        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
         config_result = json_gen.generate(
             target_file="config.json",
             content_spec={
@@ -350,10 +350,11 @@ class TestCrossFormatWorkflows:
             }
         )
         
+        # Now we can use relative paths since cwd is the temp directory
         batch_size = int(tf.evaluate_all_functions("{{json_value:batch_size:config.json}}"))
         
         # Step 2: CSV data generation
-        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace))
+        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace_as_cwd))
         csv_result = csv_gen.generate(
             target_file="data.csv",
             content_spec={
@@ -363,7 +364,7 @@ class TestCrossFormatWorkflows:
         )
         
         # Step 3: SQLite storage simulation
-        sqlite_gen = FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace))
+        sqlite_gen = FileGeneratorFactory.create_generator('create_sqlite', str(temp_workspace_as_cwd))
         sqlite_result = sqlite_gen.generate(
             target_file="warehouse.db",
             content_spec={
@@ -381,7 +382,7 @@ class TestCrossFormatWorkflows:
         # Step 4: Cross-format validation
         assert all(result['errors'] == [] for result in [config_result, csv_result, sqlite_result])
         
-        # Verify data consistency across formats
+        # Verify data consistency across formats - can use relative paths now
         csv_count = int(tf.evaluate_all_functions("{{csv_count:name:data.csv}}"))
         assert csv_count == batch_size
         
@@ -404,14 +405,14 @@ class TestCrossFormatWorkflows:
 class TestPerformanceWorkflows:
     """Test performance characteristics of complete workflows."""
     
-    def test_large_dataset_workflow(self, temp_workspace):
+    def test_large_dataset_workflow(self, temp_workspace_as_cwd):
         """Test workflow with larger datasets to verify performance."""
         import time
         
         start_time = time.time()
         
         # Generate large CSV
-        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace))
+        csv_gen = FileGeneratorFactory.create_generator('create_csv', str(temp_workspace_as_cwd))
         result = csv_gen.generate(
             target_file="large_data.csv",
             content_spec={
@@ -426,7 +427,7 @@ class TestPerformanceWorkflows:
         assert generation_time < 5.0  # Should complete within 5 seconds
         
         # Perform multiple template operations
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         operations_start = time.time()
         
@@ -450,9 +451,9 @@ class TestPerformanceWorkflows:
 class TestYAMLWorkflows:
     """Test complete YAML generation → extraction workflows."""
     
-    def test_yaml_configuration_workflow(self, temp_workspace):
+    def test_yaml_configuration_workflow(self, temp_workspace_as_cwd):
         """Test: Generate YAML config → Extract values → Verify structure."""
-        yaml_generator = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace))
+        yaml_generator = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace_as_cwd))
         
         # Generate complex YAML configuration
         result = yaml_generator.generate(
@@ -487,7 +488,7 @@ class TestYAMLWorkflows:
         
         assert result['errors'] == []
         
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Test basic value extraction
         db_host = tf.evaluate_all_functions("{{yaml_value:database.host:app_config.yaml}}")
@@ -520,9 +521,9 @@ class TestYAMLWorkflows:
         expected_keys = {'host', 'port', 'name'}
         assert keys == expected_keys
     
-    def test_yaml_array_operations(self, temp_workspace):
+    def test_yaml_array_operations(self, temp_workspace_as_cwd):
         """Test complex YAML array operations and filtering."""
-        yaml_generator = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace))
+        yaml_generator = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace_as_cwd))
         
         # Generate YAML with filterable array data
         result = yaml_generator.generate(
@@ -548,7 +549,7 @@ class TestYAMLWorkflows:
         
         assert result['errors'] == []
         
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Test array aggregations
         total_budget = float(tf.evaluate_all_functions("{{yaml_sum:$.teams[*].budget:teams.yaml}}"))
@@ -577,9 +578,9 @@ class TestYAMLWorkflows:
             high_names = high_budget_names.split(',')
             assert len(high_names) == int(high_budget_count)
     
-    def test_yaml_to_json_comparison(self, temp_workspace):
+    def test_yaml_to_json_comparison(self, temp_workspace_as_cwd):
         """Test that YAML and JSON with same data structure produce equivalent results."""
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Define same schema for both formats
         schema = {
@@ -598,14 +599,14 @@ class TestYAMLWorkflows:
         }
         
         # Generate YAML version
-        yaml_gen = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace))
+        yaml_gen = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace_as_cwd))
         yaml_result = yaml_gen.generate(
             target_file="data.yaml",
             content_spec={'schema': schema}
         )
         
         # Generate JSON version with same schema
-        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
         json_result = json_gen.generate(
             target_file="data.json", 
             content_spec={'schema': schema}
@@ -637,9 +638,9 @@ class TestYAMLWorkflows:
 class TestXMLWorkflows:
     """Test complete XML generation → extraction workflows."""
     
-    def test_xml_enterprise_configuration_workflow(self, temp_workspace):
+    def test_xml_enterprise_configuration_workflow(self, temp_workspace_as_cwd):
         """Test: Generate XML enterprise config → Extract values → Verify structure."""
-        xml_generator = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace))
+        xml_generator = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace_as_cwd))
         
         # Generate enterprise XML configuration
         result = xml_generator.generate(
@@ -678,7 +679,7 @@ class TestXMLWorkflows:
         
         assert result['errors'] == []
         
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Test basic value extraction
         company_name = tf.evaluate_all_functions("{{xpath_value:company/name:enterprise_config.xml}}")
@@ -719,9 +720,9 @@ class TestXMLWorkflows:
         assert total_salary_cost > 0
         assert 30000 <= avg_employee_salary <= 150000  # salary data type range
     
-    def test_xml_document_processing_workflow(self, temp_workspace):
+    def test_xml_document_processing_workflow(self, temp_workspace_as_cwd):
         """Test XML document processing with mixed content types."""
-        xml_generator = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace))
+        xml_generator = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace_as_cwd))
         
         # Generate XML with mixed content
         result = xml_generator.generate(
@@ -756,7 +757,7 @@ class TestXMLWorkflows:
         
         assert result['errors'] == []
         
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Test metadata extraction
         total_docs = tf.evaluate_all_functions("{{xpath_value:metadata/total_docs:documents.xml}}")
@@ -805,9 +806,9 @@ class TestXMLWorkflows:
         total_tags = int(tf.evaluate_all_functions("{{xpath_count:documents/item/tags/item:documents.xml}}"))
         assert 8 <= total_tags <= 32  # 8 docs * 1-4 tags each
     
-    def test_xml_to_other_formats_comparison(self, temp_workspace):
+    def test_xml_to_other_formats_comparison(self, temp_workspace_as_cwd):
         """Test XML data extraction compared to equivalent JSON/YAML operations."""
-        tf = TemplateFunctions(str(temp_workspace))
+        tf = TemplateFunctions(str(temp_workspace_as_cwd))
         
         # Define same schema for XML, JSON, and YAML
         schema = {
@@ -827,21 +828,21 @@ class TestXMLWorkflows:
         }
         
         # Generate XML version
-        xml_gen = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace))
+        xml_gen = FileGeneratorFactory.create_generator('create_xml', str(temp_workspace_as_cwd))
         xml_result = xml_gen.generate(
             target_file="products.xml",
             content_spec={'schema': schema, 'root_element': 'catalog'}
         )
         
         # Generate JSON version
-        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace))
+        json_gen = FileGeneratorFactory.create_generator('create_json', str(temp_workspace_as_cwd))
         json_result = json_gen.generate(
             target_file="products.json",
             content_spec={'schema': schema}
         )
         
         # Generate YAML version
-        yaml_gen = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace))
+        yaml_gen = FileGeneratorFactory.create_generator('create_yaml', str(temp_workspace_as_cwd))
         yaml_result = yaml_gen.generate(
             target_file="products.yaml",
             content_spec={'schema': schema}

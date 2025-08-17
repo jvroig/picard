@@ -161,6 +161,177 @@ See the complete specifications for each data type in the sections below.
 4. **Reference the same variables** in templates and expected values for consistency
 5. **Combine with numeric and entity variables** for comprehensive test coverage
 
+### Advanced Variable Combination Examples
+
+#### Multi-Format Consistency
+Create tests where the same data appears across multiple file formats:
+
+```yaml
+# Same employee data across CSV, JSON, and XML
+sandbox_setup:
+  - type: "create_csv"
+    target_file: "{{artifacts}}/{{qs_id}}/employees.csv"
+    content:
+      headers: ["name", "department", "salary", "email"]
+      header_types: ["person_name", "department", "salary", "email"]
+      rows: 10
+  - type: "create_json"
+    target_file: "{{artifacts}}/{{qs_id}}/config.json"
+    content:
+      schema:
+        type: "object"
+        properties:
+          hr_contact: {type: "string", data_type: "person_name"}
+          it_department: {type: "string", data_type: "department"}
+          budget_limit: {type: "number", data_type: "salary"}
+
+template: "Find {{semantic1:person_name}} in {{semantic2:department}} with salary ${{number1:50000:100000:currency}}"
+expected_content: |
+  Employee {{semantic1:person_name}} located in {{semantic2:department}} 
+  Salary: ${{number1:50000:100000:currency}}
+  Contact: {{semantic3:email}}
+```
+
+#### Complex Business Scenarios
+Combine multiple variable types for realistic enterprise testing:
+
+```yaml
+# Enterprise project management scenario
+template: |
+  Create project report for {{semantic1:company}} showing:
+  - Project manager: {{semantic2:person_name}} ({{semantic3:email}})
+  - Team: {{semantic4:department}} department in {{semantic5:city}}
+  - Budget: ${{number1:100000:500000:currency}} over {{number2:6:24}} months
+  - Priority: {{entity1:colors}} level with {{entity2:metals}} resources
+  - Target score: {{number3:85:100}}% by {{semantic6:semester}}
+
+expected_content: |
+  {
+    "project": {
+      "company": "{{semantic1:company}}",
+      "manager": {
+        "name": "{{semantic2:person_name}}",
+        "email": "{{semantic3:email}}"
+      },
+      "team": {
+        "department": "{{semantic4:department}}",
+        "location": "{{semantic5:city}}"
+      },
+      "budget": {
+        "amount": {{number1:100000:500000:currency}},
+        "duration_months": {{number2:6:24}}
+      },
+      "priority": "{{entity1:colors}}",
+      "resources": "{{entity2:metals}}",
+      "targets": {
+        "score": {{number3:85:100}},
+        "deadline": "{{semantic6:semester}}"
+      }
+    }
+  }
+```
+
+#### Cross-Format Data Validation
+Test data consistency across different file formats:
+
+```yaml
+# Data pipeline validation scenario
+question_id: 501
+template: |
+  Validate data pipeline: CSV → JSON → XML transformation
+  Customer: {{semantic1:person_name}} from {{semantic2:city}}
+  Order #{{semantic3:id}} for {{semantic4:product}} 
+  Amount: ${{number1:25:500:decimal}} on {{semantic5:date}}
+
+sandbox_setup:
+  - type: "create_csv"
+    target_file: "{{artifacts}}/{{qs_id}}/source_data.csv"
+    content:
+      headers: ["customer", "city", "order_id", "product", "amount", "date"]
+      rows: 50
+  
+scoring_type: "readfile_jsonmatch"
+file_to_read: "{{artifacts}}/{{qs_id}}/transformed.json"
+expected_content: |
+  {
+    "pipeline_status": "success",
+    "customer_data": {
+      "name": "{{semantic1:person_name}}",
+      "location": "{{semantic2:city}}",
+      "order": {
+        "id": "{{semantic3:id}}",
+        "product": "{{semantic4:product}}",
+        "amount": {{number1:25:500:decimal}},
+        "date": "{{semantic5:date}}"
+      }
+    },
+    "validation": {
+      "records_processed": {{csv_count:customer:{{artifacts}}/{{qs_id}}/source_data.csv}},
+      "total_amount": {{csv_sum:amount:{{artifacts}}/{{qs_id}}/source_data.csv}},
+      "date_range": "{{csv_value:0:date:{{artifacts}}/{{qs_id}}/source_data.csv}} to {{csv_value:-1:date:{{artifacts}}/{{qs_id}}/source_data.csv}}"
+    }
+  }
+```
+
+#### Advanced Type Constraints for XML/YAML
+Use enhanced variables with type constraints for complex nested structures:
+
+```yaml
+# Complex XML configuration with type constraints
+sandbox_setup:
+  type: "create_xml"
+  target_file: "{{artifacts}}/{{qs_id}}/enterprise_config.xml"
+  content:
+    root_element: "enterprise"
+    schema:
+      type: "object"
+      properties:
+        company:
+          type: "object"
+          properties:
+            name: {type: "string", data_type: "company"}
+            headquarters: {type: "string", data_type: "city"}
+            departments:
+              type: "array"
+              count: 5
+              item_schema:
+                type: "object"
+                properties:
+                  name: {type: "string", data_type: "department"}
+                  head: {type: "string", data_type: "person_name"}
+                  budget: {type: "integer", data_type: "currency"}
+                  employees:
+                    type: "array"
+                    count: 3
+                    item_schema:
+                      type: "object"
+                      properties:
+                        name: {type: "string", data_type: "person_name"}
+                        role: {type: "string", data_type: "course"}  # Using course for job titles
+                        experience: {type: "integer", data_type: "experience"}
+                        email: {type: "string", data_type: "email"}
+
+template: |
+  Analyze {{semantic1:company}} configuration:
+  - HQ in {{semantic2:city}}
+  - Department head: {{semantic3:person_name}}
+  - Budget above ${{number1:200000:800000:currency}}
+  - Team size: {{number2:10:50}} employees
+
+expected_content: |
+  Company: {{semantic1:company}}
+  Location: {{semantic2:city}}
+  Executive: {{semantic3:person_name}}
+  Budget Range: ${{number1:200000:800000:currency}}+
+  Headcount: {{number2:10:50}}
+  
+  Department Analysis:
+  - Total departments: {{xpath_count://department:TARGET_FILE}}
+  - Total employees: {{xpath_count://employee:TARGET_FILE}}
+  - Average budget: ${{xpath_avg://department/budget:TARGET_FILE}}
+  - Senior staff: {{xpath_count://employee[experience>10]:TARGET_FILE}}
+```
+
 For complete syntax and additional variable types, see the [Enhanced Variable Substitution](REFERENCE.md#enhanced-variable-substitution) section in the PICARD Reference guide.
 
 ---

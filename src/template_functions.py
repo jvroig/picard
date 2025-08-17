@@ -12,6 +12,62 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+# Import ComponentSpec for type hints
+try:
+    from .test_definition_parser import ComponentSpec
+except ImportError:
+    # Fallback for when running independently
+    ComponentSpec = None
+
+
+def validate_component_name(name: str) -> bool:
+    """Validate component name against naming standards."""
+    import re
+    COMPONENT_NAME_PATTERN = re.compile(r'^[a-zA-Z][a-zA-Z0-9_-]*$')
+    return bool(COMPONENT_NAME_PATTERN.match(name)) and len(name) <= 50
+
+
+def resolve_target_file(expression: str, components: List = None) -> str:
+    """
+    Simple, single-path TARGET_FILE resolution - no legacy compatibility.
+    
+    Args:
+        expression: File path expression, may contain TARGET_FILE[component_name]
+        components: List of ComponentSpec objects for resolution
+    
+    Returns:
+        Resolved file path
+        
+    Raises:
+        ValueError: If TARGET_FILE syntax is invalid or component not found
+    """
+    if not expression:
+        return expression
+    
+    # Handle TARGET_FILE[component_name] syntax
+    if expression.startswith("TARGET_FILE[") and expression.endswith("]"):
+        component_name = expression[12:-1]  # Extract name from TARGET_FILE[name]
+        
+        if not validate_component_name(component_name):
+            raise ValueError(f"Invalid component name: {component_name}")
+        
+        if not components:
+            raise ValueError(f"No components provided for TARGET_FILE[{component_name}] resolution")
+        
+        for component in components:
+            if hasattr(component, 'name') and component.name == component_name:
+                return component.target_file or ""
+        
+        raise ValueError(f"Component '{component_name}' not found")
+    
+    # Handle bare TARGET_FILE (now requires component name)
+    elif expression == "TARGET_FILE":
+        raise ValueError("TARGET_FILE requires component name: TARGET_FILE[component_name]")
+    
+    else:
+        # Literal file path - return as-is
+        return expression
+
 
 class TemplateFunctionError(Exception):
     """Raised when template function evaluation fails."""
@@ -21,16 +77,18 @@ class TemplateFunctionError(Exception):
 class TemplateFunctions:
     """Handles evaluation of template functions for content extraction."""
     
-    def __init__(self, base_dir: str = None):
+    def __init__(self, base_dir: str = None, components: List = None):
         """
         Initialize template functions processor.
         
         Args:
             base_dir: Base directory for resolving relative file paths
+            components: List of ComponentSpec objects for TARGET_FILE resolution
         """
         if base_dir is None:
             base_dir = Path.cwd()
         self.base_dir = Path(base_dir)
+        self.components = components or []
     
     def evaluate_all_functions(self, text: str, target_file_path: str = None) -> str:
         """
@@ -38,7 +96,7 @@ class TemplateFunctions:
         
         Args:
             text: Text containing template functions like {{file_line:3:path}}
-            target_file_path: Path to substitute for TARGET_FILE keyword (optional)
+            target_file_path: Path to substitute for TARGET_FILE keyword (backwards compatibility)
             
         Returns:
             Text with all template functions replaced with their results
@@ -144,17 +202,23 @@ class TemplateFunctions:
     
     def _resolve_target_file(self, path: str, target_file_path: str = None) -> str:
         """
-        Resolve TARGET_FILE keyword to actual target file path.
+        Resolve TARGET_FILE[component_name] to actual target file path.
         
         Args:
-            path: Path that may contain TARGET_FILE keyword
-            target_file_path: Actual target file path to substitute
+            path: Path that may contain TARGET_FILE[component_name] 
+            target_file_path: Legacy target file path (backwards compatibility)
             
         Returns:
-            Resolved path with TARGET_FILE replaced if applicable
+            Resolved path with TARGET_FILE resolved if applicable
         """
+        # Use new resolution system if available
+        if self.components or "TARGET_FILE[" in path:
+            return resolve_target_file(path, self.components)
+        
+        # Legacy backwards compatibility
         if path == "TARGET_FILE" and target_file_path:
             return target_file_path
+        
         return path
     
     def _read_file_lines(self, path: str) -> List[str]:

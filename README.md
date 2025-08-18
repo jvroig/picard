@@ -50,11 +50,16 @@ Once the agentic server is up, you can run tests
 python src/test_runner.py --api-endpoint "http://localhost:5002/api/chat"
 
 # Run tests using your own PICARD-based test
-python src/test_runner.py --definitions "config/your-test-definition.yml --api-endpoint "http://localhost:5002/api/chat"
+python src/test_runner.py --definitions "config/your-test-definition.yml" --api-endpoint "http://localhost:5002/api/chat"
 
 # Score a successful test run (e.g., "test_20250529")
 python src/scorer.py --test-dir results/test_20250529 
 python src/scorer.py #No params = just score the latest test result
+
+# Specify a custom label for your results folder (instead of just "test_[timestamp]")
+python src/test_runner.py --label "llama3_70b" --definitions "config/your-test-definition.yml" --api-endpoint "http://localhost:5002/api/chat"
+# This will create a folder called "llama3_70b_[timestamp]" - e.g., "llama3_70b_20250529"
+
 ```
 
 ## 📝 Creating Tests

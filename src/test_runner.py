@@ -48,18 +48,67 @@ class TestRunner:
         self.test_id = None
         self.test_dir = None
     
-    def initialize_test_run(self, test_definitions_file: str = None) -> str:
+    def sanitize_label(self, label: str) -> str:
+        """
+        Sanitize user-provided label for filesystem compatibility.
+        
+        Args:
+            label: Raw user input label
+            
+        Returns:
+            Sanitized label safe for folder names
+            
+        Rules:
+            - Convert to lowercase
+            - Replace spaces with underscores
+            - Remove/replace special characters
+            - Limit length to reasonable bounds
+            - Ensure non-empty result
+        """
+        import re
+        
+        if not label or not label.strip():
+            return "test"
+        
+        # Convert to lowercase and replace spaces, hyphens, and periods with underscores
+        sanitized = label.lower().replace(' ', '_').replace('-', '_').replace('.', '_')
+        
+        # Keep only alphanumeric and underscores 
+        sanitized = re.sub(r'[^a-z0-9_]', '', sanitized)
+        
+        # Remove multiple consecutive underscores
+        sanitized = re.sub(r'_+', '_', sanitized)
+        
+        # Trim underscores from start/end
+        sanitized = sanitized.strip('_')
+        
+        # Length limits (reasonable for folder names)
+        if len(sanitized) > 50:
+            sanitized = sanitized[:50].rstrip('_')
+        
+        # Ensure non-empty
+        if not sanitized:
+            return "test"
+        
+        return sanitized
+    
+    def initialize_test_run(self, test_definitions_file: str = None, label: str = "test") -> str:
         """
         Initialize a new test run.
         
         Args:
             test_definitions_file: Path to test definitions YAML file
+            label: Label for test run folder
             
         Returns:
             Test ID for this run
         """
-        # Generate test ID
-        self.test_id = f"test_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        # Sanitize the label
+        clean_label = self.sanitize_label(label)
+        
+        # Generate test ID with custom label
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.test_id = f"{clean_label}_{timestamp}"
         
         # Create test directory
         self.test_dir = self.results_dir / self.test_id
@@ -79,7 +128,8 @@ class TestRunner:
     def run_benchmark(self, test_definitions_file: str = None, 
                      sandbox_template: str = "clean_sandbox",
                      max_retries: int = 3, max_llm_rounds: int = 20, retry_delay: float = 2.0,
-                     use_mock_llm: bool = False, api_endpoint: str = None) -> Dict[str, str]:
+                     use_mock_llm: bool = False, api_endpoint: str = None,
+                     label: str = "test") -> Dict[str, str]:
         """
         Run complete benchmark test.
         
@@ -91,6 +141,7 @@ class TestRunner:
             retry_delay: Delay between retries in seconds
             use_mock_llm: Whether to use mock LLM API or not
             api_endpoint: Optional API endpoint for real LLM
+            label: Label for test run folder
             
         Returns:
             Dictionary with file paths of generated results
@@ -107,7 +158,7 @@ class TestRunner:
         print("=" * 40)
         
         # Initialize test run
-        test_id = self.initialize_test_run(test_definitions_file)
+        test_id = self.initialize_test_run(test_definitions_file, label)
         print(f"🆔 Test ID: {test_id}")
         print(f"📁 Test directory: {self.test_dir}")
         print()
@@ -425,6 +476,12 @@ Examples:
         help='API endpoint for agentic server (default: http://localhost:5002/api/chat)'
     )
     
+    parser.add_argument(
+        '--label', '-l',
+        default='test',
+        help='Label for test run folder (default: test). Creates folder: {label}_{timestamp}'
+    )
+    
     args = parser.parse_args()
     
     try:
@@ -437,7 +494,8 @@ Examples:
             max_llm_rounds=args.max_llm_rounds,
             retry_delay=args.delay,
             use_mock_llm=args.mock_llm,
-            api_endpoint=args.api_endpoint
+            api_endpoint=args.api_endpoint,
+            label=args.label
         )
         
         print(f"\n🎊 Success! Test results available at: {result['test_dir']}")

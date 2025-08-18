@@ -4,6 +4,9 @@ Test Component Orchestrator
 Tests multi-component sandbox creation and dependency resolution.
 """
 import pytest
+import tempfile
+import os
+from pathlib import Path
 from src.component_orchestrator import (
     ComponentOrchestrator, DependencyResolver, ComponentResult,
     EnhancedFileGeneratorFactory, create_multi_component_sandbox
@@ -97,11 +100,17 @@ class TestComponentOrchestrator:
     
     def setup_method(self):
         """Set up test fixtures."""
+        self.temp_dir = tempfile.mkdtemp()
         self.orchestrator = ComponentOrchestrator()
+    
+    def teardown_method(self):
+        """Clean up test fixtures."""
+        import shutil
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
     
     def test_empty_components_list(self):
         """Test handling of empty components list."""
-        results = self.orchestrator.create_components([], 1, 1)
+        results = self.orchestrator.create_components([], 1, 1, artifacts_dir=self.temp_dir)
         assert results == []
     
     def test_single_component_creation(self):
@@ -111,7 +120,7 @@ class TestComponentOrchestrator:
                          content={"headers": ["id", "name"], "rows": 10})
         ]
         
-        results = self.orchestrator.create_components(components, 1, 1)
+        results = self.orchestrator.create_components(components, 1, 1, artifacts_dir=self.temp_dir)
         
         assert len(results) == 1
         result = results[0]
@@ -128,7 +137,7 @@ class TestComponentOrchestrator:
             ComponentSpec(type="create_yaml", name="settings_yaml", target_file="settings.yaml")
         ]
         
-        results = self.orchestrator.create_components(components, 1, 1)
+        results = self.orchestrator.create_components(components, 1, 1, artifacts_dir=self.temp_dir)
         
         assert len(results) == 3
         for i, result in enumerate(results):
@@ -144,7 +153,7 @@ class TestComponentOrchestrator:
             ComponentSpec(type="create_yaml", name="output", target_file="output.yaml", depends_on=["config"])
         ]
         
-        results = self.orchestrator.create_components(components, 1, 1)
+        results = self.orchestrator.create_components(components, 1, 1, artifacts_dir=self.temp_dir)
         
         assert len(results) == 3
         # Should be created in dependency order: data, config, output
@@ -159,7 +168,7 @@ class TestComponentOrchestrator:
             ComponentSpec(type="create_json", name="json_comp", target_file="file2.json")
         ]
         
-        results = self.orchestrator.create_components(components, 1, 1)
+        results = self.orchestrator.create_components(components, 1, 1, artifacts_dir=self.temp_dir)
         
         assert len(results) == 2
         # All components should fail due to dependency resolution error
@@ -173,7 +182,7 @@ class TestComponentOrchestrator:
             ComponentSpec(type="run_docker", name="postgres_db", config={"image": "postgres:13"})
         ]
         
-        results = self.orchestrator.create_components(components, 1, 1)
+        results = self.orchestrator.create_components(components, 1, 1, artifacts_dir=self.temp_dir)
         
         assert len(results) == 1
         result = results[0]
@@ -294,6 +303,15 @@ class TestComponentResult:
 class TestConvenienceFunction:
     """Test convenience function for multi-component sandbox creation."""
     
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.temp_dir = tempfile.mkdtemp()
+    
+    def teardown_method(self):
+        """Clean up test fixtures."""
+        import shutil
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+    
     def test_create_multi_component_sandbox(self):
         """Test the convenience function."""
         components = [
@@ -303,7 +321,7 @@ class TestConvenienceFunction:
                          content={"schema": {"type": "object", "properties": {"test": {"type": "string"}}}})
         ]
         
-        results = create_multi_component_sandbox(components, 1, 1)
+        results = create_multi_component_sandbox(components, 1, 1, artifacts_dir=self.temp_dir)
         
         assert len(results) == 2
         for result in results:

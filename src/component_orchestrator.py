@@ -180,7 +180,7 @@ class ComponentOrchestrator:
         
         # Use the factory to create the appropriate generator
         try:
-            generator = self.file_generator_factory.create_component(component)
+            generator = self.file_generator_factory.create_component(component, artifacts_dir)
             
             # Generate the file using the correct interface
             result_info = generator.generate(component.target_file, component.content, 
@@ -248,24 +248,24 @@ class EnhancedFileGeneratorFactory:
             logger.warning(f"Could not import file generators: {e}")
             self._generators = {}
     
-    def create_component(self, component_spec: ComponentSpec):
+    def create_component(self, component_spec: ComponentSpec, artifacts_dir: str = None):
         """Create appropriate generator for component type."""
         
         if component_spec.type.startswith('create_'):
-            return self._create_file_generator(component_spec)
+            return self._create_file_generator(component_spec, artifacts_dir)
         elif component_spec.type.startswith('run_'):
             return self._create_infrastructure_component(component_spec)
         else:
             raise ValueError(f"Unknown component type: {component_spec.type}")
     
-    def _create_file_generator(self, component_spec: ComponentSpec):
+    def _create_file_generator(self, component_spec: ComponentSpec, artifacts_dir: str = None):
         """Create file generator for component."""
         
         generator_class = self._generators.get(component_spec.type)
         if not generator_class:
             raise ValueError(f"No generator available for type: {component_spec.type}")
         
-        return generator_class()
+        return generator_class(base_dir=artifacts_dir)
     
     def _create_infrastructure_component(self, component_spec: ComponentSpec):
         """Create infrastructure component (future implementation)."""

@@ -47,6 +47,10 @@ class TestRunner:
         # Test run info
         self.test_id = None
         self.test_dir = None
+        
+        # Progressive writing handles
+        self.responses_file = None
+        self.conversations_dir = None
     
     def sanitize_label(self, label: str) -> str:
         """
@@ -187,24 +191,19 @@ class TestRunner:
         print(f"💾 Saved precheck file: {precheck_file}")
         print()
         
-        # Execute questions against LLM
-        print("🤖 Executing questions against LLM...")
-        responses, conversations = self._execute_questions(precheck_entries, max_retries, max_llm_rounds, retry_delay, api_endpoint)
-        
-        # Save responses file
-        responses_file = self.test_dir / "responses.jsonl"
-        self._save_responses(responses, str(responses_file))
-        print(f"💾 Saved responses file: {responses_file}")
-        
-        # Save conversation files
-        conversations_dir = self.test_dir / "conversations"
-        conversations_dir.mkdir(exist_ok=True)
-        self._save_conversations(conversations, conversations_dir)
-        print(f"💾 Saved {len(conversations)} conversation files: {conversations_dir}")
+        # Initialize progressive writing
+        print("📁 Setting up progressive result writing...")
+        self._initialize_progressive_writers()
         print()
         
-        # Generate summary
-        self._generate_test_summary()
+        # Execute questions against LLM with progressive writing
+        print("🤖 Executing questions against LLM...")
+        completed_count = self._execute_questions(precheck_entries, max_retries, max_llm_rounds, retry_delay, api_endpoint)
+        
+        # Finalize progressive writing and generate summary
+        print(f"💾 Results written progressively - {completed_count} items completed")
+        print()
+        self._finalize_progressive_results()
         
         print("🎉 Test run completed successfully!")
         print(f"📁 Results saved in: {self.test_dir}")
@@ -213,7 +212,7 @@ class TestRunner:
             'test_id': test_id,
             'test_dir': str(self.test_dir),
             'precheck_file': str(precheck_file),
-            'responses_file': str(responses_file)
+            'responses_file': str(self.test_dir / "responses.jsonl")
         }
     
     def _setup_question_sandbox(self, precheck_entry: Dict[str, Any]) -> Dict[str, Any]:
@@ -299,12 +298,54 @@ class TestRunner:
         
         return sandbox_result
     
+    def _initialize_progressive_writers(self):
+        """Set up files and directories for progressive result writing."""
+        # Create and open responses.jsonl for writing
+        responses_file_path = self.test_dir / "responses.jsonl"
+        self.responses_file = responses_file_path.open('w', encoding='utf-8')
+        
+        # Create conversations directory
+        self.conversations_dir = self.test_dir / "conversations"
+        self.conversations_dir.mkdir(exist_ok=True)
+    
+    def _write_result_immediately(self, response_entry: Dict[str, Any], conversation_entry: Dict[str, Any]):
+        """Write individual result immediately after question completion."""
+        # Write to responses.jsonl immediately
+        try:
+            self.responses_file.write(json.dumps(response_entry) + '\n')
+            self.responses_file.flush()  # Force write to disk
+        except Exception as e:
+            print(f"⚠️  Failed to write response to JSONL: {e}")
+            # Continue execution - don't fail entire test
+        
+        # Write individual conversation file immediately
+        try:
+            question_id = conversation_entry['question_id']
+            sample_number = conversation_entry['sample_number']
+            filename = f"q{question_id}_s{sample_number}.json"
+            conversation_file = self.conversations_dir / filename
+            
+            with open(conversation_file, 'w', encoding='utf-8') as f:
+                json.dump(conversation_entry, f, indent=2)
+        except Exception as e:
+            print(f"⚠️  Failed to write conversation file: {e}")
+            # Continue execution - don't fail entire test
+    
+    def _finalize_progressive_results(self):
+        """Close file handles and finalize progressive writing."""
+        # Close progressive file handles
+        if self.responses_file:
+            self.responses_file.close()
+            self.responses_file = None
+            
+        # Generate final test summary (same as current implementation)
+        self._generate_test_summary()
+    
     def _execute_questions(self, precheck_entries: List[Dict[str, Any]], 
-                          max_retries: int, max_llm_rounds: int, retry_delay: float, api_endpoint: str = None) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        """Execute all questions against the LLM."""
-        responses = []
-        conversations = []
+                          max_retries: int, max_llm_rounds: int, retry_delay: float, api_endpoint: str = None) -> int:
+        """Execute all questions against the LLM with progressive result writing."""
         total_questions = len(precheck_entries)
+        completed_count = 0
             
         for i, entry in enumerate(precheck_entries, 1):
             question_id = entry['question_id']
@@ -364,8 +405,9 @@ class TestRunner:
                     'model_info': result.get('model_info')
                 }
                 
-                responses.append(response_entry)
-                conversations.append(conversation_entry)
+                # Write results immediately instead of storing in memory
+                self._write_result_immediately(response_entry, conversation_entry)
+                completed_count += 1
                 print(" ✅")
                 
             except Exception as e:
@@ -374,27 +416,8 @@ class TestRunner:
                 print(f"   🛑 Aborting test run (fail-fast strategy)")
                 raise Exception(f"Test run aborted due to LLM execution failure: {e}")
         
-        print(f"\n🎯 Executed {len(responses)} questions successfully")
-        return responses, conversations
-    
-    def _save_responses(self, responses: List[Dict[str, Any]], output_file: str):
-        """Save responses to JSONL file."""
-        with open(output_file, 'w', encoding='utf-8') as f:
-            for response in responses:
-                f.write(json.dumps(response) + '\n')
-    
-    def _save_conversations(self, conversations: List[Dict[str, Any]], conversations_dir: Path):
-        """Save conversation files to individual JSON files."""
-        for conversation in conversations:
-            question_id = conversation['question_id']
-            sample_number = conversation['sample_number']
-            
-            # Create filename: q1_s1.json, q2_s3.json, etc.
-            filename = f"q{question_id}_s{sample_number}.json"
-            conversation_file = conversations_dir / filename
-            
-            with open(conversation_file, 'w', encoding='utf-8') as f:
-                json.dump(conversation, f, indent=2)
+        print(f"\n🎯 Executed {completed_count} questions successfully")
+        return completed_count
     
     def _generate_test_summary(self):
         """Generate and save test run summary."""

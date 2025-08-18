@@ -264,11 +264,12 @@ class TestDefinitionParser:
                 raise ValueError(f"Duplicate question_id: {question_id}")
             seen_question_ids.add(question_id)
             
-            # Parse sandbox setup (new syntax only - components array required)
+            # Parse sandbox setup (optional - some tests don't need file generation)
             sandbox_components = None
             
             if 'sandbox_setup' in test_data:
                 sandbox_data = test_data['sandbox_setup']
+                
                 if not isinstance(sandbox_data, dict):
                     raise ValueError(f"Test {i}: 'sandbox_setup' must be an object")
                 

@@ -114,11 +114,11 @@ class PrecheckGenerator:
         Returns:
             Dictionary with sandbox-related fields to add to precheck entry
         """
-        if not test_def.sandbox_setup:
+        if not test_def.sandbox_components:
             return {}
         
         result = {
-            'sandbox_setup': test_def.sandbox_setup.to_dict(),
+            'sandbox_components': [comp.to_dict() for comp in test_def.sandbox_components],
             'sandbox_generation': {}
         }
         
@@ -129,39 +129,49 @@ class PrecheckGenerator:
             # Get entity values from precheck entry
             entity_values = {k: v for k, v in precheck_entry.items() if k.startswith('entity')}
             
-            # Process sandbox setup templates
-            setup_fields = {
-                'target_file': test_def.sandbox_setup.target_file or '',
-                'content': str(test_def.sandbox_setup.content or {}),
-                'clutter': str(test_def.sandbox_setup.clutter or {})
-            }
+            # Process each sandbox component
+            all_files_created = []
+            all_errors = []
+            components_info = []
             
-            # Use manual entity substitution and template substitutions for consistency
-            target_file = setup_fields['target_file']
-            target_file = self.parser.substitute_artifacts(target_file, None)  # Use config artifacts dir
-            target_file = self.entity_pool.substitute_with_entities(target_file, entity_values)
-            target_file = self.parser.substitute_qs_id(target_file, question_id, sample_number)
-            
-            content_spec = eval(setup_fields['content']) if setup_fields['content'] != '{}' else {}
-            clutter_spec = eval(setup_fields['clutter']) if setup_fields['clutter'] != '{}' else None
-            
-            # Create file generator
-            generator_type = test_def.sandbox_setup.type
-            file_generator = FileGeneratorFactory.create_generator(generator_type, str(self.base_dir))
-            
-            # Generate files during precheck generation
-            generation_result = file_generator.generate(
-                target_file=target_file,
-                content_spec=content_spec,
-                clutter_spec=clutter_spec
-            )
+            for component in test_def.sandbox_components:
+                # Process sandbox component templates
+                target_file = component.target_file or ''
+                target_file = self.parser.substitute_artifacts(target_file, None)  # Use config artifacts dir
+                target_file = self.entity_pool.substitute_with_entities(target_file, entity_values)
+                target_file = self.parser.substitute_qs_id(target_file, question_id, sample_number)
+                
+                content_spec = component.content or {}
+                
+                # Create file generator
+                generator_type = component.type
+                file_generator = FileGeneratorFactory.create_generator(generator_type, str(self.base_dir))
+                
+                # Generate files during precheck generation
+                generation_result = file_generator.generate(
+                    target_file=target_file,
+                    content_spec=content_spec,
+                    clutter_spec=None  # Components don't use clutter
+                )
+                
+                # Collect results from this component
+                all_files_created.extend(generation_result['files_created'])
+                all_errors.extend(generation_result.get('errors', []))
+                
+                components_info.append({
+                    'name': component.name,
+                    'type': component.type,
+                    'target_file_resolved': target_file,
+                    'files_created': generation_result['files_created'],
+                    'errors': generation_result.get('errors', [])
+                })
             
             # Store generation results
             result['sandbox_generation'] = {
-                'target_file_resolved': target_file,
-                'files_created': generation_result['files_created'],
-                'generation_successful': len(generation_result.get('errors', [])) == 0,
-                'errors': generation_result.get('errors', []),
+                'components': components_info,
+                'all_files_created': all_files_created,
+                'generation_successful': len(all_errors) == 0,
+                'errors': all_errors,
                 'timestamp': datetime.now().isoformat()
             }
             
@@ -181,10 +191,8 @@ class PrecheckGenerator:
         question_id = precheck_entry['question_id']
         sample_number = precheck_entry['sample_number']
         
-        # Get the resolved target file path if sandbox setup exists
-        target_file_path = None
-        if 'sandbox_generation' in precheck_entry:
-            target_file_path = precheck_entry['sandbox_generation'].get('target_file_resolved')
+        # Get sandbox components for template function resolution
+        sandbox_components = test_def.sandbox_components
         
         if test_def.file_to_read:
             substituted_file = self.entity_pool.substitute_with_entities(
@@ -202,7 +210,7 @@ class PrecheckGenerator:
                 )
                 # Apply template substitutions and evaluate template functions
                 substituted_expected_content = self._evaluate_template_functions(
-                    substituted_expected_content, question_id, sample_number, target_file_path
+                    substituted_expected_content, question_id, sample_number, sandbox_components
                 )
                 precheck_entry['expected_content'] = substituted_expected_content
         
@@ -230,19 +238,19 @@ class PrecheckGenerator:
             )
             # Apply template substitutions and evaluate template functions with TARGET_FILE support
             substituted_response = self._evaluate_template_functions(
-                substituted_response, question_id, sample_number, target_file_path
+                substituted_response, question_id, sample_number, sandbox_components
             )
             precheck_entry['expected_response'] = substituted_response
     def _evaluate_template_functions(self, text: str, question_id: int, sample_number: int, 
-                                    target_file_path: str = None) -> str:
+                                    components=None) -> str:
         """
         Evaluate template functions in text after applying template substitutions.
         
         Args:
-            text: Text that may contain template functions like {{file_line:3:path}}
+            text: Text that may contain template functions like {{csv_count:col:TARGET_FILE[component_name]}}
             question_id: Question ID for {{qs_id}} substitution
             sample_number: Sample number for {{qs_id}} substitution
-            target_file_path: Path to substitute for TARGET_FILE keyword (optional)
+            components: List of ComponentSpec objects for TARGET_FILE[component_name] resolution
             
         Returns:
             Text with template functions evaluated to their actual values
@@ -257,9 +265,9 @@ class PrecheckGenerator:
             # Then apply {{qs_id}} substitution
             processed_text = self.parser.substitute_qs_id(processed_text, question_id, sample_number)
             
-            # Finally evaluate any template functions with TARGET_FILE support
+            # Finally evaluate any template functions with TARGET_FILE[component_name] support
             result = self.template_processor.template_functions.evaluate_all_functions(
-                processed_text, target_file_path
+                processed_text, components=components
             )
             
             return result

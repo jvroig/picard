@@ -210,7 +210,7 @@ class PrecheckGenerator:
                 )
                 # Apply template substitutions and evaluate template functions
                 substituted_expected_content = self._evaluate_template_functions(
-                    substituted_expected_content, question_id, sample_number, sandbox_components
+                    substituted_expected_content, question_id, sample_number, sandbox_components, entity_values
                 )
                 precheck_entry['expected_content'] = substituted_expected_content
         
@@ -238,11 +238,11 @@ class PrecheckGenerator:
             )
             # Apply template substitutions and evaluate template functions with TARGET_FILE support
             substituted_response = self._evaluate_template_functions(
-                substituted_response, question_id, sample_number, sandbox_components
+                substituted_response, question_id, sample_number, sandbox_components, entity_values
             )
             precheck_entry['expected_response'] = substituted_response
     def _evaluate_template_functions(self, text: str, question_id: int, sample_number: int, 
-                                    components=None) -> str:
+                                    components=None, entity_values=None) -> str:
         """
         Evaluate template functions in text after applying template substitutions.
         
@@ -266,16 +266,47 @@ class PrecheckGenerator:
             processed_text = self.parser.substitute_qs_id(processed_text, question_id, sample_number)
             
             # Finally evaluate any template functions with TARGET_FILE[component_name] support
-            # Create a new TemplateFunctions instance with the correct components for this evaluation
+            # Create resolved components with actual file paths (not template strings)
+            resolved_components = []
+            if components:
+                for component in components:
+                    # Resolve the target_file path using the same logic as sandbox generation
+                    if component.target_file:
+                        resolved_target_file = component.target_file
+                        resolved_target_file = self.parser.substitute_artifacts(resolved_target_file, None)
+                        resolved_target_file = self.entity_pool.substitute_with_entities(resolved_target_file, entity_values or {})
+                        resolved_target_file = self.parser.substitute_qs_id(resolved_target_file, question_id, sample_number)
+                        
+                        # Create a new component with resolved path
+                        from test_definition_parser import ComponentSpec
+                        resolved_component = ComponentSpec(
+                            type=component.type,
+                            name=component.name,
+                            target_file=resolved_target_file,
+                            content=component.content,
+                            config=component.config,
+                            depends_on=component.depends_on
+                        )
+                        resolved_components.append(resolved_component)
+                    else:
+                        resolved_components.append(component)
+            
+            # Create a new TemplateFunctions instance with the resolved components
             from template_functions import TemplateFunctions
-            template_functions = TemplateFunctions(base_dir=str(self.base_dir), components=components)
+            template_functions = TemplateFunctions(base_dir=str(self.base_dir), components=resolved_components)
+            
             result = template_functions.evaluate_all_functions(processed_text)
             
             return result
             
         except Exception as e:
-            # If template function evaluation fails, return the text with basic substitutions
+            # If template function evaluation fails, log the error and return the text with basic substitutions
             # This allows the system to continue even if files don't exist yet
+            print(f"WARNING: Template function evaluation failed: {e}")
+            print(f"  Text: {text}")
+            print(f"  Components: {components}")
+            import traceback
+            traceback.print_exc()
             processed_text = self.parser.substitute_artifacts(text)
             return self.parser.substitute_qs_id(processed_text, question_id, sample_number)
     

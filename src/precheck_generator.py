@@ -266,9 +266,10 @@ class PrecheckGenerator:
             processed_text = self.parser.substitute_qs_id(processed_text, question_id, sample_number)
             
             # Finally evaluate any template functions with TARGET_FILE[component_name] support
-            result = self.template_processor.template_functions.evaluate_all_functions(
-                processed_text, components=components
-            )
+            # Create a new TemplateFunctions instance with the correct components for this evaluation
+            from template_functions import TemplateFunctions
+            template_functions = TemplateFunctions(base_dir=str(self.base_dir), components=components)
+            result = template_functions.evaluate_all_functions(processed_text)
             
             return result
             

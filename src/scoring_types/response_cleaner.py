@@ -70,7 +70,7 @@ class ResponseCleaner:
         return final_answer
     
     @staticmethod
-    def strip_thinking_tags(text):
+    def strip_thinking_tags(text, preserve_whitespace=False):
         """
         Remove thinking/reasoning tags and their content from text.
         
@@ -82,9 +82,11 @@ class ResponseCleaner:
         - <internal>...</internal>
         - Case insensitive matching
         - Multiline content support
+        - Proper whitespace handling
         
         Args:
             text (str): Input text that may contain thinking tags
+            preserve_whitespace (bool): If True, preserve original whitespace around tags
             
         Returns:
             str: Text with thinking tags and their content removed
@@ -92,22 +94,20 @@ class ResponseCleaner:
         if not text:
             return text
             
-        # Define patterns for common thinking tag formats
-        thinking_patterns = [
-            r'<thinking>.*?</thinking>',
-            r'<think>.*?</think>', 
-            r'<reasoning>.*?</reasoning>',
-            r'<thought>.*?</thought>',
-            r'<internal>.*?</internal>',
-            r'<reflection>.*?</reflection>',
-            r'<analysis>.*?</analysis>'
-        ]
-        
-        # Apply each pattern with case-insensitive matching and DOTALL flag
-        # DOTALL makes . match newlines too
-        cleaned_text = text
-        for pattern in thinking_patterns:
-            cleaned_text = re.sub(pattern, '', cleaned_text, flags=re.IGNORECASE | re.DOTALL)
+        if preserve_whitespace:
+            # Think tags will be at the beginning, no spaces before them
+            # Remove the think tag AND any spaces/newlines after the closing tag
+            thinking_pattern = r'<(?:thinking|think|reasoning|thought|internal|reflection|analysis)>.*?</(?:thinking|think|reasoning|thought|internal|reflection|analysis)>\s*'
+            
+            # Remove thinking tags and trailing spaces, but preserve other whitespace
+            cleaned_text = re.sub(thinking_pattern, '', text, flags=re.IGNORECASE | re.DOTALL)
+        else:
+            # Pattern to match thinking tags with surrounding whitespace
+            # Replace tag and surrounding spaces with single space to maintain word separation
+            thinking_pattern = r'\s*<(?:thinking|think|reasoning|thought|internal|reflection|analysis)>.*?</(?:thinking|think|reasoning|thought|internal|reflection|analysis)>\s*'
+            
+            # Remove thinking tags and replace with single space
+            cleaned_text = re.sub(thinking_pattern, ' ', text, flags=re.IGNORECASE | re.DOTALL)
         
         return cleaned_text
     
@@ -139,10 +139,15 @@ class ResponseCleaner:
             cleaned = ResponseCleaner.strip_harmony_format(cleaned)
         elif strip_thinking:
             # Only apply thinking tag removal if not Harmony format
-            cleaned = ResponseCleaner.strip_thinking_tags(cleaned)
+            # Preserve whitespace when strip_whitespace=False
+            cleaned = ResponseCleaner.strip_thinking_tags(cleaned, preserve_whitespace=not strip_whitespace)
         
-        # Strip whitespace last
+        # Handle whitespace normalization and stripping
         if strip_whitespace:
+            # Only normalize internal whitespace if we actually processed something
+            if cleaned != text:  # Something was changed (tags were removed)
+                cleaned = re.sub(r'\s+', ' ', cleaned)
+            # Always strip leading/trailing whitespace when strip_whitespace=True
             cleaned = cleaned.strip()
             
         return cleaned
@@ -165,6 +170,6 @@ class ResponseCleaner:
             return False
             
         original_length = len(text)
-        cleaned_length = len(ResponseCleaner.strip_thinking_tags(text))
+        cleaned_length = len(ResponseCleaner.strip_thinking_tags(text, preserve_whitespace=False))
         
         return original_length != cleaned_length

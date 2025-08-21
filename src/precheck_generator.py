@@ -65,8 +65,8 @@ class PrecheckGenerator:
         
         for test_def in self.test_definitions:
             for sample_num in range(1, test_def.samples + 1):
-                # Generate random entities for this sample
-                result = self.entity_pool.substitute_template(
+                # Generate random entities for this sample using enhanced substitution
+                result = self.entity_pool.substitute_template_enhanced(
                     test_def.template, 
                     test_def.expected_structure
                 )

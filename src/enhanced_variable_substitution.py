@@ -9,7 +9,7 @@ import re
 import random
 from typing import Dict, Any, List
 from pathlib import Path
-from file_generators import DataGenerator
+from data_generator import DataGenerator
 from entity_pool import EntityPool
 
 

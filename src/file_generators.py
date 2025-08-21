@@ -1171,11 +1171,8 @@ class JSONFileGenerator(BaseFileGenerator):
         count_spec = schema.get('count', 5)
         items_schema = schema.get('items', 'lorem_words')
         
-        # Handle count as range [min, max] or single value
-        if isinstance(count_spec, list) and len(count_spec) == 2:
-            count = random.randint(count_spec[0], count_spec[1])
-        else:
-            count = int(count_spec)
+        # Use {{numeric}} variables for randomization: count: {{number1:2:4}}
+        count = int(count_spec)
         
         result = []
         for _ in range(count):

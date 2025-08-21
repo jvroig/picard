@@ -380,6 +380,7 @@ class BaseFileGenerator(ABC):
         self.base_dir = Path(base_dir)
         self.lorem_generator = LoremGenerator()
         self.data_generator = DataGenerator()
+        self.entity_pool = EntityPool()
     
     @abstractmethod
     def generate(self, target_file: str, content_spec: Dict[str, Any], 
@@ -430,6 +431,20 @@ class BaseFileGenerator(ABC):
                 return self.lorem_generator.generate_words(count)
         
         return re.sub(lorem_pattern, replace_lorem, content)
+    
+    def _process_content_spec_variables(self, content_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """Process {{numeric}} variables in content specification recursively."""
+        import json
+        
+        # Convert to JSON string to handle all nested structures uniformly
+        spec_json = json.dumps(content_spec)
+        
+        # Process {{numeric}} variables using the entity pool
+        result = self.entity_pool.substitute_template_enhanced(spec_json)
+        processed_json = result['substituted']
+        
+        # Convert back to dictionary
+        return json.loads(processed_json)
 
 
 class TextFileGenerator(BaseFileGenerator):
@@ -1082,8 +1097,11 @@ class JSONFileGenerator(BaseFileGenerator):
         }
         
         try:
+            # Process {{numeric}} variables in content_spec
+            processed_content_spec = self._process_content_spec_variables(content_spec)
+            
             # Generate JSON content
-            json_data = self._generate_json_content(content_spec)
+            json_data = self._generate_json_content(processed_content_spec)
             
             # Write JSON file
             target_path = self._resolve_path(target_file)
@@ -1312,8 +1330,11 @@ class YAMLFileGenerator(BaseFileGenerator):
         }
         
         try:
+            # Process {{numeric}} variables in content_spec
+            processed_content_spec = self._process_content_spec_variables(content_spec)
+            
             # Generate YAML content (reuse JSON schema logic)
-            yaml_data = self._generate_yaml_content(content_spec)
+            yaml_data = self._generate_yaml_content(processed_content_spec)
             
             # Write YAML file with consistent formatting
             target_path = self._resolve_path(target_file)
@@ -1550,8 +1571,11 @@ class XMLFileGenerator(BaseFileGenerator):
         }
         
         try:
+            # Process {{numeric}} variables in content_spec
+            processed_content_spec = self._process_content_spec_variables(content_spec)
+            
             # Generate XML content
-            xml_root = self._generate_xml_content(content_spec)
+            xml_root = self._generate_xml_content(processed_content_spec)
             
             # Write XML file with pretty formatting
             target_path = self._resolve_path(target_file)

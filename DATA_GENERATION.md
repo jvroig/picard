@@ -655,7 +655,7 @@ content:
       name: "company"
     services:
       type: "array"
-      count: [2, 4]
+      count: "{{number1:2:4}}"
       items:
         name: "product"
         enabled: "boolean"
@@ -680,7 +680,7 @@ content:
             password: "id"
         features:
           type: "array"
-          count: [2, 5]
+          count: "{{number2:2:5}}"
           items:
             name: "product"
             budget: "currency"
@@ -703,7 +703,7 @@ content:
           phone: "phone"
         members:
           type: "array"
-          count: [3, 8]
+          count: "{{number3:3:8}}"
           items:
             name: "person_name"
             role: "category"
@@ -739,7 +739,7 @@ content:
         name: "company"
       services:
         type: "array"
-        count: [2, 4]
+        count: "{{number4:2:4}}"
         items:
           name: "product"
           enabled: "boolean"
@@ -759,7 +759,7 @@ content:
   schema:
     products:
       type: "array"
-      count: [3, 6]
+      count: "{{number5:3:6}}"
       items:
         id: "id"
         name: "product"
@@ -785,7 +785,7 @@ content:
   schema:
     documents:
       type: "array"
-      count: [4, 7]
+      count: "{{number6:4:7}}"
       items:
         id: "id"
         title: "lorem_words"
@@ -797,7 +797,7 @@ content:
           size: "score"
           tags:
             type: "array"
-            count: [1, 3]
+            count: "{{number7:1:3}}"
             items: "lorem_word"
         processing:
           stage: "category"

@@ -248,8 +248,11 @@ class CSVFileGenerator(BaseFileGenerator):
         }
         
         try:
+            # Process {{numeric}} variables in content_spec
+            processed_content_spec = self._process_content_spec_variables(content_spec)
+            
             # Generate CSV content
-            csv_data = self._generate_csv_content(content_spec)
+            csv_data = self._generate_csv_content(processed_content_spec)
             
             # Write CSV file
             target_path = self._resolve_path(target_file)
@@ -282,7 +285,14 @@ class CSVFileGenerator(BaseFileGenerator):
     def _generate_csv_content(self, content_spec: Dict[str, Any]) -> List[List[str]]:
         """Generate CSV content based on specification."""
         headers = content_spec.get('headers', ['name', 'email', 'age'])
-        row_count = content_spec.get('rows', 10)
+        raw_row_count = content_spec.get('rows', 10)
+        
+        # Convert row count to integer if it's a string (from {{numeric}} variables)
+        if isinstance(raw_row_count, str):
+            row_count = int(raw_row_count)
+        else:
+            row_count = raw_row_count
+            
         explicit_types = content_spec.get('header_types', None)
         
         # Start with headers
@@ -397,8 +407,11 @@ class SQLiteFileGenerator(BaseFileGenerator):
             # Reset generated tables cache for this generation
             self.generated_tables = {}
             
+            # Process {{numeric}} variables in content_spec
+            processed_content_spec = self._process_content_spec_variables(content_spec)
+            
             # Generate SQLite database
-            db_data = self._generate_sqlite_content(content_spec)
+            db_data = self._generate_sqlite_content(processed_content_spec)
             
             # Create SQLite database file
             target_path = self._resolve_path(target_file)
@@ -471,7 +484,13 @@ class SQLiteFileGenerator(BaseFileGenerator):
         for table_spec in tables_spec:
             table_name = table_spec['name']
             columns_spec = table_spec['columns']
-            row_count = table_spec.get('rows', 5)
+            raw_row_count = table_spec.get('rows', 5)
+            
+            # Convert row count to integer if it's a string (from {{numeric}} variables)
+            if isinstance(raw_row_count, str):
+                row_count = int(raw_row_count)
+            else:
+                row_count = raw_row_count
             
             # Process column definitions
             columns = []

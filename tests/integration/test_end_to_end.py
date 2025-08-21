@@ -98,13 +98,13 @@ class TestJSONWorkflows:
         schema = {
             'departments': {
                 'type': 'array',
-                'count': [2, 4],
+                'count': '{{number1:2:4}}',
                 'items': {
                     'id': 'id',
                     'name': 'department',
                     'employees': {
                         'type': 'array',
-                        'count': [1, 3],
+                        'count': '{{number2:1:3}}',
                         'items': {
                             'name': 'person_name',
                             'role': 'lorem_word'
@@ -467,7 +467,7 @@ class TestYAMLWorkflows:
                     },
                     'services': {
                         'type': 'array',
-                        'count': [2, 4],
+                        'count': '{{number3:2:4}}',
                         'items': {
                             'name': 'product',
                             'enabled': {'type': 'boolean'},
@@ -651,13 +651,13 @@ class TestXMLWorkflows:
                         'name': 'company',
                         'departments': {
                             'type': 'array',
-                            'count': [3, 5],
+                            'count': '{{number4:3:5}}',
                             'items': {
                                 'name': 'department',
                                 'budget': {'type': 'integer', 'minimum': 100000, 'maximum': 500000},
                                 'employees': {
                                     'type': 'array',
-                                    'count': [2, 6],
+                                    'count': '{{number5:2:6}}',
                                     'items': {
                                         'name': 'person_name',
                                         'role': 'category',
@@ -745,7 +745,7 @@ class TestXMLWorkflows:
                             'is_public': {'type': 'boolean'},
                             'tags': {
                                 'type': 'array',
-                                'count': [1, 4],
+                                'count': '{{number6:1:4}}',
                                 'items': 'lorem_word'
                             }
                         }

@@ -109,7 +109,10 @@ class TemplateProcessor:
     def process_multiple_fields(self, fields: Dict[str, str], question_id: int, sample_number: int,
                                expected_structure: List[str] = None) -> Dict[str, Any]:
         """
-        Process multiple template fields using the same entity values.
+        Process multiple template fields using consistent enhanced variable substitution.
+        
+        Uses the enhanced substitution system to support semantic, numeric, and entity variables
+        while maintaining consistency across all fields (same variable produces same value).
         
         Args:
             fields: Dict mapping field names to template strings
@@ -120,22 +123,31 @@ class TemplateProcessor:
         Returns:
             Dictionary containing processed results for all fields
         """
-        # First, determine all unique entities needed across all fields
-        all_templates = list(fields.values())
-        if expected_structure:
-            all_templates.extend(expected_structure)
+        # Use enhanced substitution for all fields with shared variable state
+        # This ensures consistent values across all fields (same {{number1:10:50}} produces same value)
         
-        # Process the first template to get entity values
-        first_field = next(iter(fields.keys()))
-        first_result = self.process_template(fields[first_field], question_id, sample_number, expected_structure)
-        entity_values = first_result['entities']
-        
-        # Now process all fields using the same entity values
-        results = {}
+        # Step 1: {{qs_id}} substitution for all fields
+        qs_id_substituted = {}
         for field_name, template in fields.items():
-            # Manual processing using same entities
-            current_template = TestDefinitionParser.substitute_qs_id(template, question_id, sample_number)
-            current_template = self.entity_pool.substitute_with_entities(current_template, entity_values)
+            qs_id_substituted[field_name] = TestDefinitionParser.substitute_qs_id(template, question_id, sample_number)
+        
+        # Step 2: Enhanced variable substitution with shared state
+        # Process all templates with the same enhanced substitution instance to maintain consistency
+        enhanced_result = self.entity_pool.substitute_template_enhanced(
+            '\n'.join(qs_id_substituted.values()), expected_structure
+        )
+        
+        # Split the results back to individual fields
+        substituted_lines = enhanced_result['substituted'].split('\n')
+        field_names = list(qs_id_substituted.keys())
+        
+        # Step 3: Template function evaluation for each field
+        results = {}
+        all_variables = enhanced_result.get('variables', {})
+        legacy_entities = enhanced_result.get('entities', {})
+        
+        for i, field_name in enumerate(field_names):
+            current_template = substituted_lines[i] if i < len(substituted_lines) else qs_id_substituted[field_name]
             
             # Handle template functions
             template_function_results = {}
@@ -163,15 +175,16 @@ class TemplateProcessor:
                 template_function_results['error'] = str(e)
             
             results[field_name] = {
-                'original_template': template,
+                'original_template': fields[field_name],
                 'substituted': current_template,
                 'has_template_functions': has_template_functions,
                 'template_function_results': template_function_results
             }
         
-        # Add shared entity information
+        # Add shared variable information (enhanced)
         results['_shared'] = {
-            'entities': entity_values,
+            'entities': legacy_entities,  # For backwards compatibility
+            'variables': all_variables,   # All enhanced variables
             'question_id': question_id,
             'sample_number': sample_number,
             'qs_id': f"q{question_id}_s{sample_number}"

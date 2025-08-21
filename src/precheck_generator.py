@@ -89,32 +89,34 @@ class PrecheckGenerator:
                 fully_substituted_question = self.parser.substitute_qs_id(fully_substituted_question, test_def.question_id, sample_num)
                 precheck_entry['substituted_question'] = fully_substituted_question
                 
-                # Handle sandbox setup and file generation if needed
-                # This must happen BEFORE scoring properties because template functions need the files
-                sandbox_result = self._handle_sandbox_generation(precheck_entry, test_def)
-                if sandbox_result:
-                    precheck_entry.update(sandbox_result)
-                
-                # Add scoring-specific properties with template function evaluation
-                # Pass ALL variables from the initial substitution to ensure consistency
+                # Prepare ALL variables for both sandbox generation and scoring properties
                 all_variables = {}
                 if 'entities' in result:
                     all_variables.update(result['entities'])
                 if 'variables' in result:
                     all_variables.update(result['variables'])
+                
+                # Handle sandbox setup and file generation if needed
+                # This must happen BEFORE scoring properties because template functions need the files
+                sandbox_result = self._handle_sandbox_generation(precheck_entry, test_def, all_variables)
+                if sandbox_result:
+                    precheck_entry.update(sandbox_result)
+                
+                # Add scoring-specific properties with template function evaluation
                 self._add_scoring_properties(precheck_entry, test_def, all_variables)
                 
                 precheck_entries.append(precheck_entry)
         
         return precheck_entries
     
-    def _handle_sandbox_generation(self, precheck_entry: Dict[str, Any], test_def) -> Dict[str, Any]:
+    def _handle_sandbox_generation(self, precheck_entry: Dict[str, Any], test_def, all_variables: Dict[str, str]) -> Dict[str, Any]:
         """
         Handle sandbox file generation for questions that need it.
         
         Args:
             precheck_entry: The precheck entry being built
             test_def: Test definition object
+            all_variables: All variables (entities + enhanced variables) for substitution
             
         Returns:
             Dictionary with sandbox-related fields to add to precheck entry
@@ -131,8 +133,8 @@ class PrecheckGenerator:
             question_id = precheck_entry['question_id']
             sample_number = precheck_entry['sample_number']
             
-            # Get entity values from precheck entry
-            entity_values = {k: v for k, v in precheck_entry.items() if k.startswith('entity')}
+            # Use all variables (entities + enhanced variables) for consistent substitution
+            entity_values = all_variables
             
             # Process each sandbox component
             all_files_created = []

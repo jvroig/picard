@@ -65,7 +65,7 @@ class TestYAMLFileGenerator:
         schema = {
             'users': {
                 'type': 'array',
-                'count': [2, 4],  # Between 2-4 items
+                'count': '{{number1:2:4}}',  # Between 2-4 items using {{numeric}} variables
                 'items': {
                     'id': 'id',
                     'name': 'person_name'

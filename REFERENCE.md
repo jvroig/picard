@@ -1768,7 +1768,7 @@ content:
   schema:
     projects:
       type: "array"
-      count: [2, 5]                # Random count between 2-5
+      count: "{{number1:2:5}}"     # Random count between 2-5 using {{numeric}} variables
       items:
         name: "product"
         budget: "currency"
@@ -1812,7 +1812,7 @@ sandbox_setup:
       company: "company"
       departments:
         type: "array"
-        count: [2, 4]
+        count: "{{number2:2:4}}"
         items:
           name: "department"
           manager:
@@ -1820,14 +1820,14 @@ sandbox_setup:
             email: "email"
           employees:
             type: "array"
-            count: [5, 15]
+            count: "{{number3:5:15}}"
             items:
               name: "person_name"
               salary: "salary"
               experience: "experience"
               projects:
                 type: "array"
-                count: [1, 3]
+                count: "{{number4:1:3}}"
                 items:
                   name: "product"
                   budget:
@@ -1876,7 +1876,7 @@ sandbox_setup:
         name: "company"
       services:
         type: "array"
-        count: [2, 4]
+        count: "{{number5:2:4}}"
         items:
           name: "product"
           enabled: "boolean"
@@ -1926,7 +1926,7 @@ sandbox_setup:
                   maximum: 120
             features:
               type: "array"
-              count: [1, 3]
+              count: "{{number6:1:3}}"
               items: "product"
 ```
 
@@ -1951,7 +1951,7 @@ sandbox_setup:
             maximum: 200000
           members:
             type: "array"
-            count: [2, 8]
+            count: "{{number7:2:8}}"
             items:
               name: "person_name"
               role: "category"
@@ -1974,7 +1974,7 @@ sandbox_setup:
       company: "company"
       departments:
         type: "array"
-        count: [3, 5]
+        count: "{{number8:3:5}}"
         items:
           name: "department"
           manager:
@@ -2073,7 +2073,7 @@ content_spec:
           budget: {"type": "integer", "minimum": 100000, "maximum": 500000}
           employees:
             type: "array"
-            count: [2, 5]
+            count: "{{number9:2:5}}"
             items:
               name: "person_name"
               role: "category"
@@ -2114,7 +2114,7 @@ Arrays in XML are represented as container elements with `<item>` children:
 schema:
   products:
     type: "array"
-    count: [2, 4]        # Random count between 2-4
+    count: "{{number10:2:4}}"  # Random count between 2-4 using {{numeric}} variables
     items:
       name: "product"
       price: "price"

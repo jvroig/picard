@@ -143,7 +143,7 @@ class PrecheckGenerator:
                 # Process sandbox component templates
                 target_file = component.target_file or ''
                 target_file = self.parser.substitute_artifacts(target_file, None)  # Use config artifacts dir
-                target_file = self.entity_pool.substitute_with_entities(target_file, entity_values)
+                target_file = self._substitute_with_all_variables(target_file, entity_values)
                 target_file = self.parser.substitute_qs_id(target_file, question_id, sample_number)
                 
                 content_spec = component.content or {}
@@ -200,7 +200,7 @@ class PrecheckGenerator:
         sandbox_components = test_def.sandbox_components
         
         if test_def.file_to_read:
-            substituted_file = self.entity_pool.substitute_with_entities(
+            substituted_file = self._substitute_with_all_variables(
                 test_def.file_to_read, entity_values
             )
             # Apply template substitutions  
@@ -223,7 +223,7 @@ class PrecheckGenerator:
         if test_def.files_to_check:
             substituted_files = []
             for file_path in test_def.files_to_check:
-                substituted_file = self.entity_pool.substitute_with_entities(file_path, entity_values)
+                substituted_file = self._substitute_with_all_variables(file_path, entity_values)
                 substituted_file = self.parser.substitute_artifacts(substituted_file, None)
                 substituted_file = self.parser.substitute_qs_id(substituted_file, question_id, sample_number)
                 substituted_files.append(substituted_file)
@@ -232,14 +232,14 @@ class PrecheckGenerator:
         if test_def.expected_structure:
             substituted_structure = []
             for path in test_def.expected_structure:
-                substituted_path = self.entity_pool.substitute_with_entities(path, entity_values)
+                substituted_path = self._substitute_with_all_variables(path, entity_values)
                 substituted_path = self.parser.substitute_artifacts(substituted_path, None)
                 substituted_path = self.parser.substitute_qs_id(substituted_path, question_id, sample_number)
                 substituted_structure.append(substituted_path)
             precheck_entry['expected_paths'] = substituted_structure
         
         if test_def.expected_response:
-            substituted_response = self.entity_pool.substitute_with_entities(
+            substituted_response = self._substitute_with_all_variables(
                 test_def.expected_response, entity_values
             )
             # Apply template substitutions and evaluate template functions with TARGET_FILE support
@@ -280,7 +280,7 @@ class PrecheckGenerator:
                     if component.target_file:
                         resolved_target_file = component.target_file
                         resolved_target_file = self.parser.substitute_artifacts(resolved_target_file, None)
-                        resolved_target_file = self.entity_pool.substitute_with_entities(resolved_target_file, entity_values or {})
+                        resolved_target_file = self._substitute_with_all_variables(resolved_target_file, entity_values or {})
                         resolved_target_file = self.parser.substitute_qs_id(resolved_target_file, question_id, sample_number)
                         
                         # Create a new component with resolved path

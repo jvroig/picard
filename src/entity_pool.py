@@ -91,11 +91,17 @@ class EntityPool:
         """Get enhanced variable substitution instance (lazy loading)."""
         if self._enhanced_substitution is None:
             try:
+                # Try relative import first (for when running from src/)
                 from enhanced_variable_substitution import EnhancedVariableSubstitution
                 self._enhanced_substitution = EnhancedVariableSubstitution()
             except ImportError:
-                # Fall back to None if enhanced substitution not available
-                self._enhanced_substitution = None
+                try:
+                    # Try absolute import (for when running from project root)
+                    from src.enhanced_variable_substitution import EnhancedVariableSubstitution
+                    self._enhanced_substitution = EnhancedVariableSubstitution()
+                except ImportError:
+                    # Fall back to None if enhanced substitution not available
+                    self._enhanced_substitution = None
         return self._enhanced_substitution
     
     def substitute_template_enhanced(self, template: str, expected_structure: List[str] = None) -> Dict[str, Any]:

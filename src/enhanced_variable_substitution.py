@@ -9,8 +9,14 @@ import re
 import random
 from typing import Dict, Any, List
 from pathlib import Path
-from data_generator import DataGenerator
-from entity_pool import EntityPool
+try:
+    # Try relative imports first (for when running from src/)
+    from data_generator import DataGenerator
+    from entity_pool import EntityPool
+except ImportError:
+    # Try absolute imports (for when running from project root)
+    from src.data_generator import DataGenerator
+    from src.entity_pool import EntityPool
 
 
 class EnhancedVariableSubstitution:

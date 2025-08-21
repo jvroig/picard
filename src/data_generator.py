@@ -157,7 +157,10 @@ class DataGenerator:
         elif field_type == 'entity_pool':
             # Import entity pool and pick random word
             if self.entity_pool is None:
-                from entity_pool import EntityPool
+                try:
+                    from entity_pool import EntityPool
+                except ImportError:
+                    from src.entity_pool import EntityPool
                 self.entity_pool = EntityPool()
             return self.entity_pool.get_random_entity()
 

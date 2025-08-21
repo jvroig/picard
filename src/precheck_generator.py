@@ -96,8 +96,13 @@ class PrecheckGenerator:
                     precheck_entry.update(sandbox_result)
                 
                 # Add scoring-specific properties with template function evaluation
-                # Pass the entity values from the initial substitution to ensure consistency
-                self._add_scoring_properties(precheck_entry, test_def, result['entities'])
+                # Pass ALL variables from the initial substitution to ensure consistency
+                all_variables = {}
+                if 'entities' in result:
+                    all_variables.update(result['entities'])
+                if 'variables' in result:
+                    all_variables.update(result['variables'])
+                self._add_scoring_properties(precheck_entry, test_def, all_variables)
                 
                 precheck_entries.append(precheck_entry)
         
@@ -205,7 +210,8 @@ class PrecheckGenerator:
             
             # Handle expected_content substitution for readfile_stringmatch
             if test_def.scoring_type in ['readfile_stringmatch', 'readfile_jsonmatch'] and test_def.expected_content:
-                substituted_expected_content = self.entity_pool.substitute_with_entities(
+                # Use consistent variable substitution (both legacy entities and enhanced variables)
+                substituted_expected_content = self._substitute_with_all_variables(
                     test_def.expected_content, entity_values
                 )
                 # Apply template substitutions and evaluate template functions
@@ -338,6 +344,39 @@ class PrecheckGenerator:
             'entity_pool_size': self.entity_pool.count_entities(),
             'by_scoring_type': by_scoring_type
         }
+    
+    def _substitute_with_all_variables(self, template: str, all_variables: Dict[str, str]) -> str:
+        """
+        Substitute template with all variables (both legacy entities and enhanced variables).
+        
+        Args:
+            template: Template string containing variable placeholders
+            all_variables: Dictionary of all variable mappings
+            
+        Returns:
+            Template with all variables substituted
+        """
+        substituted = template
+        
+        # Substitute all variables in the template
+        for var_name, var_value in all_variables.items():
+            # Handle different variable formats
+            if var_name.startswith('semantic'):
+                # {{semantic1:city}} format
+                if ':' in var_name:
+                    placeholder = f"{{{{{var_name}}}}}"
+                    substituted = substituted.replace(placeholder, var_value)
+            elif var_name.startswith('number'):
+                # {{number1:15:35:integer}} format
+                if ':' in var_name:
+                    placeholder = f"{{{{{var_name}}}}}"
+                    substituted = substituted.replace(placeholder, var_value)
+            elif var_name.startswith('entity'):
+                # {{entity1}} format (legacy)
+                placeholder = f"{{{{{var_name}}}}}"
+                substituted = substituted.replace(placeholder, var_value)
+        
+        return substituted
 
 
 def main():

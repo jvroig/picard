@@ -325,12 +325,12 @@ class TestXMLFileGenerator:
                 'name': 'company',
                 'departments': {
                     'type': 'array',
-                    'count': [2, 3],
+                    'count': '{{number1:2:3}}',
                     'items': {
                         'name': 'department',
                         'employees': {
                             'type': 'array',
-                            'count': [1, 3],
+                            'count': '{{number2:1:3}}',
                             'items': {
                                 'name': 'person_name',
                                 'role': 'category',

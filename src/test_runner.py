@@ -358,7 +358,7 @@ class TestRunner:
             if 'sandbox_generation' in entry:
                 sandbox_gen = entry['sandbox_generation']
                 if sandbox_gen.get('generation_successful', False):
-                    files_count = len(sandbox_gen.get('files_created', []))
+                    files_count = len(sandbox_gen.get('all_files_created', []))
                     print(f" [Using {files_count} pre-generated files]", end="")
                 else:
                     print(f" [⚠️ Sandbox generation had errors]", end="")

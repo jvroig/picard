@@ -131,7 +131,7 @@ class TestRunner:
     
     def run_benchmark(self, test_definitions_file: str = None, 
                      sandbox_template: str = "clean_sandbox",
-                     max_retries: int = 3, max_llm_rounds: int = 20, retry_delay: float = 2.0,
+                     max_retries: int = 5, max_llm_rounds: int = 20, retry_delay: float = 30.0,
                      use_mock_llm: bool = False, api_endpoint: str = None,
                      label: str = "test") -> Dict[str, str]:
         """
@@ -140,9 +140,9 @@ class TestRunner:
         Args:
             test_definitions_file: Path to test definitions YAML file
             sandbox_template: Sandbox template to use
-            max_retries: Maximum retry attempts for failed LLM calls
+            max_retries: Maximum retry attempts for failed LLM calls (default: 5)
             max_llm_rounds: Maximum rounds of inference an LLM can attempt for each test item
-            retry_delay: Delay between retries in seconds
+            retry_delay: Delay between retries in seconds (default: 30.0 for rate limits)
             use_mock_llm: Whether to use mock LLM API or not
             api_endpoint: Optional API endpoint for real LLM
             label: Label for test run folder
@@ -477,15 +477,15 @@ Examples:
     parser.add_argument(
         '--retries', '-r',
         type=int,
-        default=3,
-        help='Maximum retry attempts for failed LLM calls (default: 3)'
+        default=5,
+        help='Maximum retry attempts for failed LLM calls (default: 5)'
     )
     
     parser.add_argument(
         '--delay',
         type=float,
-        default=2.0,
-        help='Delay between retries in seconds (default: 2.0)'
+        default=30.0,
+        help='Delay between retries in seconds (default: 30.0)'
     )
     
     parser.add_argument(

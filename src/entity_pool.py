@@ -127,6 +127,9 @@ class EntityPool:
             # Fall back to legacy substitution
             return self.substitute_template(template, expected_structure)
         
+        # Clear cache to ensure fresh randomization for each sample
+        enhanced_sub.clear_cache()
+        
         # Use enhanced substitution
         result = enhanced_sub.substitute_all_variables(template)
         

@@ -193,9 +193,9 @@ class EnhancedVariableSubstitution:
                 if pool_name not in self.entity_pools:
                     raise ValueError(f"Unknown entity pool: {pool_name}")
                 
-                # Use index for deterministic selection within the pool
+                # Use random selection from the pool
                 pool = self.entity_pools[pool_name]
-                value = pool[index % len(pool)]
+                value = random.choice(pool)
                 self.entity_cache[cache_key] = value
             
             # Track in variables mapping
@@ -228,7 +228,7 @@ class EnhancedVariableSubstitution:
             else:
                 # Generate and cache new value using default pool
                 pool = self.entity_pools['default']
-                value = pool[index % len(pool)]
+                value = random.choice(pool)
                 self.entity_cache[cache_key] = value
             
             # Track in variables mapping

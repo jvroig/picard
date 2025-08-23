@@ -130,6 +130,9 @@ class EntityPool:
         # Use enhanced substitution
         result = enhanced_sub.substitute_all_variables(template)
         
+        # Start with variables from the template
+        all_variables = result['variables'].copy()
+        
         # Handle expected_structure substitution if needed
         if '{{expected_structure}}' in template and expected_structure:
             # Substitute variables in the expected_structure paths
@@ -137,23 +140,32 @@ class EntityPool:
             for path in expected_structure:
                 path_result = enhanced_sub.substitute_all_variables(path)
                 substituted_paths.append(path_result['substituted'])
+                # IMPORTANT: Merge variables from expected_structure into all_variables
+                all_variables.update(path_result['variables'])
             
             # Format as tree structure
             tree_structure = self._format_directory_tree(substituted_paths)
             
             # Replace {{expected_structure}} with the formatted tree
             result['substituted'] = result['substituted'].replace('{{expected_structure}}', f'\n```\n{tree_structure}\n```')
+        elif expected_structure:
+            # Even if template doesn't contain {{expected_structure}}, we still need to
+            # extract variables from expected_structure for later use in scoring
+            for path in expected_structure:
+                path_result = enhanced_sub.substitute_all_variables(path)
+                # IMPORTANT: Merge variables from expected_structure into all_variables
+                all_variables.update(path_result['variables'])
         
         # Extract legacy entity variables for backwards compatibility
         legacy_entities = {}
-        for var_name, var_value in result['variables'].items():
+        for var_name, var_value in all_variables.items():
             if var_name.startswith('entity') and ':' not in var_name:
                 legacy_entities[var_name] = var_value
         
         return {
             'substituted': result['substituted'],
             'entities': legacy_entities,  # Legacy compatibility
-            'variables': result['variables']  # All variables
+            'variables': all_variables  # All variables from both template AND expected_structure
         }
     
     def substitute_template(self, template: str, expected_structure: List[str] = None) -> Dict[str, Any]:

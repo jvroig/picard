@@ -27,14 +27,14 @@ class LLMEngineClient:
         self.timeout = timeout
     
     def execute_question(self, question: str, temperature: float = 0.4, 
-                        max_tokens: int = 1000, max_llm_rounds: int = 20) -> Tuple[str, List[Dict[str, Any]], Dict[str, Any]]:
+                        max_tokens: int = 4000, max_llm_rounds: int = 20) -> Tuple[str, List[Dict[str, Any]], Dict[str, Any]]:
         """
         Execute a question against the LLM and return final response + full conversation.
         
         Args:
             question: The question to ask the LLM
             temperature: LLM temperature parameter
-            max_tokens: Maximum tokens for response
+            max_tokens: Maximum tokens for response (default: 4000 for reasoning models)
             
         Returns:
             Tuple of:
@@ -154,7 +154,7 @@ def real_llm_execute(question: str, api_endpoint: str = None, **kwargs) -> Dict[
         final_response, conversation_history, statistics = client.execute_question(
             question=question,
             temperature=kwargs.get("temperature", 0.4),
-            max_tokens=kwargs.get("max_tokens", 1000),
+            max_tokens=kwargs.get("max_tokens", 4000),
             max_llm_rounds=kwargs.get("max_llm_rounds", 20),
         )
         

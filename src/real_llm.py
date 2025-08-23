@@ -187,15 +187,18 @@ def real_llm_execute(question: str, api_endpoint: str = None, **kwargs) -> Dict[
         }
 
 
-def execute_with_retry(question: str, max_retries: int = 3, delay: float = 2.0, 
+def execute_with_retry(question: str, max_retries: int = 5, delay: float = 30.0, 
                       api_endpoint: str = None, **kwargs) -> Dict[str, Any]:
     """
-    Execute LLM call with retry logic (compatible with mock_llm interface).
+    Execute LLM call with retry logic optimized for rate-limited APIs.
+    
+    Uses escalating delays: 30s, 60s, 90s, 120s, 150s (30s * retry_number)
+    Total attempts: 6 (1 initial + 5 retries)
     
     Args:
         question: The question to ask the LLM
-        max_retries: Maximum number of retry attempts
-        delay: Delay between retries in seconds
+        max_retries: Maximum number of retry attempts (default: 5 for rate limits)
+        delay: Base delay multiplier in seconds (default: 30.0)
         api_endpoint: Optional API endpoint URL override
         **kwargs: Additional parameters passed to LLM function
         
@@ -206,8 +209,9 @@ def execute_with_retry(question: str, max_retries: int = 3, delay: float = 2.0,
         Exception: If all retry attempts fail
     """
     last_error = None
+    total_attempts = max_retries + 1  # Include initial attempt
     
-    for attempt in range(max_retries):
+    for attempt in range(total_attempts):
         try:
             result = real_llm_execute(question, api_endpoint=api_endpoint, **kwargs)
             
@@ -222,13 +226,17 @@ def execute_with_retry(question: str, max_retries: int = 3, delay: float = 2.0,
         except Exception as e:
             last_error = e
             
-            if attempt < max_retries - 1:  # Not the last attempt
-                print(f"   ⚠️  Attempt {attempt + 1} failed: {e}")
-                print(f"   🔄 Retrying in {delay} seconds...")
-                time.sleep(delay)
+            if attempt < total_attempts - 1:  # Not the last attempt
+                retry_number = attempt + 1
+                # Escalating delays: 30s, 60s, 90s, 120s, 150s
+                wait_time = delay * retry_number
+                
+                print(f"   ⚠️  Attempt {attempt + 1}/{total_attempts} failed: {e}")
+                print(f"   🔄 Retrying in {wait_time:.0f} seconds (retry #{retry_number})...")
+                time.sleep(wait_time)
             else:
                 # Last attempt failed
-                raise Exception(f"Failed after {max_retries} attempts. Last error: {e}")
+                raise Exception(f"Failed after {total_attempts} attempts. Last error: {e}")
     
     # This shouldn't be reached, but just in case
     raise Exception(f"Unexpected error in retry logic. Last error: {last_error}")

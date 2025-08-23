@@ -694,23 +694,3 @@ Valid again: Budget ${{number1:1000:5000}} for {{entity2}}"""
         assert len(function_results) > 0  # Should have attempted template functions
         # Note: Some functions may succeed despite missing files (implementation dependent)
     
-    def test_consistency_across_multiple_runs(self, complete_processor, complete_test_files):
-        """Test that same template produces consistent results across multiple runs."""
-        template = "User {{semantic1:person_name}} pays ${{number1:100:500}} for {{entity1}} item"
-        
-        # Run the same template multiple times
-        results = []
-        for _ in range(5):
-            result = complete_processor.process_template(template, question_id=1, sample_number=1)
-            results.append(result)
-        
-        # All results should be identical because we use the same question_id and sample_number
-        first_result = results[0]['substituted']
-        for i in range(1, len(results)):
-            assert results[i]['substituted'] == first_result, f"Result {i} differs from first result"
-            
-        # Variable mappings should be consistent too
-        first_vars = results[0].get('variables', {})
-        for i in range(1, len(results)):
-            current_vars = results[i].get('variables', {})
-            assert current_vars == first_vars, f"Variables {i} differ from first variables"

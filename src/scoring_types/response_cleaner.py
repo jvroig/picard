@@ -37,34 +37,35 @@ class ResponseCleaner:
         Extract the final answer from OpenAI Harmony format response.
         
         The Harmony format looks like:
-        <|channel|>analysis<|message|>User says "Hello". Probably just greet back.<|start|>assistant<|channel|>final<|message|>Hello! How can I assist you today?
+        <|channel|>analysis<|message|>reasoning...<|end|><|start|>assistant<|channel|>final<|message|>Hello! How can I assist you today?
         
-        This function extracts everything after the last <|channel|>final<|message|> token.
+        This function extracts everything after the last <|message|> token, regardless of channel type.
+        This handles cases where the answer might be in 'final', 'commentary', or other channels.
         
         Args:
             text (str): Input text in Harmony format
             
         Returns:
-            str: Final answer content, or original text if no final channel found
+            str: Final answer content, or original text if no message tags found
         """
         if not text:
             return text
         
-        # Look for the final channel marker
-        final_pattern = r'<\|channel\|>final<\|message\|>'
+        # Look for any message marker (regardless of channel)
+        message_pattern = r'<\|message\|>'
         
-        # Find all matches to get the last one (in case there are multiple)
-        matches = list(re.finditer(final_pattern, text))
+        # Find all matches to get the last one
+        matches = list(re.finditer(message_pattern, text))
         
         if not matches:
-            # No final channel found, return original text
+            # No message tags found, return original text
             return text
         
-        # Get the position after the last final channel marker
+        # Get the position after the last message marker
         last_match = matches[-1]
         final_answer_start = last_match.end()
         
-        # Extract everything after the final marker
+        # Extract everything after the last message marker
         final_answer = text[final_answer_start:]
         
         return final_answer

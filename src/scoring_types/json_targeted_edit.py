@@ -18,8 +18,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 sys.path.append(str(Path(__file__).parent))
 
 try:
-    from jsonpath_ng import parse as jsonpath_parse
-    from jsonpath_ng.exceptions import JSONPathMatch
+    from jsonpath_ng.ext import parse as jsonpath_parse
 except ImportError:
     raise ImportError("jsonpath-ng required: pip install jsonpath-ng")
 
@@ -260,22 +259,42 @@ class JsonTargetedEditScorer(BaseScoringType):
                 # Parse JSONPath expression
                 jsonpath_expr = jsonpath_parse(path)
                 
-                # Find all matches
-                matches = jsonpath_expr.find(cleaned_data)
-                
-                # Remove matches in reverse order to avoid index shifting
-                for match in reversed(matches):
-                    self._delete_at_path(cleaned_data, match.path, match.context)
+                # Use update method to set excluded paths to sentinel value
+                jsonpath_expr.update(cleaned_data, "__PICARD_EXCLUDED__")
                     
             except Exception as e:
                 # Log error but continue with other paths
                 pass
         
-        return cleaned_data
+        # Now recursively remove all sentinel values
+        return self._remove_sentinel_values(cleaned_data)
+    
+    def _remove_sentinel_values(self, data):
+        """Remove sentinel values from the data structure."""
+        if isinstance(data, dict):
+            result = {}
+            for key, value in data.items():
+                if value != "__PICARD_EXCLUDED__":
+                    cleaned_value = self._remove_sentinel_values(value)
+                    if cleaned_value != "__PICARD_EXCLUDED__":
+                        result[key] = cleaned_value
+            return result
+        elif isinstance(data, list):
+            result = []
+            for item in data:
+                cleaned_item = self._remove_sentinel_values(item)
+                if cleaned_item != "__PICARD_EXCLUDED__":
+                    result.append(cleaned_item)
+            return result
+        else:
+            return data if data != "__PICARD_EXCLUDED__" else "__PICARD_EXCLUDED__"
     
     def _delete_at_path(self, data: Dict[str, Any], path, context) -> None:
         """
         Delete a value at a specific JSONPath location.
+        
+        This is a simplified approach - we'll set values to None instead of
+        deleting them to avoid complex path navigation issues.
         
         Args:
             data: Root data structure
@@ -283,26 +302,11 @@ class JsonTargetedEditScorer(BaseScoringType):
             context: Context information from JSONPath match
         """
         try:
-            # Get the parent container and key/index
-            if hasattr(path, 'path') and len(path.path) > 0:
-                # Navigate to parent
-                parent = data
-                path_parts = path.path[:-1]  # All but the last part
-                
-                for part in path_parts:
-                    if hasattr(part, 'key'):
-                        parent = parent[part.key]
-                    elif hasattr(part, 'index'):
-                        parent = parent[part.index]
-                
-                # Delete the final key/index
-                final_part = path.path[-1]
-                if hasattr(final_part, 'key') and isinstance(parent, dict):
-                    if final_part.key in parent:
-                        del parent[final_part.key]
-                elif hasattr(final_part, 'index') and isinstance(parent, list):
-                    if 0 <= final_part.index < len(parent):
-                        parent.pop(final_part.index)
-        except (KeyError, IndexError, AttributeError, TypeError):
+            # For simplicity, we'll use the jsonpath-ng update method
+            # which is more reliable than manual path navigation
+            if hasattr(context, 'value'):
+                # Replace the value with a sentinel that we can filter out
+                context.value = "__PICARD_EXCLUDED__"
+        except (AttributeError, TypeError):
             # Path doesn't exist or is invalid - that's okay
             pass

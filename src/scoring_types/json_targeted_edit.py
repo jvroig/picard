@@ -214,6 +214,95 @@ class JsonTargetedEditScorer(BaseScoringType):
             else:
                 return False, "Data was modified but no exclusions specified", {'full_comparison': False}
         
-        # TODO: Implement path exclusion logic
-        # For now, return success with a placeholder message
-        return True, f"Preservation check skipped (exclude_paths not yet implemented): {exclude_paths}", {'implementation_pending': True}
+        try:
+            # Remove excluded paths from both datasets
+            original_clean = self._remove_json_paths(original_data, exclude_paths)
+            modified_clean = self._remove_json_paths(modified_data, exclude_paths)
+            
+            # Normalize and compare
+            original_normalized = json.dumps(original_clean, sort_keys=True, separators=(',', ':'))
+            modified_normalized = json.dumps(modified_clean, sort_keys=True, separators=(',', ':'))
+            
+            if original_normalized == modified_normalized:
+                return True, f"Preservation verified (excluding {len(exclude_paths)} paths)", {
+                    'exclude_paths': exclude_paths,
+                    'normalization_used': True
+                }
+            else:
+                return False, "Non-excluded data was modified", {
+                    'exclude_paths': exclude_paths,
+                    'original_normalized_length': len(original_normalized),
+                    'modified_normalized_length': len(modified_normalized)
+                }
+                
+        except Exception as e:
+            return False, f"Preservation verification failed: {e}", {'error': str(e), 'exclude_paths': exclude_paths}
+    
+    def _remove_json_paths(self, data: Dict[str, Any], exclude_paths: List[str]) -> Dict[str, Any]:
+        """
+        Remove specified JSONPath expressions from data structure.
+        
+        Args:
+            data: JSON data to clean
+            exclude_paths: List of JSONPath expressions to remove
+        
+        Returns:
+            Cleaned JSON data with specified paths removed
+        """
+        if not exclude_paths:
+            return data
+        
+        # Create deep copy to avoid mutation
+        cleaned_data = copy.deepcopy(data)
+        
+        for path in exclude_paths:
+            try:
+                # Parse JSONPath expression
+                jsonpath_expr = jsonpath_parse(path)
+                
+                # Find all matches
+                matches = jsonpath_expr.find(cleaned_data)
+                
+                # Remove matches in reverse order to avoid index shifting
+                for match in reversed(matches):
+                    self._delete_at_path(cleaned_data, match.path, match.context)
+                    
+            except Exception as e:
+                # Log error but continue with other paths
+                pass
+        
+        return cleaned_data
+    
+    def _delete_at_path(self, data: Dict[str, Any], path, context) -> None:
+        """
+        Delete a value at a specific JSONPath location.
+        
+        Args:
+            data: Root data structure
+            path: JSONPath object representing the location
+            context: Context information from JSONPath match
+        """
+        try:
+            # Get the parent container and key/index
+            if hasattr(path, 'path') and len(path.path) > 0:
+                # Navigate to parent
+                parent = data
+                path_parts = path.path[:-1]  # All but the last part
+                
+                for part in path_parts:
+                    if hasattr(part, 'key'):
+                        parent = parent[part.key]
+                    elif hasattr(part, 'index'):
+                        parent = parent[part.index]
+                
+                # Delete the final key/index
+                final_part = path.path[-1]
+                if hasattr(final_part, 'key') and isinstance(parent, dict):
+                    if final_part.key in parent:
+                        del parent[final_part.key]
+                elif hasattr(final_part, 'index') and isinstance(parent, list):
+                    if 0 <= final_part.index < len(parent):
+                        parent.pop(final_part.index)
+        except (KeyError, IndexError, AttributeError, TypeError):
+            # Path doesn't exist or is invalid - that's okay
+            pass

@@ -51,6 +51,9 @@ class TestRunner:
         # Progressive writing handles
         self.responses_file = None
         self.conversations_dir = None
+        
+        # Timing info
+        self.start_time = None
     
     def sanitize_label(self, label: str) -> str:
         """
@@ -95,6 +98,23 @@ class TestRunner:
             return "test"
         
         return sanitized
+    
+    def _get_timestamp_str(self) -> str:
+        """Get current timestamp as formatted string for logging."""
+        return datetime.now().strftime('%H:%M:%S')
+    
+    def _format_duration(self, seconds: float) -> str:
+        """Format duration in seconds to human-readable string."""
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        
+        if hours > 0:
+            return f"{hours}h {minutes}m {secs}s"
+        elif minutes > 0:
+            return f"{minutes}m {secs}s"
+        else:
+            return f"{secs}s"
     
     def initialize_test_run(self, test_definitions_file: str = None, label: str = "test") -> str:
         """
@@ -158,28 +178,34 @@ class TestRunner:
         else:
             print("🔗 Using REAL LLM API")
             from real_llm import execute_with_retry
+        
+        # Record start time and display initial info
+        self.start_time = datetime.now()
+        start_time_str = self.start_time.strftime('%Y-%m-%d %H:%M:%S')
+        
         print("🚀 PICARD Test Runner")
         print("=" * 40)
+        print(f"⏰ Test started at: {start_time_str}")
         
         # Initialize test run
         test_id = self.initialize_test_run(test_definitions_file, label)
-        print(f"🆔 Test ID: {test_id}")
-        print(f"📁 Test directory: {self.test_dir}")
+        print(f"[{self._get_timestamp_str()}] 🆔 Test ID: {test_id}")
+        print(f"[{self._get_timestamp_str()}] 📁 Test directory: {self.test_dir}")
         print()
         
         # Reset sandbox
-        print("🧹 Resetting sandbox...")
+        print(f"[{self._get_timestamp_str()}] 🧹 Resetting sandbox...")
         success = self.sandbox_manager.reset_sandbox(sandbox_template, verbose=True)
         if not success:
             raise Exception(f"Failed to reset sandbox with template: {sandbox_template}")
         print()
         
         # Generate precheck entries
-        print("📋 Generating precheck entries...")
+        print(f"[{self._get_timestamp_str()}] 📋 Generating precheck entries...")
         precheck_entries = self.precheck_generator.generate_precheck_entries()
         
         stats = self.precheck_generator.get_statistics()
-        print(f"✅ Generated {len(precheck_entries)} precheck entries")
+        print(f"[{self._get_timestamp_str()}] ✅ Generated {len(precheck_entries)} precheck entries")
         print(f"   📊 Questions: {stats['total_questions']}")
         print(f"   📊 Total samples: {stats['total_samples']}")
         print(f"   📊 Entity pool: {stats['entity_pool_size']} words")
@@ -188,24 +214,32 @@ class TestRunner:
         # Save precheck file
         precheck_file = self.test_dir / "precheck.jsonl"
         self.precheck_generator.save_precheck_entries(precheck_entries, str(precheck_file))
-        print(f"💾 Saved precheck file: {precheck_file}")
+        print(f"[{self._get_timestamp_str()}] 💾 Saved precheck file: {precheck_file}")
         print()
         
         # Initialize progressive writing
-        print("📁 Setting up progressive result writing...")
+        print(f"[{self._get_timestamp_str()}] 📁 Setting up progressive result writing...")
         self._initialize_progressive_writers()
         print()
         
         # Execute questions against LLM with progressive writing
-        print("🤖 Executing questions against LLM...")
+        print(f"[{self._get_timestamp_str()}] 🤖 Executing questions against LLM...")
         completed_count = self._execute_questions(precheck_entries, max_retries, max_llm_rounds, retry_delay, api_endpoint)
         
         # Finalize progressive writing and generate summary
-        print(f"💾 Results written progressively - {completed_count} items completed")
+        print(f"[{self._get_timestamp_str()}] 💾 Results written progressively - {completed_count} items completed")
         print()
         self._finalize_progressive_results()
         
-        print("🎉 Test run completed successfully!")
+        # Calculate and display timing information
+        end_time = datetime.now()
+        end_time_str = end_time.strftime('%Y-%m-%d %H:%M:%S')
+        duration = end_time - self.start_time
+        duration_str = self._format_duration(duration.total_seconds())
+        
+        print(f"[{self._get_timestamp_str()}] 🎉 Test run completed successfully!")
+        print(f"⏰ Test ended at: {end_time_str}")
+        print(f"⏱️ Total wall time: {duration_str}")
         print(f"📁 Results saved in: {self.test_dir}")
         
         return {
@@ -352,7 +386,7 @@ class TestRunner:
             sample_number = entry['sample_number']
             question = entry['substituted_question']
             
-            print(f"Running: Question {question_id}, Sample {sample_number} ({i}/{total_questions})", end="")
+            print(f"[{self._get_timestamp_str()}] Running: Question {question_id}, Sample {sample_number} ({i}/{total_questions})", end="")
             
             # Check if this entry had sandbox setup (informational only - files already generated during precheck)
             if 'sandbox_generation' in entry:
@@ -416,7 +450,7 @@ class TestRunner:
                 print(f"   🛑 Aborting test run (fail-fast strategy)")
                 raise Exception(f"Test run aborted due to LLM execution failure: {e}")
         
-        print(f"\n🎯 Executed {completed_count} questions successfully")
+        print(f"\n[{self._get_timestamp_str()}] 🎯 Executed {completed_count} questions successfully")
         return completed_count
     
     def _generate_test_summary(self):
@@ -437,7 +471,7 @@ class TestRunner:
         with open(summary_file, 'w', encoding='utf-8') as f:
             json.dump(summary, f, indent=2)
         
-        print(f"📄 Generated test summary: {summary_file}")
+        print(f"[{self._get_timestamp_str()}] 📄 Generated test summary: {summary_file}")
 
 
 def main():

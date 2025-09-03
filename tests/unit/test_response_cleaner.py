@@ -87,15 +87,16 @@ class TestResponseCleaner:
         assert result == expected
     
     def test_strip_harmony_format_no_final_channel(self):
-        """Test when no final channel exists (returns original text)."""
+        """Test when no final channel exists (uses last message content)."""
         harmony_text = """
         <|channel|>analysis<|message|>Some analysis here.
         <|channel|>thinking<|message|>Some thinking here.
         """
         
         result = ResponseCleaner.strip_harmony_format(harmony_text)
+        expected = "Some thinking here.\n        "
         
-        assert result == harmony_text
+        assert result == expected
     
     def test_strip_harmony_format_empty_text(self):
         """Test Harmony format stripping with empty text."""
@@ -302,6 +303,43 @@ class TestResponseCleaner:
         assert ResponseCleaner.clean_response("") == ""
         assert ResponseCleaner.clean_response(None) is None
     
+    def test_clean_response_orphaned_think_only(self):
+        """Test clean_response with only orphaned </think> tags."""
+        orphaned_text = "Some reasoning process.</think>\nFinal answer here."
+        
+        result = ResponseCleaner.clean_response(orphaned_text)
+        expected = "Final answer here."
+        
+        assert result == expected
+    
+    def test_clean_response_mixed_proper_and_orphaned(self):
+        """Test clean_response with both proper and orphaned think tags."""
+        mixed_text = """
+        <thinking>Proper reasoning block.</thinking>
+        More reasoning here.</think>
+        Final answer.
+        """
+        
+        result = ResponseCleaner.clean_response(mixed_text)
+        expected = "Final answer."
+        
+        assert result == expected
+    
+    def test_clean_response_orphaned_think_with_harmony_disabled(self):
+        """Test orphaned think handling when harmony processing is disabled."""
+        mixed_text = """
+        <thinking>Should be removed.</thinking>
+        Orphaned reasoning.</think>
+        <|channel|>final<|message|>Should remain due to harmony disabled.
+        """
+        
+        result = ResponseCleaner.clean_response(mixed_text, strip_harmony=False)
+        
+        # Should strip thinking tags and orphaned tags, but leave harmony format
+        assert "<thinking>" not in result
+        assert "</think>" not in result
+        assert "<|channel|>final<|message|>" in result
+    
     def test_has_thinking_tags_true(self):
         """Test detection of thinking tags."""
         text_with_thinking = "Some text <thinking>internal thoughts</thinking> more text."
@@ -325,6 +363,55 @@ class TestResponseCleaner:
         """Test thinking tag detection with empty text."""
         assert ResponseCleaner.has_thinking_tags("") is False
         assert ResponseCleaner.has_thinking_tags(None) is False
+    
+    def test_strip_orphaned_think_closing_basic(self):
+        """Test basic orphaned </think> tag removal."""
+        orphaned_text = "Some reasoning process here.</think>\nFinal answer."
+        
+        result = ResponseCleaner.strip_orphaned_think_closing(orphaned_text)
+        expected = "\nFinal answer."
+        
+        assert result == expected
+    
+    def test_strip_orphaned_think_closing_multiple(self):
+        """Test with multiple orphaned </think> tags (uses last one)."""
+        multiple_orphaned = "First reasoning.</think> More thinking.</think>\nFinal answer."
+        
+        result = ResponseCleaner.strip_orphaned_think_closing(multiple_orphaned)
+        expected = "\nFinal answer."
+        
+        assert result == expected
+    
+    def test_strip_orphaned_think_closing_case_insensitive(self):
+        """Test orphaned tag removal is case insensitive."""
+        mixed_case = "Reasoning here.</THINK>\nAnswer here.</ThInK>\nFinal."
+        
+        result = ResponseCleaner.strip_orphaned_think_closing(mixed_case)
+        expected = "\nFinal."
+        
+        assert result == expected
+    
+    def test_strip_orphaned_think_closing_no_tags(self):
+        """Test when no orphaned tags are present."""
+        no_tags = "Just regular text without any think tags."
+        
+        result = ResponseCleaner.strip_orphaned_think_closing(no_tags)
+        
+        assert result == no_tags
+    
+    def test_strip_orphaned_think_closing_empty_text(self):
+        """Test orphaned tag removal with empty text."""
+        assert ResponseCleaner.strip_orphaned_think_closing("") == ""
+        assert ResponseCleaner.strip_orphaned_think_closing(None) is None
+    
+    def test_strip_orphaned_think_closing_only_tag(self):
+        """Test with only closing tag and no content after."""
+        only_tag = "Some reasoning.</think>"
+        
+        result = ResponseCleaner.strip_orphaned_think_closing(only_tag)
+        expected = ""
+        
+        assert result == expected
 
 
 class TestResponseCleanerEdgeCases:

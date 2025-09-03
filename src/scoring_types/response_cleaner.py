@@ -113,6 +113,41 @@ class ResponseCleaner:
         return cleaned_text
     
     @staticmethod
+    def strip_orphaned_think_closing(text):
+        """
+        Handle orphaned closing think tags by returning everything after the last </think>.
+        
+        Some models (e.g., newer Qwen reasoning models) emit closing </think> tags
+        without proper opening <think> tags. This function finds the last </think>
+        and returns everything after it.
+        
+        Args:
+            text (str): Input text that may contain orphaned </think> tags
+            
+        Returns:
+            str: Text after the last </think> tag, or original text if no </think> found
+        """
+        if not text:
+            return text
+            
+        # Find the last occurrence of </think> (case insensitive)
+        think_close_pattern = r'</think>'
+        matches = list(re.finditer(think_close_pattern, text, flags=re.IGNORECASE))
+        
+        if not matches:
+            # No </think> tags found, return original text
+            return text
+        
+        # Get position after the last </think> tag
+        last_match = matches[-1]
+        after_think_start = last_match.end()
+        
+        # Return everything after the last </think> tag
+        result = text[after_think_start:]
+        
+        return result
+    
+    @staticmethod
     def clean_response(text, strip_thinking=True, strip_harmony=True, strip_whitespace=True):
         """
         Apply standard cleaning operations to an LLM response.
@@ -139,8 +174,10 @@ class ResponseCleaner:
         if strip_harmony and ResponseCleaner.has_harmony_format(cleaned):
             cleaned = ResponseCleaner.strip_harmony_format(cleaned)
         elif strip_thinking:
-            # Only apply thinking tag removal if not Harmony format
+            # Apply standard thinking tag removal first
             cleaned = ResponseCleaner.strip_thinking_tags(cleaned)
+            # Then handle any orphaned </think> tags that weren't caught
+            cleaned = ResponseCleaner.strip_orphaned_think_closing(cleaned)
         
         # Strip whitespace last
         if strip_whitespace:

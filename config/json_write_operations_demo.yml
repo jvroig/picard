@@ -1,0 +1,224 @@
+# PICARD JSON Write Operations Demo
+# Tests agentic AI JSON modification capabilities with anti-memorization
+
+tests:
+  # DevOps Configuration Update Scenario
+  - question_id: 601
+    samples: 5
+    template: |
+      Update the microservice configuration at {{artifacts}}/{{qs_id}}/services.json:
+      - Set all API gateway endpoints to "https://{{semantic1:city}}.gateway.com"
+      - Enable DEBUG logging for all services
+      - Save the updated config to {{artifacts}}/{{qs_id}}/updated_services.json
+    
+    scoring_type: "json_targeted_edit"
+    original_file: "{{artifacts}}/{{qs_id}}/services.json"
+    modified_file: "{{artifacts}}/{{qs_id}}/updated_services.json"
+    edit_verification:
+      target_changes:
+        - selector: "$.services[?(@.type == 'api-gateway')].endpoint"
+          expected_value: "https://{{semantic1:city}}.gateway.com"
+        - selector: "$.services[*].logging.level"
+          expected_value: "DEBUG"
+      preservation_spec:
+        exclude_paths:
+          - "$.services[*].endpoint"
+          - "$.services[*].logging.level" 
+          - "$.metadata.last_updated"
+    
+    sandbox_setup:
+      type: "create_json"
+      name: "service_config"
+      target_file: "{{artifacts}}/{{qs_id}}/services.json"
+      content:
+        schema:
+          services:
+            type: "array"
+            count: "{{number1:3:5}}"
+            items:
+              name: "product"
+              type: 
+                type: "string"
+                enum: ["api-gateway", "user-service", "data-processor"]
+              endpoint: "lorem_words"
+              logging:
+                level: "status"
+              port: "id"
+          metadata:
+            version: "id"
+            created: "date"
+
+  # API Response Data Enrichment Scenario  
+  - question_id: 602
+    samples: 3
+    template: |
+      Add a "processed_timestamp" field to all user objects in {{artifacts}}/{{qs_id}}/users.json
+      Set the timestamp to "{{semantic1:date}}" for all users
+      Save to {{artifacts}}/{{qs_id}}/processed_users.json
+    
+    scoring_type: "json_targeted_edit"
+    original_file: "{{artifacts}}/{{qs_id}}/users.json"
+    modified_file: "{{artifacts}}/{{qs_id}}/processed_users.json"
+    edit_verification:
+      target_changes:
+        - selector: "$.users[*].processed_timestamp"
+          expected_value: "{{semantic1:date}}"
+      preservation_spec:
+        exclude_paths:
+          - "$.users[*].processed_timestamp"  # Allow new field addition
+    
+    sandbox_setup:
+      type: "create_json"
+      name: "user_data"
+      target_file: "{{artifacts}}/{{qs_id}}/users.json"
+      content:
+        schema:
+          users:
+            type: "array"
+            count: "{{number2:5:10}}"
+            items:
+              id: "id"
+              name: "person_name"
+              email: "email"
+              department: "department"
+              active: "boolean"
+
+  # Compliance Data Removal Scenario
+  - question_id: 603
+    samples: 4
+    template: |
+      Remove all "salary" fields from employee records where consent=false in {{artifacts}}/{{qs_id}}/employees.json
+      Keep all other employee data intact
+      Save to {{artifacts}}/{{qs_id}}/compliant_employees.json
+    
+    scoring_type: "json_targeted_edit"
+    original_file: "{{artifacts}}/{{qs_id}}/employees.json"
+    modified_file: "{{artifacts}}/{{qs_id}}/compliant_employees.json"
+    edit_verification:
+      target_changes:
+        - selector: "$.employees[?(@.consent == false)].salary"
+          expected_value: null  # Field should be removed/null
+      preservation_spec:
+        exclude_paths:
+          - "$.employees[?(@.consent == false)].salary"  # Allow salary removal
+    
+    sandbox_setup:
+      type: "create_json"
+      name: "employee_data"
+      target_file: "{{artifacts}}/{{qs_id}}/employees.json"
+      content:
+        schema:
+          employees:
+            type: "array"
+            count: "{{number3:8:15}}"
+            items:
+              id: "id"
+              name: "person_name"
+              email: "email"
+              department: "department"
+              salary: "salary"
+              consent:
+                type: "boolean"
+              hire_date: "date"
+
+  # Complex Multi-Level Update Scenario
+  - question_id: 604
+    samples: 3
+    template: |
+      Update all projects in {{artifacts}}/{{qs_id}}/company.json where budget > {{number1:50000:100000:currency}}:
+      - Set their status to "high-priority"
+      - Add a new field "review_required" set to true
+      - Save to {{artifacts}}/{{qs_id}}/updated_company.json
+    
+    scoring_type: "json_targeted_edit"
+    original_file: "{{artifacts}}/{{qs_id}}/company.json"
+    modified_file: "{{artifacts}}/{{qs_id}}/updated_company.json"
+    edit_verification:
+      target_changes:
+        - selector: "$.departments[*].projects[?(@.budget > {{number1:50000:100000:currency}})].status"
+          expected_value: "high-priority"
+        - selector: "$.departments[*].projects[?(@.budget > {{number1:50000:100000:currency}})].review_required"
+          expected_value: true
+      preservation_spec:
+        exclude_paths:
+          - "$.departments[*].projects[*].status"
+          - "$.departments[*].projects[*].review_required"
+    
+    sandbox_setup:
+      type: "create_json"
+      name: "company_data"
+      target_file: "{{artifacts}}/{{qs_id}}/company.json"
+      content:
+        schema:
+          company: "company"
+          departments:
+            type: "array"
+            count: "{{number4:2:4}}"
+            items:
+              name: "department"
+              manager: "person_name"
+              projects:
+                type: "array"
+                count: "{{number5:2:5}}"
+                items:
+                  name: "product"
+                  budget:
+                    type: "integer"
+                    minimum: 10000
+                    maximum: 150000
+                  status: "status"
+                  team:
+                    type: "array"
+                    count: "{{number6:2:6}}"
+                    items: "person_name"
+
+  # Error Handling Scenario - File Corruption Recovery
+  - question_id: 605
+    samples: 2
+    template: |
+      Fix the configuration file {{artifacts}}/{{qs_id}}/config.json by:
+      - Setting all invalid email addresses (missing @ symbol) to "{{semantic2:email}}"
+      - Ensuring all port numbers are between 1000-9999 (set invalid ones to {{number2:3000:8000}})
+      - Save corrected config to {{artifacts}}/{{qs_id}}/fixed_config.json
+    
+    scoring_type: "json_targeted_edit"
+    original_file: "{{artifacts}}/{{qs_id}}/config.json"
+    modified_file: "{{artifacts}}/{{qs_id}}/fixed_config.json"
+    edit_verification:
+      target_changes:
+        - selector: "$.users[?(@.email && @.email != '' && @.email.indexOf('@') == -1)].email"
+          expected_value: "{{semantic2:email}}"
+        - selector: "$.servers[?(@.port && (@.port < 1000 || @.port > 9999))].port"
+          expected_value: "{{number2:3000:8000}}"
+      preservation_spec:
+        exclude_paths:
+          - "$.users[*].email"
+          - "$.servers[*].port"
+    
+    sandbox_setup:
+      type: "create_json"
+      name: "corrupted_config"
+      target_file: "{{artifacts}}/{{qs_id}}/config.json"
+      content:
+        schema:
+          users:
+            type: "array"
+            count: "{{number7:3:8}}"
+            items:
+              name: "person_name"
+              email: 
+                type: "string"
+                # Mix valid and invalid emails
+                enum: ["valid.email@company.com", "invalid-email", "another@valid.com", "broken-email"]
+              role: "category"
+          servers:
+            type: "array"
+            count: "{{number8:2:4}}"
+            items:
+              name: "lorem_word"
+              port:
+                type: "integer"
+                # Mix valid and invalid ports
+                minimum: 100
+                maximum: 15000
+              status: "status"

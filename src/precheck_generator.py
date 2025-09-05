@@ -78,7 +78,8 @@ class PrecheckGenerator:
                     'sample_number': sample_num,
                     'template': test_def.template,
                     'substituted_question': result['substituted'],
-                    **result['entities']  # Add all entity mappings
+                    **result['entities'],  # Add legacy entity mappings
+                    **result['variables']  # Add all variable mappings (semantic, numeric, entity)
                 }
                 
                 # Apply {{artifacts}} and {{qs_id}} substitutions to the question

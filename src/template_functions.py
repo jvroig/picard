@@ -103,69 +103,21 @@ class TemplateFunctions:
         if not text:
             return text
         
-        # Pattern to match template functions with balanced braces: {{function_name:args}}
-        # Use a more sophisticated approach to handle nested {{}} in arguments
-        def find_template_functions(text):
-            """Find template functions with proper brace balancing."""
-            functions = []
-            i = 0
-            while i < len(text):
-                if text[i:i+2] == '{{':
-                    # Find the end of this template function
-                    brace_count = 1
-                    j = i + 2
-                    colon_pos = None
-                    
-                    # Find the colon separator (function_name:args)
-                    while j < len(text) and colon_pos is None:
-                        if text[j] == ':' and brace_count == 1:
-                            colon_pos = j
-                        elif text[j:j+2] == '{{':
-                            brace_count += 1
-                            j += 2
-                            continue
-                        elif text[j:j+2] == '}}':
-                            brace_count -= 1
-                            j += 2
-                            continue
-                        j += 1
-                    
-                    # Find the end of the function
-                    while j < len(text) and brace_count > 0:
-                        if text[j:j+2] == '{{':
-                            brace_count += 1
-                            j += 2
-                        elif text[j:j+2] == '}}':
-                            brace_count -= 1
-                            j += 2
-                        else:
-                            j += 1
-                    
-                    if brace_count == 0 and colon_pos is not None:
-                        # Extract function name and args
-                        function_name = text[i+2:colon_pos].strip()
-                        args_str = text[colon_pos+1:j-2].strip()
-                        functions.append((i, j, function_name, args_str))
-                        i = j
-                    else:
-                        i += 1
-                else:
-                    i += 1
-            return functions
+        # Pattern to match template functions: {{function_name:args}}
+        pattern = r'\{\{([^:]+):([^}]+)\}\}'
         
-        # Process template functions from right to left to handle nested functions correctly
-        functions = find_template_functions(text)
-        functions.reverse()  # Process from end to beginning to avoid position shifts
+        def replace_function(match):
+            function_name = match.group(1).strip()
+            args_str = match.group(2).strip()
+            args = [arg.strip() for arg in args_str.split(':')]
+            
+            try:
+                return str(self.evaluate_function(function_name, args))
+            except Exception as e:
+                raise TemplateFunctionError(f"Error evaluating {{{{{function_name}:{args_str}}}}}: {e}")
         
         try:
-            result = text
-            for start, end, function_name, args_str in functions:
-                args = [arg.strip() for arg in args_str.split(':')]
-                try:
-                    replacement = str(self.evaluate_function(function_name, args))
-                    result = result[:start] + replacement + result[end:]
-                except Exception as e:
-                    raise TemplateFunctionError(f"Error evaluating {{{{{function_name}:{args_str}}}}}: {e}")
+            result = re.sub(pattern, replace_function, text)
             return result
         except TemplateFunctionError:
             raise

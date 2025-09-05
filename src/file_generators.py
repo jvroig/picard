@@ -130,8 +130,11 @@ class TextFileGenerator(BaseFileGenerator):
         }
         
         try:
+            # Process {{numeric}} variables in content_spec
+            processed_content_spec = self._process_content_spec_variables(content_spec)
+            
             # Generate main file content
-            content = self._generate_text_content(content_spec)
+            content = self._generate_text_content(processed_content_spec)
             
             # Write main file
             target_path = self._resolve_path(target_file)
@@ -160,6 +163,13 @@ class TextFileGenerator(BaseFileGenerator):
         """Generate text content based on specification."""
         content_type = content_spec.get('type', 'lorem_lines')
         count = content_spec.get('count', 10)
+        
+        # Convert count to integer if it's a string (after variable substitution)
+        if isinstance(count, str):
+            try:
+                count = int(count)
+            except ValueError:
+                raise FileGeneratorError(f"Invalid count value: {count}. Must be an integer.")
         
         if content_type == 'lorem_lines':
             return self.lorem_generator.generate_lines(count)

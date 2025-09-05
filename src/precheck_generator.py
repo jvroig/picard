@@ -212,8 +212,9 @@ class PrecheckGenerator:
             
             # Handle expected_content substitution for readfile_stringmatch
             if test_def.scoring_type in ['readfile_stringmatch', 'readfile_jsonmatch'] and test_def.expected_content:
-                # Use consistent variable substitution (both legacy entities and enhanced variables)
-                substituted_expected_content = self._substitute_with_all_variables(
+                # Use the existing entity_pool substitution to maintain variable consistency
+                # but extend it to handle any new variables found in expected_content
+                substituted_expected_content = self._substitute_with_all_variables_enhanced(
                     test_def.expected_content, entity_values
                 )
                 # Apply template substitutions and evaluate template functions
@@ -241,7 +242,9 @@ class PrecheckGenerator:
             precheck_entry['expected_paths'] = substituted_structure
         
         if test_def.expected_response:
-            substituted_response = self._substitute_with_all_variables(
+            # Use enhanced substitution that maintains consistency with existing variables
+            # but can generate new variables that weren't in the main template
+            substituted_response = self._substitute_with_all_variables_enhanced(
                 test_def.expected_response, entity_values
             )
             # Apply template substitutions and evaluate template functions with TARGET_FILE support
@@ -377,6 +380,39 @@ class PrecheckGenerator:
                 # {{entity1}} format (legacy)
                 placeholder = f"{{{{{var_name}}}}}"
                 substituted = substituted.replace(placeholder, var_value)
+        
+        return substituted
+    
+    def _substitute_with_all_variables_enhanced(self, template: str, all_variables: Dict[str, str]) -> str:
+        """
+        Enhanced variable substitution that can handle new variables not in the main template,
+        while maintaining consistency with existing variables.
+        
+        Args:
+            template: Template string containing variable placeholders
+            all_variables: Dictionary of existing variable mappings (will be updated with new variables)
+            
+        Returns:
+            Template with all variables substituted
+        """
+        # First try the regular substitution with existing variables
+        substituted = self._substitute_with_all_variables(template, all_variables)
+        
+        # Check if there are still unresolved variables (new ones not in the main template)
+        import re
+        remaining_vars = re.findall(r'\{\{([^}]+)\}\}', substituted)
+        
+        if remaining_vars:
+            # Use enhanced substitution to resolve any remaining variables
+            # This will generate new values for variables not in the original template
+            result = self.entity_pool.substitute_template_enhanced(substituted)
+            substituted = result['substituted']
+            
+            # Update our entity_values dictionary with the new variables for consistency
+            if 'variables' in result:
+                all_variables.update(result['variables'])
+            if 'entities' in result:
+                all_variables.update(result['entities'])
         
         return substituted
 

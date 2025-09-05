@@ -217,6 +217,9 @@ class PrecheckGenerator:
                 substituted_expected_content = self._substitute_with_all_variables(
                     test_def.expected_content, entity_values
                 )
+                # Store pre-template-function state for transparency
+                precheck_entry['expected_content_before_template_functions'] = substituted_expected_content
+                
                 # Apply template substitutions and evaluate template functions
                 substituted_expected_content = self._evaluate_template_functions(
                     substituted_expected_content, question_id, sample_number, sandbox_components, entity_values
@@ -245,6 +248,9 @@ class PrecheckGenerator:
             substituted_response = self._substitute_with_all_variables(
                 test_def.expected_response, entity_values
             )
+            # Store pre-template-function state for transparency
+            precheck_entry['expected_response_before_template_functions'] = substituted_response
+            
             # Apply template substitutions and evaluate template functions with TARGET_FILE support
             substituted_response = self._evaluate_template_functions(
                 substituted_response, question_id, sample_number, sandbox_components, entity_values

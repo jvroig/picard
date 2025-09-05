@@ -90,19 +90,11 @@ class PrecheckGenerator:
                 precheck_entry['substituted_question'] = fully_substituted_question
                 
                 # Prepare ALL variables for both sandbox generation and scoring properties
-                print(f"\n📋 DEBUG: Building variable dictionary for Q{test_def.question_id}.{sample_num}:")
-                print(f"   Main template: {test_def.template}")
-                print(f"   Enhanced substitution result: {result}")
-                
                 all_variables = {}
                 if 'entities' in result:
                     all_variables.update(result['entities'])
-                    print(f"   Added entities: {result['entities']}")
                 if 'variables' in result:
                     all_variables.update(result['variables'])
-                    print(f"   Added variables: {result['variables']}")
-                    
-                print(f"   Final all_variables: {all_variables}")
                 
                 # Handle sandbox setup and file generation if needed
                 # This must happen BEFORE scoring properties because template functions need the files
@@ -249,20 +241,13 @@ class PrecheckGenerator:
             precheck_entry['expected_paths'] = substituted_structure
         
         if test_def.expected_response:
-            print(f"\n🔍 DEBUG expected_response processing for Q{question_id}.{sample_number}:")
-            print(f"   Original: {test_def.expected_response}")
-            print(f"   Available entity_values: {list(entity_values.keys())}")
-            
             substituted_response = self._substitute_with_all_variables(
                 test_def.expected_response, entity_values
             )
-            print(f"   After variable substitution: {substituted_response}")
-            
             # Apply template substitutions and evaluate template functions with TARGET_FILE support
             substituted_response = self._evaluate_template_functions(
                 substituted_response, question_id, sample_number, sandbox_components, entity_values
             )
-            print(f"   After template functions: {substituted_response}")
             precheck_entry['expected_response'] = substituted_response
     def _evaluate_template_functions(self, text: str, question_id: int, sample_number: int, 
                                     components=None, entity_values=None) -> str:
@@ -373,10 +358,6 @@ class PrecheckGenerator:
         Returns:
             Template with all variables substituted
         """
-        print(f"      🔧 _substitute_with_all_variables called:")
-        print(f"         Input template: {template}")
-        print(f"         Variable dictionary: {all_variables}")
-        
         substituted = template
         
         # Substitute all variables in the template
@@ -386,33 +367,27 @@ class PrecheckGenerator:
                 # {{semantic1:city}} format
                 if ':' in var_name:
                     placeholder = f"{{{{{var_name}}}}}"
-                    print(f"         Trying semantic: {placeholder} -> {var_value}")
-                    if placeholder in substituted:
-                        substituted = substituted.replace(placeholder, var_value)
-                        print(f"           ✅ Replaced! Now: {substituted}")
-                    else:
-                        print(f"           ❌ Not found in template")
+                    substituted = substituted.replace(placeholder, var_value)
             elif var_name.startswith('number'):
-                # {{number1:15:35:integer}} format
+                # {{number1:15:35:integer}} format - but template might have {{number1:15:35}} (without type)
                 if ':' in var_name:
+                    # Try exact match first
                     placeholder = f"{{{{{var_name}}}}}"
-                    print(f"         Trying number: {placeholder} -> {var_value}")
                     if placeholder in substituted:
                         substituted = substituted.replace(placeholder, var_value)
-                        print(f"           ✅ Replaced! Now: {substituted}")
                     else:
-                        print(f"           ❌ Not found in template")
+                        # Try without the type suffix (remove last :type part)
+                        parts = var_name.split(':')
+                        if len(parts) >= 4:  # number1:min:max:type format
+                            var_name_no_type = ':'.join(parts[:-1])  # Remove the :type suffix
+                            placeholder_no_type = f"{{{{{var_name_no_type}}}}}"
+                            if placeholder_no_type in substituted:
+                                substituted = substituted.replace(placeholder_no_type, var_value)
             elif var_name.startswith('entity'):
                 # {{entity1}} format (legacy)
                 placeholder = f"{{{{{var_name}}}}}"
-                print(f"         Trying entity: {placeholder} -> {var_value}")
-                if placeholder in substituted:
-                    substituted = substituted.replace(placeholder, var_value)
-                    print(f"           ✅ Replaced! Now: {substituted}")
-                else:
-                    print(f"           ❌ Not found in template")
+                substituted = substituted.replace(placeholder, var_value)
         
-        print(f"         Final result: {substituted}")
         return substituted
 
 

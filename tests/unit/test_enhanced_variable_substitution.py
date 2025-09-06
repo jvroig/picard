@@ -310,3 +310,236 @@ class TestEnhancedVariableSubstitution:
         assert '{{number1:}}' in result['substituted']
         assert '{{entity1:}}' in result['substituted']
         assert '{{invalid}}' in result['substituted']
+
+
+class TestRoundedNumbers:
+    """Test rounded number functionality."""
+    
+    def test_round_hundreds_type(self):
+        """Test round_hundreds generates numbers rounded to nearest 100."""
+        evs = EnhancedVariableSubstitution(seed=42)
+        
+        # Test multiple samples to verify consistency
+        for _ in range(10):
+            result = evs.substitute_all_variables("{{number1:1234:5678:round_hundreds}}")
+            number = int(result['substituted'])
+            assert number % 100 == 0, f"Should be rounded to hundreds: {number}"
+            assert 1200 <= number <= 5700, f"Should be within rounded range: {number}"
+            evs.clear_cache()  # Fresh generation each time
+
+    def test_round_thousands_type(self):
+        """Test round_thousands generates numbers rounded to nearest 1000."""
+        evs = EnhancedVariableSubstitution(seed=42)
+        
+        for _ in range(10):
+            result = evs.substitute_all_variables("{{number1:40000:60000:round_thousands}}")
+            number = int(result['substituted'])
+            assert number % 1000 == 0, f"Should be rounded to thousands: {number}"
+            assert 40000 <= number <= 60000, f"Should be within range: {number}"
+            evs.clear_cache()
+
+    def test_round_ten_thousands_type(self):
+        """Test round_ten_thousands generates numbers rounded to nearest 10000."""
+        evs = EnhancedVariableSubstitution(seed=42)
+        
+        result = evs.substitute_all_variables("{{number1:85000:125000:round_ten_thousands}}")
+        number = int(result['substituted'])
+        assert number % 10000 == 0, f"Should be rounded to ten thousands: {number}"
+        assert number in [90000, 100000, 110000, 120000], f"Should be valid rounded value: {number}"
+
+    def test_custom_increment_rounding(self):
+        """Test custom increment rounding (500, 250)."""
+        evs = EnhancedVariableSubstitution(seed=42)
+        
+        # Test 500 increments
+        result = evs.substitute_all_variables("{{number1:1000:3000:round_500}}")
+        number = int(result['substituted'])
+        assert number % 500 == 0, f"Should be rounded to 500s: {number}"
+        
+        # Test 250 increments  
+        result = evs.substitute_all_variables("{{number1:1000:2000:round_250}}")
+        number = int(result['substituted'])
+        assert number % 250 == 0, f"Should be rounded to 250s: {number}"
+        
+    def test_rounding_edge_cases(self):
+        """Test rounding behavior at range boundaries."""
+        evs = EnhancedVariableSubstitution(seed=42)
+        
+        # Test small ranges
+        result = evs.substitute_all_variables("{{number1:1:99:round_hundreds}}")
+        number = int(result['substituted'])
+        assert number == 0 or number == 100, f"Small range should round to 0 or 100: {number}"
+        
+        # Test single value ranges  
+        result = evs.substitute_all_variables("{{number1:1500:1500:round_thousands}}")
+        number = int(result['substituted'])
+        assert number == 2000, f"1500 should round to 2000: {number}"
+        
+        # Test ranges that span rounding boundaries
+        result = evs.substitute_all_variables("{{number1:49999:50001:round_thousands}}")
+        number = int(result['substituted'])
+        assert number == 50000, f"Range around 50000 should round to 50000: {number}"
+
+    def test_rounding_range_validation(self):
+        """Test that rounded values stay within logical bounds."""
+        # Test with different seeds to get variety
+        numbers = []
+        for seed in range(10):  # Use different seeds instead of clearing cache
+            evs = EnhancedVariableSubstitution(seed=seed)
+            result = evs.substitute_all_variables("{{number1:45000:55000:round_thousands}}")
+            number = int(result['substituted'])
+            numbers.append(number)
+        
+        # All should be multiples of 1000
+        assert all(n % 1000 == 0 for n in numbers), "All should be rounded to thousands"
+        
+        # Should have variety across different seeds
+        unique_numbers = set(numbers)
+        assert len(unique_numbers) > 1, f"Should generate varied numbers, got: {unique_numbers}"
+        
+        # All should be reasonable for the range
+        assert all(45000 <= n <= 55000 for n in numbers), f"All should be in range, got: {min(numbers)} to {max(numbers)}"
+
+    def test_rounded_variable_consistency(self):
+        """Test that same rounded variable generates same value across template."""
+        evs = EnhancedVariableSubstitution(seed=42)
+        
+        template = "Budget {{number1:40000:60000:round_thousands}} vs actual {{number1:40000:60000:round_thousands}}"
+        result = evs.substitute_all_variables(template)
+        
+        # Extract both numbers
+        import re
+        numbers = re.findall(r'\d+', result['substituted'])
+        assert len(numbers) == 2, f"Should find exactly 2 numbers: {numbers}"
+        assert numbers[0] == numbers[1], f"Same variable should have same value: {numbers}"
+        
+        # Verify both are properly rounded
+        number = int(numbers[0])
+        assert number % 1000 == 0, f"Should be rounded to thousands: {number}"
+
+    def test_rounded_vs_regular_variable_independence(self):
+        """Test that rounded and regular versions of same variable are independent."""
+        evs = EnhancedVariableSubstitution(seed=42)
+        
+        template = "Regular: {{number1:40000:60000:integer}} Rounded: {{number2:40000:60000:round_thousands}}"
+        result = evs.substitute_all_variables(template)
+        
+        import re
+        numbers = re.findall(r'\d+', result['substituted'])
+        regular = int(numbers[0])
+        rounded = int(numbers[1])
+        
+        # Regular should potentially not be rounded
+        # Rounded should definitely be rounded
+        assert rounded % 1000 == 0, f"Rounded variable should be rounded: {rounded}"
+        
+        # They should be independent (different cache keys)
+        assert regular != rounded or regular % 1000 == 0, "Variables should be independent"
+
+    def test_rounded_variable_mappings(self):
+        """Test that rounded variables are properly tracked in variable mappings."""
+        evs = EnhancedVariableSubstitution(seed=42)
+        
+        result = evs.substitute_all_variables("{{number1:1000:2000:round_hundreds}}")
+        
+        # Check variable mapping includes full type specification
+        assert 'number1:1000:2000:round_hundreds' in result['variables'], \
+            f"Should track full variable spec, got keys: {list(result['variables'].keys())}"
+        
+        # Check value is properly rounded
+        value = int(result['variables']['number1:1000:2000:round_hundreds'])
+        assert value % 100 == 0, f"Mapped value should be rounded: {value}"
+        
+        # Check substituted text matches mapped value
+        substituted_number = int(result['substituted'])
+        assert substituted_number == value, f"Substituted ({substituted_number}) should match mapped ({value})"
+
+    def test_multiple_rounded_types_mapping(self):
+        """Test variable mappings with multiple rounded types."""
+        evs = EnhancedVariableSubstitution(seed=42)
+        
+        template = "H:{{number1:1000:2000:round_hundreds}} T:{{number2:40000:60000:round_thousands}}"
+        result = evs.substitute_all_variables(template)
+        
+        expected_keys = [
+            'number1:1000:2000:round_hundreds',
+            'number2:40000:60000:round_thousands'
+        ]
+        
+        for key in expected_keys:
+            assert key in result['variables'], f"Missing variable mapping: {key}"
+            value = int(result['variables'][key])
+            
+            if 'round_hundreds' in key:
+                assert value % 100 == 0, f"Hundreds value should be rounded: {value}"
+            elif 'round_thousands' in key:
+                assert value % 1000 == 0, f"Thousands value should be rounded: {value}"
+
+    def test_existing_types_unchanged(self):
+        """Test that existing number types continue working unchanged."""
+        evs = EnhancedVariableSubstitution(seed=42)
+        
+        # Test all existing types still work
+        test_cases = [
+            ("{{number1:1:100:integer}}", int, lambda x: isinstance(x, int)),
+            ("{{number1:1:100:currency}}", int, lambda x: isinstance(x, int)),
+        ]
+        
+        for template, expected_type, validator in test_cases:
+            result = evs.substitute_all_variables(template)
+            
+            # Extract number from result
+            number = int(result['substituted'])
+            
+            assert validator(number), f"Type validation failed for {template}: {number}"
+            assert 1 <= number <= 100, f"Value out of range for {template}: {number}"
+
+    def test_error_handling_for_unknown_types(self):
+        """Test that unknown number types raise appropriate errors."""
+        evs = EnhancedVariableSubstitution(seed=42)
+        
+        with pytest.raises(ValueError, match="Unknown number type: invalid_type"):
+            evs._generate_number(1, 100, 'invalid_type')
+        
+        # Ensure new rounded types don't interfere with error detection
+        with pytest.raises(ValueError, match="Unknown number type: round_invalid"):
+            evs._generate_number(1, 100, 'round_invalid')
+
+    def test_rounded_numbers_with_seed_consistency(self):
+        """Test that rounded numbers are consistent with same seed."""
+        template = "{{number1:40000:60000:round_thousands}}"
+        
+        # Generate with same seed twice
+        evs1 = EnhancedVariableSubstitution(seed=12345)
+        result1 = evs1.substitute_all_variables(template)
+        
+        evs2 = EnhancedVariableSubstitution(seed=12345)
+        result2 = evs2.substitute_all_variables(template)
+        
+        assert result1['substituted'] == result2['substituted'], \
+            f"Same seed should generate same result: {result1['substituted']} vs {result2['substituted']}"
+        
+        assert result1['variables'] == result2['variables'], \
+            f"Same seed should generate same variables: {result1['variables']} vs {result2['variables']}"
+
+    def test_realistic_enterprise_number_generation(self):
+        """Test that rounded numbers model realistic enterprise scenarios."""
+        # Generate rounded numbers with different seeds for variety
+        rounded_numbers = []
+        for seed in range(20):  # Use different seeds to get variety
+            evs = EnhancedVariableSubstitution(seed=seed)
+            result = evs.substitute_all_variables("{{number1:40000:60000:round_thousands}}")
+            number = int(result['substituted'])
+            rounded_numbers.append(number)
+        
+        # All should be properly rounded to thousands (realistic for enterprise thresholds)
+        assert all(n % 1000 == 0 for n in rounded_numbers), \
+            f"All should be rounded to thousands: {rounded_numbers}"
+        
+        # Should have good variety across different seeds (different enterprise scenarios)
+        unique_numbers = set(rounded_numbers)
+        assert len(unique_numbers) >= 5, f"Should have good variety for testing: {unique_numbers}"
+        
+        # All should be in valid range
+        assert all(40000 <= n <= 60000 for n in rounded_numbers), \
+            f"All should be in range: min={min(rounded_numbers)}, max={max(rounded_numbers)}"

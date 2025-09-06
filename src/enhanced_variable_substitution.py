@@ -143,7 +143,7 @@ class EnhancedVariableSubstitution:
         Returns:
             Tuple of (substituted_text, variable_mappings)
         """
-        pattern = r'\{\{number(\d+):(\d+):(\d+)(?::([a-zA-Z_]+))?\}\}'
+        pattern = r'\{\{number(\d+):(\d+):(\d+)(?::([a-zA-Z_][a-zA-Z0-9_]*))?\}\}'
         variables = {}
         
         def replace_numeric(match):
@@ -247,19 +247,49 @@ class EnhancedVariableSubstitution:
         Args:
             min_val: Minimum value
             max_val: Maximum value
-            num_type: Type of number (integer, decimal, currency, percentage)
+            num_type: Type of number (integer, decimal, currency, percentage, round_*)
             
         Returns:
             Generated number of appropriate type
+            
+        Supported types:
+            - integer: Random integer (default)
+            - decimal: Random decimal with 2 places
+            - currency: Random integer
+            - percentage: Random decimal with 1 place
+            - round_hundreds: Round to nearest 100 (47927 → 47900)
+            - round_thousands: Round to nearest 1000 (47927 → 48000)
+            - round_ten_thousands: Round to nearest 10,000
+            - round_500: Round to nearest 500
+            - round_250: Round to nearest 250
         """
+        # Generate base random number first
+        base_value = random.randint(min_val, max_val)
+        
+        # Existing types (unchanged)
         if num_type == 'integer':
-            return random.randint(min_val, max_val)
+            return base_value
         elif num_type == 'decimal':
             return round(random.uniform(min_val, max_val), 2)
         elif num_type == 'currency':
-            return random.randint(min_val, max_val)
+            return base_value
         elif num_type == 'percentage':
             return round(random.uniform(min_val, max_val), 1)
+        
+        # Rounded number types (Phase 1: Core types)
+        elif num_type == 'round_hundreds':
+            return round(base_value, -2)  # Round to nearest 100
+        elif num_type == 'round_thousands':
+            return round(base_value, -3)  # Round to nearest 1000
+        elif num_type == 'round_ten_thousands':
+            return round(base_value, -4)  # Round to nearest 10,000
+            
+        # Rounded number types (Phase 2: Custom increments)
+        elif num_type == 'round_500':
+            return int(round(base_value / 500.0)) * 500  # Round to nearest 500
+        elif num_type == 'round_250':
+            return int(round(base_value / 250.0)) * 250  # Round to nearest 250
+        
         else:
             raise ValueError(f"Unknown number type: {num_type}")
     
@@ -275,23 +305,41 @@ class EnhancedVariableSubstitution:
 
 
 def main():
-    """Test the enhanced variable substitution."""
+    """Test the enhanced variable substitution including new rounded number types."""
     evs = EnhancedVariableSubstitution(seed=42)
     
-    # Test semantic variables
-    template1 = "Employee {{semantic1:person_name}} works in {{semantic2:department}} with salary ${{number1:30000:150000:currency}}"
+    # Test semantic + rounded numbers
+    template1 = "Employee {{semantic1:person_name}} works in {{semantic2:department}} with salary ${{number1:30000:150000:round_thousands}}"
     result1 = evs.substitute_all_variables(template1)
-    print("Semantic + Numeric test:")
+    print("Semantic + Rounded Numeric test:")
     print(f"Template: {template1}")
     print(f"Result: {result1['substituted']}")
     print(f"Variables: {result1['variables']}")
     print()
     
-    # Test consistency
-    template2 = "{{semantic1:person_name}} from {{semantic2:department}} earns ${{number1:30000:150000:currency}}"
+    # Test all rounded number types
+    template2 = "Budget: {{number1:10000:20000:round_hundreds}}, Threshold: {{number2:40000:60000:round_thousands}}, Limit: {{number3:100000:200000:round_ten_thousands}}"
     result2 = evs.substitute_all_variables(template2)
-    print("Consistency test (should have same values):")
+    print("Rounded number types test:")
     print(f"Template: {template2}")
+    print(f"Result: {result2['substituted']}")
+    print(f"Variables: {result2['variables']}")
+    print()
+    
+    # Test custom increments
+    template3 = "Increment A: {{number1:1000:3000:round_500}}, Increment B: {{number2:1500:2500:round_250}}"
+    result3 = evs.substitute_all_variables(template3)
+    print("Custom increment rounding test:")
+    print(f"Template: {template3}")
+    print(f"Result: {result3['substituted']}")
+    print(f"Variables: {result3['variables']}")
+    print()
+    
+    # Test consistency
+    template4 = "Budget {{number1:40000:60000:round_thousands}} vs actual {{number1:40000:60000:round_thousands}}"
+    result4 = evs.substitute_all_variables(template4)
+    print("Consistency test (should have same rounded values):")
+    print(f"Template: {template4}")
     print(f"Result: {result2['substituted']}")
     print()
     

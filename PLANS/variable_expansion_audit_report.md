@@ -107,20 +107,6 @@ All sandbox components support variable expansion in these properties:
 
 These component properties may lack variable expansion (needs verification):
 
-#### 🔍 **Component `name` Property**
-- **Current Status:** UNKNOWN - not explicitly processed for variables
-- **Usage:** Used in `TARGET_FILE[component_name]` references
-- **Example:** `name: "{{entity1}}_database"`
-- **Risk Level:** LOW (rarely needs variables)
-- **Location to check:** Component creation in `component_orchestrator.py`
-
-#### 🔍 **Component `depends_on` Property**  
-- **Current Status:** UNKNOWN - not explicitly processed for variables
-- **Usage:** Specifies component dependencies
-- **Example:** `depends_on: ["{{entity1}}_setup"]`
-- **Risk Level:** LOW (rarely needs variables)
-- **Location to check:** Dependency resolution in `component_orchestrator.py`
-
 #### 🔍 **Component `config` Property**
 - **Current Status:** UNKNOWN - not explicitly processed for variables  
 - **Usage:** Component-specific configuration
@@ -165,9 +151,7 @@ PICARD uses three main variable processing methods:
 
 Audit these potentially unsupported component properties:
 
-1. **Component `name` property** - Check if variables work in component names
-2. **Component `depends_on` property** - Check dependency references with variables
-3. **Component `config` property** - Check configuration values with variables
+1. **Component `config` property** - Check configuration values with variables
 
 **Implementation:** Add variable processing in `component_orchestrator.py` component creation.
 
@@ -199,24 +183,17 @@ Consider adding these advanced features:
 
 ### Missing Test Coverage ❌
 
-- ❌ Component `name`/`depends_on`/`config` properties with variables
+- ❌ Component `config` properties with variables
 - ❌ Infrastructure components (when implemented)
 - ❌ Edge cases with complex nested variable combinations
 
 ### Recommended Test Cases
 
 ```yaml
-# Test component name with variables
-- name: "{{entity1}}_database"
-  type: "create_sqlite"
-  
 # Test config with variables
 - config:
     host: "{{semantic1:hostname}}"
     port: {{number1:8000:9000}}
-    
-# Test depends_on with variables  
-- depends_on: ["{{entity1}}_setup", "{{entity2}}_prereq"]
 ```
 
 ---
@@ -235,5 +212,5 @@ The remaining gaps are **minor edge cases** (component names, config, depends_on
 
 ---
 
-*Report generated: 2024-12-19*  
+*Report generated: September 5, 2025*  
 *Based on codebase analysis and recent bug fixes*

@@ -522,9 +522,15 @@ Generate numbers within specified ranges with different formatting types.
 - `decimal`: Two decimal places (e.g., "42.75")
 - `currency`: Whole numbers for money (e.g., "1500")
 - `percentage`: One decimal place (e.g., "87.3")
+- `round_hundreds`: Round to nearest 100 (e.g., "47927" → "47900")
+- `round_thousands`: Round to nearest 1000 (e.g., "47927" → "48000")
+- `round_ten_thousands`: Round to nearest 10,000 (e.g., "47927" → "50000")
+- `round_500`: Round to nearest 500 (e.g., "47927" → "48000")
+- `round_250`: Round to nearest 250 (e.g., "47927" → "48000")
 
 **Examples**:
 ```yaml
+# Basic numeric variables
 template: "Score: {{number1:60:100}}% with budget ${{number2:1000:5000:currency}}"
 # Result: "Score: 87% with budget $3250"
 
@@ -533,7 +539,23 @@ template: "Success rate: {{number1:85:99:percentage}}% over {{number2:30:180}} d
 
 template: "Price: ${{number1:25:500:decimal}} with {{number2:5:15}} day shipping"
 # Result: "Price: $127.85 with 8 day shipping"
+
+# Rounded number examples for enterprise scenarios
+template: "Employee {{semantic1:person_name}} earns ${{number1:40000:80000:round_thousands}} annually"
+# Result: "Employee John Smith earns $67000 annually"
+
+template: "Budget {{number1:150000:300000:round_ten_thousands}} with {{number2:1000:5000:round_500}} contingency"
+# Result: "Budget 250000 with 3500 contingency"
+
+template: "Quarterly target ${{number1:25000:75000:round_hundreds}} vs actual ${{number2:20000:80000:round_250}}"
+# Result: "Quarterly target $47900 vs actual $48000"
 ```
+
+**Rounded Number Use Cases**:
+- **Enterprise modeling**: Budgets, thresholds, and limits often use round numbers in real business contexts
+- **SQL testing**: Expose pattern-matching weaknesses where LLMs confuse rounded amounts with ID fields
+- **Realistic scenarios**: Model genuine business scenarios that naturally use round numbers
+- **PICARD validation**: Test both round and non-round scenarios to identify model failure modes
 
 ### Enhanced Entity Pool Variables
 
@@ -581,35 +603,36 @@ template: "Archive {{entity1}} logs to {{entity2}}_backup"
 **Example Test**:
 ```yaml
 question_id: 501
-template: "Create summary for {{semantic1:person_name}} in {{semantic2:department}} with budget ${{number1:50000:100000:currency}}"
+template: "Create summary for {{semantic1:person_name}} in {{semantic2:department}} with budget ${{number1:50000:100000:round_thousands}}"
 scoring_type: "readfile_jsonmatch"
 file_to_read: "{{artifacts}}/summary.json"
 expected_content: |
   {
     "employee": "{{semantic1:person_name}}",
     "department": "{{semantic2:department}}",
-    "budget": {{number1:50000:100000:currency}},
+    "budget": {{number1:50000:100000:round_thousands}},
     "status": "active"
   }
 ```
 
 **Consistency Rules**:
 - `{{semantic1:person_name}}` produces the same name in template and expected_content
-- `{{number1:50000:100000:currency}}` produces the same amount in both places
+- `{{number1:50000:100000:round_thousands}}` produces the same rounded amount in both places
 - Different indexes produce different values: `{{semantic1:person_name}}` ≠ `{{semantic2:person_name}}`
 - Same index with different types: `{{entity1:colors}}` ≠ `{{entity1:metals}}`
+- Same index with different number types: `{{number1:50000:100000:currency}}` ≠ `{{number1:50000:100000:round_thousands}}`
 
 ### Usage Examples
 
 **Mixed Variable Types**:
 ```yaml
-template: "Employee {{semantic1:person_name}} in {{semantic2:department}} earns ${{number1:30000:80000:currency}} working on {{entity1:colors}} project with {{entity2}} tools"
+template: "Employee {{semantic1:person_name}} in {{semantic2:department}} earns ${{number1:30000:80000:round_thousands}} working on {{entity1:colors}} project with {{entity2}} tools"
 # Result: "Employee John Smith in Engineering earns $65000 working on crimson project with harbor tools"
 ```
 
 **Business Scenario**:
 ```yaml
-template: "Assign {{semantic1:person_name}} to {{entity1:colors}} project with budget ${{number1:10000:50000:currency}} due in {{number2:30:180}} days"
+template: "Assign {{semantic1:person_name}} to {{entity1:colors}} project with budget ${{number1:10000:50000:round_thousands}} due in {{number2:30:180}} days"
 # Result: "Assign Alice Chen to azure project with budget $32000 due in 127 days"
 ```
 
@@ -624,6 +647,22 @@ template: "Deploy {{entity1:metals}} server for {{semantic1:company}} with {{num
 # Different variable types can be used together
 template: "Migrate {{entity1}} database to {{entity2:gems}} cluster using {{semantic1:person_name}} credentials"
 # Result: "Migrate harbor database to emerald cluster using Sarah Johnson credentials"
+```
+
+**Enterprise Rounded Number Scenarios**:
+```yaml
+# Budget planning with multiple rounding types
+template: "Department {{semantic1:department}} budget: ${{number1:100000:500000:round_ten_thousands}} total, ${{number2:5000:25000:round_thousands}} monthly, ${{number3:500:2500:round_250}} discretionary"
+# Result: "Department Engineering budget: $400000 total, $18000 monthly, $1750 discretionary"
+
+# SQL testing scenario - rounded amounts vs ID confusion  
+template: "Find orders above ${{number1:40000:80000:round_thousands}} threshold for customer {{number2:100:999}} in Q{{number3:1:4}}"
+# Result: "Find orders above $67000 threshold for customer 445 in Q2"
+# Tests LLM's ability to distinguish rounded amounts from customer IDs
+
+# Variable consistency with rounded numbers
+template: "Budget approval: ${{number1:200000:600000:round_hundreds}} allocated, ${{number1:200000:600000:round_hundreds}} confirmed"
+# Result: "Budget approval: $347900 allocated, $347900 confirmed" (same rounded value)
 ```
 
 ---

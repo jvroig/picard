@@ -89,7 +89,7 @@ root_element: "company"
 
 ## Enhanced Variable Substitution
 
-PICARD's enhanced variable substitution system provides access to all 42 semantic data types directly in templates, expected values, and sandbox configurations. This allows dynamic, contextual data generation beyond the traditional entity pool system.
+PICARD's enhanced variable substitution system provides access to all 42 semantic data types, numeric range variables with flexible formatting including rounded numbers, and thematic entity pools directly in templates, expected values, and sandbox configurations. This allows dynamic, contextual data generation beyond the traditional entity pool system.
 
 ### Semantic Variables in Templates
 
@@ -156,13 +156,74 @@ Every data type documented in this reference is available for semantic variables
 
 See the complete specifications for each data type in the sections below.
 
-### Best Practices for Semantic Variables
+### Numeric Range Variables
 
+Generate numbers within specified ranges with different formatting types, including enterprise-friendly rounded numbers.
+
+**Syntax**: `{{number[INDEX]:[MIN]:[MAX]:[TYPE]}}`
+
+**Parameters**:
+- `INDEX`: Variable index for consistent referencing (1, 2, 3, etc.)
+- `MIN`: Minimum value (inclusive)
+- `MAX`: Maximum value (inclusive)  
+- `TYPE`: Optional formatting type (default: `integer`)
+
+**Number Types**:
+- `integer`: Whole numbers (e.g., "42")
+- `decimal`: Two decimal places (e.g., "42.75")
+- `currency`: Whole numbers for money (e.g., "1500")
+- `percentage`: One decimal place (e.g., "87.3")
+- `round_hundreds`: Round to nearest 100 (e.g., "47927" → "47900")
+- `round_thousands`: Round to nearest 1000 (e.g., "47927" → "48000")
+- `round_ten_thousands`: Round to nearest 10,000 (e.g., "47927" → "50000")
+- `round_500`: Round to nearest 500 (e.g., "47927" → "48000")
+- `round_250`: Round to nearest 250 (e.g., "47927" → "48000")
+
+**Examples**:
+```yaml
+# Basic numeric variables
+template: "Score: {{number1:60:100}}% with budget ${{number2:1000:5000:currency}}"
+# Result: "Score: 87% with budget $3250"
+
+template: "Success rate: {{number1:85:99:percentage}}% over {{number2:30:180}} days"
+# Result: "Success rate: 92.4% over 127 days"
+
+# Rounded number examples for enterprise scenarios
+template: "Employee {{semantic1:person_name}} earns ${{number1:40000:80000:round_thousands}} annually"
+# Result: "Employee John Smith earns $67000 annually"
+
+template: "Budget {{number1:150000:300000:round_ten_thousands}} with {{number2:1000:5000:round_500}} contingency"
+# Result: "Budget 250000 with 3500 contingency"
+
+template: "Quarterly target ${{number1:25000:75000:round_hundreds}} vs actual ${{number2:20000:80000:round_250}}"
+# Result: "Quarterly target $47900 vs actual $48000"
+```
+
+**Rounded Number Use Cases**:
+- **Enterprise modeling**: Budgets, thresholds, and limits often use round numbers in real business contexts
+- **SQL testing**: Expose pattern-matching weaknesses where LLMs confuse rounded amounts with ID fields
+- **Realistic scenarios**: Model genuine business scenarios that naturally use round numbers
+- **PICARD validation**: Test both round and non-round scenarios to identify model failure modes
+
+### Best Practices for Enhanced Variables
+
+#### For Semantic Variables
 1. **Choose appropriate data types** that match your test scenario context
 2. **Use consistent indexes** for related data that should vary together
 3. **Mix data types** to create realistic business scenarios
 4. **Reference the same variables** in templates and expected values for consistency
-5. **Combine with numeric and entity variables** for comprehensive test coverage
+
+#### For Numeric Variables
+1. **Use rounded types for enterprise scenarios** that naturally involve round numbers (budgets, thresholds)
+2. **Mix rounded and non-rounded values** to test different LLM response patterns
+3. **Consider the business context** when choosing min/max ranges and rounding types
+4. **Test edge cases** with both very round (50000) and irregular (47927) numbers
+
+#### General Best Practices
+1. **Combine variable types** (semantic + numeric + entity) for comprehensive test coverage
+2. **Maintain consistency** across templates, expected values, and sandbox files
+3. **Use realistic ranges** that match real-world business scenarios
+4. **Consider PICARD's dual purpose**: both model realistic scenarios AND expose failure modes
 
 ### Advanced Variable Combination Examples
 
@@ -189,10 +250,10 @@ sandbox_setup:
           it_department: "department"
           budget_limit: "salary"
 
-template: "Find {{semantic1:person_name}} in {{semantic2:department}} with salary ${{number1:50000:100000:currency}}"
+template: "Find {{semantic1:person_name}} in {{semantic2:department}} with salary ${{number1:50000:100000:round_thousands}}"
 expected_content: |
   Employee {{semantic1:person_name}} located in {{semantic2:department}} 
-  Salary: ${{number1:50000:100000:currency}}
+  Salary: ${{number1:50000:100000:round_thousands}}
   Contact: {{semantic3:email}}
 ```
 
@@ -205,7 +266,7 @@ template: |
   Create project report for {{semantic1:company}} showing:
   - Project manager: {{semantic2:person_name}} ({{semantic3:email}})
   - Team: {{semantic4:department}} department in {{semantic5:city}}
-  - Budget: ${{number1:100000:500000:currency}} over {{number2:6:24}} months
+  - Budget: ${{number1:100000:500000:round_ten_thousands}} over {{number2:6:24}} months
   - Priority: {{entity1:colors}} level with {{entity2:metals}} resources
   - Target score: {{number3:85:100}}% by {{semantic6:semester}}
 
@@ -222,7 +283,7 @@ expected_content: |
         "location": "{{semantic5:city}}"
       },
       "budget": {
-        "amount": {{number1:100000:500000:currency}},
+        "amount": {{number1:100000:500000:round_ten_thousands}},
         "duration_months": {{number2:6:24}}
       },
       "priority": "{{entity1:colors}}",
@@ -233,6 +294,51 @@ expected_content: |
       }
     }
   }
+```
+
+#### Enterprise Rounded Number Scenarios
+Use rounded numbers for realistic enterprise testing and SQL pattern-matching validation:
+
+```yaml
+# Budget planning scenario with realistic round numbers
+question_id: 450
+template: |
+  Create budget analysis for {{semantic1:company}}:
+  - Department: {{semantic2:department}} 
+  - Annual budget: ${{number1:200000:800000:round_thousands}}
+  - Quarterly targets: ${{number2:50000:200000:round_hundreds}} each
+  - Contingency fund: ${{number3:10000:50000:round_500}}
+  - Performance threshold: {{number4:85:98:percentage}}%
+
+expected_content: |
+  {
+    "company": "{{semantic1:company}}",
+    "department": "{{semantic2:department}}",
+    "budget_analysis": {
+      "annual_total": {{number1:200000:800000:round_thousands}},
+      "quarterly_target": {{number2:50000:200000:round_hundreds}},
+      "contingency": {{number3:10000:50000:round_500}},
+      "success_threshold": {{number4:85:98:percentage}}
+    },
+    "validation": {
+      "realistic_amounts": true,
+      "enterprise_standards": "round_numbers_preferred"
+    }
+  }
+
+# SQL testing scenario - expose LLM pattern-matching weaknesses  
+question_id: 451
+template: |
+  Find all orders where amount > ${{number1:30000:70000:round_thousands}} 
+  for customer ID {{semantic1:id}} in the enterprise database.
+  Note: The threshold ${{number1:30000:70000:round_thousands}} is a budget limit, not an ID.
+
+expected_response: |
+  SELECT * FROM orders 
+  WHERE order_amount > {{number1:30000:70000:round_thousands}} 
+    AND customer_id = {{semantic1:id}}
+  -- Critical: Use order_amount field, NOT order_id
+  -- Common LLM error: confusing rounded amounts with ID fields
 ```
 
 #### Cross-Format Data Validation

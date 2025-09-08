@@ -205,7 +205,7 @@ class TestYAMLFileGenerator:
         result = yaml_generator.generate(
             target_file="main.yaml",
             content_spec={'schema': schema},
-            clutter_spec={'count': 3}
+            config={'clutter': {'count': 3}}
         )
         
         assert result['errors'] == []

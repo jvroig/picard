@@ -339,7 +339,7 @@ class TestSandboxComponents:
                 'headers': ['id', 'value'],
                 'rows': 2
             },
-            clutter_spec={'count': 3}  # Generate 3 clutter files
+            config={'clutter': {'count': 3}}  # Generate 3 clutter files
         )
         
         assert component_result['errors'] == []

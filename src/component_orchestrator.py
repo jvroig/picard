@@ -184,7 +184,7 @@ class ComponentOrchestrator:
             
             # Generate the file using the correct interface
             result_info = generator.generate(component.target_file, component.content, 
-                                           component.config)  # clutter_spec mapped to config
+                                           component.config)  # Pass full config (includes clutter, etc.)
             
             return ComponentResult(
                 component_name=component_name,

@@ -151,6 +151,13 @@ class PrecheckGenerator:
                 
                 content_spec = component.content or {}
                 
+                # Process config variables if config exists
+                processed_config = None
+                if component.config:
+                    config_json = json.dumps(component.config)
+                    processed_config_json = self._substitute_with_all_variables(config_json, entity_values)
+                    processed_config = json.loads(processed_config_json)
+                
                 # Create file generator
                 generator_type = component.type
                 file_generator = FileGeneratorFactory.create_generator(generator_type, str(self.base_dir))
@@ -159,7 +166,7 @@ class PrecheckGenerator:
                 generation_result = file_generator.generate(
                     target_file=target_file,
                     content_spec=content_spec,
-                    clutter_spec=None  # Components don't use clutter
+                    config=processed_config  # Pass processed config with variable expansion
                 )
                 
                 # Collect results from this component

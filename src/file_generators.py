@@ -43,14 +43,14 @@ class BaseFileGenerator(ABC):
     
     @abstractmethod
     def generate(self, target_file: str, content_spec: Dict[str, Any], 
-                 clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
+                 config: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Generate files according to specifications.
         
         Args:
             target_file: Path to the main target file
             content_spec: Content specification dictionary
-            clutter_spec: Clutter file specification (optional)
+            config: Component configuration (includes clutter, performance, etc.)
             
         Returns:
             Dictionary with generation results and metadata
@@ -67,6 +67,29 @@ class BaseFileGenerator(ABC):
     def _ensure_directory(self, file_path: Path):
         """Ensure the directory for a file path exists."""
         file_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    def _extract_clutter_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract clutter configuration with backwards compatibility.
+        
+        Args:
+            config: Component configuration dictionary
+            
+        Returns:
+            Clutter configuration dictionary, or None if no clutter config found
+        """
+        if not config:
+            return None
+        
+        # New hierarchical format: config.clutter
+        if 'clutter' in config:
+            return config['clutter']
+        
+        # Old flat format: entire config is clutter (backwards compatibility)
+        # Check if config looks like clutter config (has count/pattern)
+        if 'count' in config or 'pattern' in config:
+            return config
+        
+        return None
     
     def _process_lorem_content(self, content: str) -> str:
         """Process {{lorem:...}} placeholders in content."""
@@ -110,14 +133,14 @@ class TextFileGenerator(BaseFileGenerator):
     """Generates text files with lorem ipsum content."""
     
     def generate(self, target_file: str, content_spec: Dict[str, Any], 
-                 clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
+                 config: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Generate text file with specified content.
         
         Args:
             target_file: Path to target text file
             content_spec: Content specification like {'type': 'lorem_lines', 'count': 10}
-            clutter_spec: Clutter specification (optional)
+            config: Component configuration (includes clutter, performance, etc.)
             
         Returns:
             Generation results with file content and metadata
@@ -147,8 +170,9 @@ class TextFileGenerator(BaseFileGenerator):
             result['content_generated'][str(target_path)] = content
             
             # Generate clutter files if specified
-            if clutter_spec:
-                clutter_result = self._generate_clutter_files(target_file, clutter_spec)
+            clutter_config = self._extract_clutter_config(config)
+            if clutter_config:
+                clutter_result = self._generate_clutter_files(target_file, clutter_config)
                 result['files_created'].extend(clutter_result['files_created'])
                 result['content_generated'].update(clutter_result['content_generated'])
                 result['errors'].extend(clutter_result['errors'])
@@ -237,14 +261,14 @@ class CSVFileGenerator(BaseFileGenerator):
     """Generates CSV files with realistic random data."""
     
     def generate(self, target_file: str, content_spec: Dict[str, Any], 
-                 clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
+                 config: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Generate CSV file with specified structure and data.
         
         Args:
             target_file: Path to target CSV file
             content_spec: Content specification like {'headers': [...], 'rows': 50}
-            clutter_spec: Clutter specification (optional)
+            config: Component configuration (includes clutter, performance, etc.)
             
         Returns:
             Generation results with CSV data and metadata
@@ -280,8 +304,9 @@ class CSVFileGenerator(BaseFileGenerator):
             result['content_generated'][str(target_path)] = csv_content
             
             # Generate clutter files if specified
-            if clutter_spec:
-                clutter_result = self._generate_clutter_files(target_file, clutter_spec)
+            clutter_config = self._extract_clutter_config(config)
+            if clutter_config:
+                clutter_result = self._generate_clutter_files(target_file, clutter_config)
                 result['files_created'].extend(clutter_result['files_created'])
                 result['content_generated'].update(clutter_result['content_generated'])
                 result['errors'].extend(clutter_result['errors'])
@@ -393,14 +418,14 @@ class SQLiteFileGenerator(BaseFileGenerator):
         self.generated_tables = {}  # Cache of generated table data for foreign key references
     
     def generate(self, target_file: str, content_spec: Dict[str, Any], 
-                 clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
+                 config: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Generate SQLite database file with specified tables and data.
         
         Args:
             target_file: Path to target SQLite file
             content_spec: Content specification with tables, columns, and rows
-            clutter_spec: Clutter specification (optional)
+            config: Component configuration (includes clutter, performance, etc.)
             
         Returns:
             Generation results with SQLite data and metadata
@@ -459,8 +484,9 @@ class SQLiteFileGenerator(BaseFileGenerator):
             result['content_generated'][str(target_path)] = content_summary
             
             # Generate clutter files if specified
-            if clutter_spec:
-                clutter_result = self._generate_clutter_files(target_file, clutter_spec)
+            clutter_config = self._extract_clutter_config(config)
+            if clutter_config:
+                clutter_result = self._generate_clutter_files(target_file, clutter_config)
                 result['files_created'].extend(clutter_result['files_created'])
                 result['content_generated'].update(clutter_result['content_generated'])
                 result['errors'].extend(clutter_result['errors'])
@@ -764,14 +790,14 @@ class JSONFileGenerator(BaseFileGenerator):
     """Generates JSON files with structured data based on schema definitions."""
     
     def generate(self, target_file: str, content_spec: Dict[str, Any], 
-                 clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
+                 config: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Generate JSON file with specified schema and data.
         
         Args:
             target_file: Path to target JSON file
             content_spec: Content specification with schema definition
-            clutter_spec: Clutter specification (optional)
+            config: Component configuration (includes clutter, performance, etc.)
             
         Returns:
             Generation results with JSON data and metadata
@@ -806,8 +832,9 @@ class JSONFileGenerator(BaseFileGenerator):
             result['content_generated'][str(target_path)] = json_content
             
             # Generate clutter files if specified
-            if clutter_spec:
-                clutter_result = self._generate_clutter_files(target_file, clutter_spec)
+            clutter_config = self._extract_clutter_config(config)
+            if clutter_config:
+                clutter_result = self._generate_clutter_files(target_file, clutter_config)
                 result['files_created'].extend(clutter_result['files_created'])
                 result['content_generated'].update(clutter_result['content_generated'])
                 result['errors'].extend(clutter_result['errors'])
@@ -997,14 +1024,14 @@ class YAMLFileGenerator(BaseFileGenerator):
     """Generates YAML files with structured data based on schema definitions."""
     
     def generate(self, target_file: str, content_spec: Dict[str, Any], 
-                 clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
+                 config: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Generate YAML file with specified schema and data.
         
         Args:
             target_file: Path to target YAML file
             content_spec: Content specification with schema definition
-            clutter_spec: Clutter specification (optional)
+            config: Component configuration (includes clutter, performance, etc.)
             
         Returns:
             Generation results with YAML data and metadata
@@ -1047,8 +1074,9 @@ class YAMLFileGenerator(BaseFileGenerator):
             result['content_generated'][str(target_path)] = yaml_content
             
             # Generate clutter files if specified
-            if clutter_spec:
-                clutter_result = self._generate_clutter_files(target_file, clutter_spec)
+            clutter_config = self._extract_clutter_config(config)
+            if clutter_config:
+                clutter_result = self._generate_clutter_files(target_file, clutter_config)
                 result['files_created'].extend(clutter_result['files_created'])
                 result['content_generated'].update(clutter_result['content_generated'])
                 result['errors'].extend(clutter_result['errors'])
@@ -1238,14 +1266,14 @@ class XMLFileGenerator(BaseFileGenerator):
     """Generates XML files with structured data based on schema definitions."""
     
     def generate(self, target_file: str, content_spec: Dict[str, Any], 
-                 clutter_spec: Dict[str, Any] = None) -> Dict[str, Any]:
+                 config: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Generate XML file with specified schema and data.
         
         Args:
             target_file: Path to target XML file
             content_spec: Content specification with schema definition
-            clutter_spec: Clutter specification (optional)
+            config: Component configuration (includes clutter, performance, etc.)
             
         Returns:
             Generation results with XML data and metadata
@@ -1281,8 +1309,9 @@ class XMLFileGenerator(BaseFileGenerator):
             result['content_generated'][str(target_path)] = formatted_xml
             
             # Generate clutter files if specified
-            if clutter_spec:
-                clutter_result = self._generate_clutter_files(target_file, clutter_spec)
+            clutter_config = self._extract_clutter_config(config)
+            if clutter_config:
+                clutter_result = self._generate_clutter_files(target_file, clutter_config)
                 result['files_created'].extend(clutter_result['files_created'])
                 result['content_generated'].update(clutter_result['content_generated'])
                 result['errors'].extend(clutter_result['errors'])

@@ -30,7 +30,7 @@ class TestTextFileGenerator:
         result = text_generator.generate(
             target_file="test_data/sample.txt",
             content_spec={'type': 'lorem_lines', 'count': 5},
-            clutter_spec={'count': 3}
+            config={'clutter': {'count': 3}}
         )
         
         assert len(result['files_created']) >= 4  # Main file + 3 clutter files
@@ -95,7 +95,7 @@ class TestCSVFileGenerator:
                 'headers': ['id', 'name', 'age', 'city', 'status'], 
                 'rows': 5
             },
-            clutter_spec={'count': 2}
+            config={'clutter': {'count': 2}}
         )
         
         assert len(result['files_created']) >= 3  # Main + 2 clutter

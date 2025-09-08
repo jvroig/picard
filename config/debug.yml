@@ -1,6 +1,3 @@
-#PICARD Abridged Standard Template (PAST)
-# Example test cases (abridged) demonstrating different scoring types and scenarios that are possible to model
-
 tests:
 
   #################################
@@ -8,7 +5,7 @@ tests:
 
   #EASY MODE
   - question_id: 401
-    samples: 10
+    samples: 20
     template: "How many orders worth above {{number1:40000:50000}} are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db? Create a JSON file {{artifacts}}/{{qs_id}}/big_orders_count.json that contains the answer using 'num_big_orders' as key. Begin by examining the schema to find relevant columns, and then do your analysis."
     scoring_type: "readfile_jsonmatch"
     file_to_read: "{{artifacts}}/{{qs_id}}/big_orders_count.json"
@@ -33,12 +30,12 @@ tests:
                   - {name: "CUST_REF", type: "INTEGER", foreign_key: "enterprise_customers.CUST_ID"}
                   - {name: "ORD_AMT", type: "INTEGER", data_type: "currency"}
                   - {name: "STAT_CD", type: "TEXT", data_type: "status"}
-                rows: 75
+                rows: 500
 
 
-  #STANDARD MODE
+  #EASY-STANDARD MODE
   - question_id: 402
-    samples: 10
+    samples: 20
     template: "How many orders worth above 50000 are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db? Create a JSON file {{artifacts}}/{{qs_id}}/big_orders_count.json that contains the answer using 'num_big_orders' as key."
     scoring_type: "readfile_jsonmatch"
     file_to_read: "{{artifacts}}/{{qs_id}}/big_orders_count.json"
@@ -63,14 +60,14 @@ tests:
                   - {name: "CUST_REF", type: "INTEGER", foreign_key: "enterprise_customers.CUST_ID"}
                   - {name: "ORD_AMT", type: "INTEGER", data_type: "currency"}
                   - {name: "STAT_CD", type: "TEXT", data_type: "status"}
-                rows: 75
+                rows: 500
 
 
 
 
-  #HARD MODE
+  #EASY-HARD MODE
   - question_id: 403
-    samples: 10
+    samples: 20
     template: "How many orders worth above {{number1:40000:50000}} are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db? Create a JSON file {{artifacts}}/{{qs_id}}/big_orders_count.json that contains the answer using 'num_big_orders' as key."
     scoring_type: "readfile_jsonmatch"
     file_to_read: "{{artifacts}}/{{qs_id}}/big_orders_count.json"
@@ -95,4 +92,96 @@ tests:
                   - {name: "CUST_REF", type: "INTEGER", foreign_key: "enterprise_customers.CUST_ID"}
                   - {name: "ORD_AMT", type: "INTEGER", data_type: "currency"}
                   - {name: "STAT_CD", type: "TEXT", data_type: "status"}
-                rows: 75
+                rows: 500
+
+
+  ##COMMONSENSE - EASY
+  - question_id: 404
+    samples: 20
+    template: "How many orders above {{number1:40000:50000}} are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db? Create a JSON file {{artifacts}}/{{qs_id}}/big_orders_count.json that contains the answer using 'num_big_orders' as key. Begin by examining the schema to find relevant columns, and then do your analysis."
+    scoring_type: "readfile_jsonmatch"
+    file_to_read: "{{artifacts}}/{{qs_id}}/big_orders_count.json"
+    expected_content: "{\"num_big_orders\": {{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > {{number1:40000:50000}}:TARGET_FILE[order_db]}}}"
+    sandbox_setup:
+      components:
+        - type: "create_sqlite"
+          name: "order_db"
+          target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}.db"
+          content:
+            tables:
+              - name: "enterprise_customers"
+                columns:
+                  - {name: "CUST_ID", type: "auto_id"}
+                  - {name: "CUST_NM", type: "TEXT", data_type: "person_name"}
+                  - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
+                  - {name: "LOC_CD", type: "TEXT", data_type: "region"}
+                rows: 20
+              - name: "enterprise_orders"
+                columns:
+                  - {name: "ORD_ID", type: "auto_id"}
+                  - {name: "CUST_REF", type: "INTEGER", foreign_key: "enterprise_customers.CUST_ID"}
+                  - {name: "ORD_AMT", type: "INTEGER", data_type: "currency"}
+                  - {name: "STAT_CD", type: "TEXT", data_type: "status"}
+                rows: 500
+
+
+  #COMMONSENSE-STANDARD MODE
+  - question_id: 405
+    samples: 20
+    template: "How many orders above 50000 are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db? Create a JSON file {{artifacts}}/{{qs_id}}/big_orders_count.json that contains the answer using 'num_big_orders' as key."
+    scoring_type: "readfile_jsonmatch"
+    file_to_read: "{{artifacts}}/{{qs_id}}/big_orders_count.json"
+    expected_content: "{\"num_big_orders\": {{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > 50000:TARGET_FILE[order_db]}}}"
+    sandbox_setup:
+      components:
+        - type: "create_sqlite"
+          name: "order_db"
+          target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}.db"
+          content:
+            tables:
+              - name: "enterprise_customers"
+                columns:
+                  - {name: "CUST_ID", type: "auto_id"}
+                  - {name: "CUST_NM", type: "TEXT", data_type: "person_name"}
+                  - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
+                  - {name: "LOC_CD", type: "TEXT", data_type: "region"}
+                rows: 20
+              - name: "enterprise_orders"
+                columns:
+                  - {name: "ORD_ID", type: "auto_id"}
+                  - {name: "CUST_REF", type: "INTEGER", foreign_key: "enterprise_customers.CUST_ID"}
+                  - {name: "ORD_AMT", type: "INTEGER", data_type: "currency"}
+                  - {name: "STAT_CD", type: "TEXT", data_type: "status"}
+                rows: 500
+
+
+
+
+  #COMMONSENSE-HARD MODE
+  - question_id: 406
+    samples: 20
+    template: "How many orders above {{number1:40000:50000}} are there from customers in the Engineering department in {{artifacts}}/{{qs_id}}/{{entity1}}.db? Create a JSON file {{artifacts}}/{{qs_id}}/big_orders_count.json that contains the answer using 'num_big_orders' as key."
+    scoring_type: "readfile_jsonmatch"
+    file_to_read: "{{artifacts}}/{{qs_id}}/big_orders_count.json"
+    expected_content: "{\"num_big_orders\": {{sqlite_query:SELECT COUNT(*) FROM enterprise_orders o JOIN enterprise_customers c ON o.CUST_REF = c.CUST_ID WHERE c.DEPT_CD = 'Engineering' AND o.ORD_AMT > {{number1:40000:50000}}:TARGET_FILE[order_db]}}}"
+    sandbox_setup:
+      components:
+        - type: "create_sqlite"
+          name: "order_db"
+          target_file: "{{artifacts}}/{{qs_id}}/{{entity1}}.db"
+          content:
+            tables:
+              - name: "enterprise_customers"
+                columns:
+                  - {name: "CUST_ID", type: "auto_id"}
+                  - {name: "CUST_NM", type: "TEXT", data_type: "person_name"}
+                  - {name: "DEPT_CD", type: "TEXT", data_type: "department"}
+                  - {name: "LOC_CD", type: "TEXT", data_type: "region"}
+                rows: 20
+              - name: "enterprise_orders"
+                columns:
+                  - {name: "ORD_ID", type: "auto_id"}
+                  - {name: "CUST_REF", type: "INTEGER", foreign_key: "enterprise_customers.CUST_ID"}
+                  - {name: "ORD_AMT", type: "INTEGER", data_type: "currency"}
+                  - {name: "STAT_CD", type: "TEXT", data_type: "status"}
+                rows: 500

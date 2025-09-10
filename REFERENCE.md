@@ -1576,9 +1576,10 @@ sandbox_setup:
   content:
     type: "lorem_lines"
     count: 50
-  clutter:
-    count: 5                      # Generate 5 random clutter files
-    pattern: "**/*.txt"           # File pattern (future feature)
+  config:
+    clutter:
+      count: 5                      # Generate 5 random clutter files
+      pattern: "**/*.txt"           # File pattern (future feature)
 ```
 
 **Clutter Generation**:
@@ -1664,9 +1665,10 @@ content:
 #### CSV Clutter
 
 ```yaml
-clutter:
-  count: 3                        # Creates 3 additional CSV/text files
-  # Generates: clutter_42.csv, random_data.txt, etc.
+config:
+  clutter:
+    count: 3                        # Creates 3 additional CSV/text files
+    # Generates: clutter_42.csv, random_data.txt, etc.
 ```
 
 ---
@@ -2243,8 +2245,9 @@ Create complex enterprise-like environments:
       headers: ["CUST_ID", "COMPANY", "REVENUE", "INDUSTRY"] 
       header_types: ["id", "company", "currency", "category"]
       rows: 100
-    clutter:
-      count: 8                    # Creates realistic corporate file chaos
+    config:
+      clutter:
+        count: 8                    # Creates realistic corporate file chaos
 ```
 
 #### Complex Business Scenarios

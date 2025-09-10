@@ -206,7 +206,7 @@ config:
 - ✅ All existing test definitions continue working (backwards compatibility) **COMPLETED**
 - ✅ New hierarchical `config.clutter` format works correctly **COMPLETED**
 - ✅ Variable expansion works in config properties: `count: {{number1:5:10}}` **COMPLETED**
-- ✅ Documentation reflects proper config structure **PENDING**
+- ✅ Documentation reflects proper config structure **COMPLETED**
 - ✅ Foundation laid for infrastructure component config needs **COMPLETED**
 
 ## Risk Assessment
@@ -232,6 +232,7 @@ config:
 - Updated component orchestrator and precheck generator to use new structure
 - Added variable expansion support for config properties (including clutter config)
 - All test files updated to use new `config={'clutter': {...}}` format
+- Updated documentation examples in REFERENCE.md to use new hierarchical syntax
 - Comprehensive testing: 31/31 tests passing with no regressions
 
 **Technical Details:**

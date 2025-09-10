@@ -86,6 +86,7 @@ class PicardScorer:
             from scoring_types.directory_structure import DirectoryStructureScorer
             from scoring_types.jsonmatch import JsonMatchScorer
             from scoring_types.readfile_jsonmatch import ReadFileJsonMatchScorer
+            from scoring_types.json_targeted_edit import JsonTargetedEditScorer
             
             self.scoring_types = {
                 'stringmatch': StringMatchScorer(),
@@ -93,7 +94,8 @@ class PicardScorer:
                 'files_exist': FilesExistScorer(),
                 'directory_structure': DirectoryStructureScorer(),
                 'jsonmatch': JsonMatchScorer(),
-                'readfile_jsonmatch': ReadFileJsonMatchScorer()
+                'readfile_jsonmatch': ReadFileJsonMatchScorer(),
+                'json_targeted_edit': JsonTargetedEditScorer()
             }
         except ImportError as e:
             print(f"Warning: Could not import scoring types: {e}")
